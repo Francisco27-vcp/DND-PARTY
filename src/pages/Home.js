@@ -421,3 +421,4 @@ const s = {
   cancelBtn: { flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#8a8070', fontFamily: 'Cinzel,serif', fontSize: '10px', padding: '10px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' },
   deleteBtn: { flex: 1, background: 'rgba(139,26,26,0.2)', border: '1px solid rgba(139,26,26,0.5)', color: '#e07070', fontFamily: 'Cinzel,serif', fontSize: '10px', padding: '10px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' },
 };
+
