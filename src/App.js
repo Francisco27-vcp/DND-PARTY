@@ -10,6 +10,7 @@ import CharacterSheet from './pages/CharacterSheet';
 import Campaign from './pages/Campaign';
 import Timeline from './pages/Timeline';
 import Notes from './pages/Notes';
+import Manual from './pages/Manual';
 import Nav from './components/Nav';
 
 export default function App() {
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/campana" element={user ? <Campaign user={user} /> : <Navigate to="/login" />} />
         <Route path="/historia" element={user ? <Timeline user={user} /> : <Navigate to="/login" />} />
         <Route path="/notas" element={user ? <Notes user={user} /> : <Navigate to="/login" />} />
+        <Route path="/manual" element={user ? <Manual /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );
@@ -44,13 +46,8 @@ export default function App() {
 function Loader() {
   return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh', flexDirection:'column', gap:'16px' }}>
-      <div style={{ fontFamily:'Cinzel,serif', fontSize:'28px', fontWeight:'900', color:'#e8c96a', letterSpacing:'4px', textShadow:'0 0 30px rgba(232,201,106,0.5)' }}>
-        ✦
-      </div>
-      <div style={{ fontFamily:'Cinzel,serif', fontSize:'10px', letterSpacing:'4px', color:'#7a6030', textTransform:'uppercase' }}>
-        Cargando campaña...
-      </div>
+      <div style={{ fontFamily:'Cinzel,serif', fontSize:'28px', fontWeight:'900', color:'#e8c96a', letterSpacing:'4px', textShadow:'0 0 30px rgba(232,201,106,0.5)' }}>⚔</div>
+      <div style={{ fontFamily:'Cinzel,serif', fontSize:'10px', letterSpacing:'4px', color:'#7a6030', textTransform:'uppercase' }}>Cargando campaña...</div>
     </div>
   );
 }
- 
