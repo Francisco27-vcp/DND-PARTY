@@ -112,3 +112,4 @@ const s = {
   input: { flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.15)', color: '#f5f0e8', fontFamily: 'Crimson Pro,serif', fontSize: '15px', padding: '10px 14px', outline: 'none' },
   sendBtn: { background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.3)', color: '#c9a84c', fontFamily: 'Cinzel,serif', fontSize: '16px', width: '44px', cursor: 'pointer', flexShrink: 0 },
 };
+ 

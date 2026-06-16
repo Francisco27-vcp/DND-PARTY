@@ -298,3 +298,4 @@ const ss = {
   combatVal: { fontFamily: 'Cinzel,serif', fontSize: '18px', fontWeight: '700', color: '#f5f0e8' },
   inputNum: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(201,168,76,0.2)', color: '#e8c96a', fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', padding: '4px 6px', textAlign: 'center', width: '60px' },
 };
+ 

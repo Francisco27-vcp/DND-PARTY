@@ -169,3 +169,4 @@ const s = {
   cardText: { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: '#9a9080', lineHeight: '1.7', whiteSpace: 'pre-wrap' },
   loading: { textAlign: 'center', padding: '40px', fontFamily: 'Cinzel,serif', color: '#5a4820', letterSpacing: '2px', fontSize: '10px' },
 };
+ 

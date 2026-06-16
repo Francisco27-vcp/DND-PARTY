@@ -165,3 +165,4 @@ const s = {
   timelineMeta: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: '#3a2e18', textTransform: 'uppercase' },
   loading: { textAlign: 'center', padding: '40px', fontFamily: 'Cinzel,serif', color: '#5a4820', letterSpacing: '2px', fontSize: '10px' },
 };
+ 

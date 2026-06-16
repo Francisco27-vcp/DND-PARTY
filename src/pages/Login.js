@@ -224,3 +224,4 @@ const s = {
     textTransform: 'uppercase',
   },
 };
+ 

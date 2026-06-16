@@ -276,3 +276,4 @@ const s = {
   pillVal: { fontFamily: 'Cinzel,serif', fontSize: '16px', fontWeight: '700', color: '#e8c96a' },
   pillLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: '#5a4820', textTransform: 'uppercase' },
 };
+ 
