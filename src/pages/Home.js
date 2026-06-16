@@ -1,9 +1,15 @@
 // src/pages/Home.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, getDocs, doc, getDoc, setDoc, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, setDoc, addDoc, deleteDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { uploadImage } from '../lib/uploadImage';
 import { db } from '../lib/firebase';
+
+const COMBAT_TYPE_COLORS = { pj: '#c9a84c', enemigo: '#8b1a1a' };
+
+function sortParticipants(participants) {
+  return [...(participants || [])].sort((a, b) => (b.initiative - a.initiative) || (a.addedAt - b.addedAt));
+}
 
 const INITIAL_CHARACTERS = [
   {
@@ -82,6 +88,16 @@ export default function Home({ user }) {
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [combat, setCombat] = useState(null);
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'combat', 'current'), (snap) => {
+      setCombat(snap.exists() ? snap.data() : null);
+    }, (err) => {
+      console.error('Error sincronizando el combate:', err);
+    });
+    return unsub;
+  }, []);
 
   useEffect(() => {
     const loadRole = async () => {
@@ -167,6 +183,30 @@ export default function Home({ user }) {
           <h1 style={s.heroTitle}>DND PARTY</h1>
         </div>
       </div>
+
+      {/* COMBAT BANNER */}
+      {combat?.active && (
+        <div style={s.combatBanner} className="fade-in">
+          <div style={s.combatBannerHeader}>
+            <span style={s.combatBannerTitle}>⚔ Combate en curso</span>
+            <span style={s.combatBannerRound}>Ronda {combat.round || 1}</span>
+          </div>
+          <div style={s.combatBannerList}>
+            {sortParticipants(combat.participants).map((p, i) => {
+              const color = COMBAT_TYPE_COLORS[p.type] || COMBAT_TYPE_COLORS.pj;
+              const isCurrent = i === (combat.currentIndex || 0);
+              return (
+                <div key={p.id} style={{ ...s.combatBannerRow, ...(isCurrent ? s.combatBannerRowActive : {}) }}>
+                  <span style={s.combatBannerTurnIcon}>{isCurrent ? '▶' : ''}</span>
+                  <span style={{ ...s.combatBannerType, borderColor: `${color}50`, color }}>{p.type === 'enemigo' ? 'Enemigo' : 'PJ'}</span>
+                  <span style={s.combatBannerName}>{p.name}</span>
+                  <span style={s.combatBannerInit}>{p.initiative}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* CHARACTERS */}
       <div style={s.section}>
@@ -400,6 +440,17 @@ const s = {
   heroContent: { position: 'relative', zIndex: 1 },
   heroLabel: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '4px', color: '#5a4820', textTransform: 'uppercase', marginBottom: '8px' },
   heroTitle: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(28px,6vw,48px)', fontWeight: '900', letterSpacing: '6px', color: '#e8c96a', textShadow: '0 0 30px rgba(232,201,106,0.3)' },
+  combatBanner: { background: 'rgba(15,12,24,0.92)', border: '1px solid rgba(139,26,26,0.35)', borderTop: '2px solid #8b1a1a', padding: '16px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '10px' },
+  combatBannerHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' },
+  combatBannerTitle: { fontFamily: 'Cinzel,serif', fontSize: '12px', letterSpacing: '2px', color: '#e07070', textTransform: 'uppercase' },
+  combatBannerRound: { fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', color: '#c9a84c', border: '1px solid rgba(201,168,76,0.3)', padding: '3px 10px', textTransform: 'uppercase' },
+  combatBannerList: { display: 'flex', flexDirection: 'column', gap: '5px' },
+  combatBannerRow: { display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 10px', background: 'rgba(8,6,12,0.4)', border: '1px solid rgba(201,168,76,0.06)' },
+  combatBannerRowActive: { background: 'rgba(201,168,76,0.1)', borderColor: 'rgba(201,168,76,0.5)', boxShadow: '0 0 12px rgba(201,168,76,0.15)' },
+  combatBannerTurnIcon: { width: '14px', color: '#e8c96a', fontSize: '11px', flexShrink: 0 },
+  combatBannerType: { border: '1px solid', fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', padding: '3px 8px', textTransform: 'uppercase', flexShrink: 0 },
+  combatBannerName: { flex: 1, fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: '#e8c96a' },
+  combatBannerInit: { fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', color: '#c9a84c', minWidth: '24px', textAlign: 'right' },
   section: { marginBottom: '28px' },
   sectionHeader: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' },
   sectionTitle: { fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '3px', color: '#7a6030', textTransform: 'uppercase', whiteSpace: 'nowrap' },
