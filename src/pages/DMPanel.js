@@ -1,7 +1,7 @@
 // src/pages/DMPanel.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, getDocs, doc, getDoc, setDoc, onSnapshot, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, setDoc, onSnapshot, writeBatch, serverTimestamp, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 const QUICK_LINKS = [
@@ -20,6 +20,30 @@ const DEFAULT_COMBAT = { active: false, round: 1, currentIndex: 0, participants:
 
 const combatRef = () => doc(db, 'combat', 'current');
 
+function buildSystemPrompt(characters, sessions) {
+  const charList = characters.length
+    ? characters.map(c =>
+        `- ${c.name} (${c.race} ${c.class}${c.subclass ? `/${c.subclass}` : ''}, Lv${c.level}): PG ${c.hp ?? '?'}/${c.hpMax ?? '?'}, CA ${c.ac ?? '?'}, XP ${(c.xp || 0).toLocaleString()}. Jugador: ${c.player || c.ownerEmail || 'desconocido'}. Condiciones: ${c.conditions || 'ninguna'}.`
+      ).join('\n')
+    : 'Sin personajes registrados.';
+
+  const sessionList = sessions.length
+    ? sessions.map(s =>
+        `- Sesión "${s.title || 'Sin título'}" (${s.date || 'fecha desconocida'}): ${s.summary || s.highlights || 'Sin resumen.'}`
+      ).join('\n')
+    : 'Sin sesiones registradas.';
+
+  return `Sos el asistente IA del Dungeon Master de una campaña de D&D 2024 (5th Edition revisada).
+
+PARTY ACTUAL:
+${charList}
+
+ÚLTIMAS SESIONES (más recientes primero):
+${sessionList}
+
+Podés responder preguntas sobre reglas de D&D 2024, los personajes y la campaña actual, consejos tácticos y narrativos para el DM, monstruos, hechizos y objetos mágicos. Respondé siempre en español. Sé conciso pero completo. Si no sabés algo con certeza, indicalo.`;
+}
+
 function sortParticipants(participants) {
   return [...(participants || [])].sort((a, b) => (b.initiative - a.initiative) || (a.addedAt - b.addedAt));
 }
@@ -37,6 +61,11 @@ export default function DMPanel({ user }) {
   const [partName, setPartName] = useState('');
   const [partInitiative, setPartInitiative] = useState('');
   const [partType, setPartType] = useState('pj');
+  const [sessions, setSessions] = useState([]);
+  const [aiMessages, setAiMessages] = useState([]);
+  const [aiInput, setAiInput] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const aiScrollRef = useRef(null);
 
   useEffect(() => {
     const loadRole = async () => {
@@ -63,8 +92,22 @@ export default function DMPanel({ user }) {
     setLoadingChars(false);
   };
 
+  const loadSessions = async () => {
+    try {
+      const q = query(collection(db, 'sessions'), orderBy('createdAt', 'desc'), limit(5));
+      const snap = await getDocs(q);
+      setSessions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    } catch (err) {
+      console.error('Error cargando sesiones:', err);
+    }
+  };
+
   useEffect(() => {
-    if (roleLoaded && isDM) loadCharacters();
+    if (roleLoaded && isDM) {
+      loadCharacters();
+      loadSessions();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roleLoaded, isDM]);
 
   useEffect(() => {
@@ -140,6 +183,83 @@ export default function DMPanel({ user }) {
       console.error('Error aplicando XP a la party:', err);
     }
     setApplying(false);
+  };
+
+  useEffect(() => {
+    if (aiScrollRef.current) aiScrollRef.current.scrollTop = aiScrollRef.current.scrollHeight;
+  }, [aiMessages]);
+
+  const sendToAI = async (userMessage) => {
+    if (!userMessage.trim() || aiLoading) return;
+
+    const prevMessages = [...aiMessages, { role: 'user', text: userMessage }];
+    setAiMessages([...prevMessages, { role: 'ai', text: '' }]);
+    setAiInput('');
+    setAiLoading(true);
+
+    const apiMessages = prevMessages.map(m => ({
+      role: m.role === 'user' ? 'user' : 'assistant',
+      content: m.text,
+    }));
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: apiMessages,
+          systemPrompt: buildSystemPrompt(characters, sessions),
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        setAiMessages(prev => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { role: 'ai', text: `Error ${res.status}: ${errData.error?.message || errData.error || 'Error desconocido.'}` };
+          return updated;
+        });
+        setAiLoading(false);
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let fullText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const raw = line.slice(6);
+          if (raw === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(raw);
+            if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta') {
+              fullText += parsed.delta.text;
+              setAiMessages(prev => {
+                const updated = [...prev];
+                updated[updated.length - 1] = { role: 'ai', text: fullText };
+                return updated;
+              });
+            }
+          } catch {}
+        }
+      }
+    } catch (err) {
+      console.error('Error llamando a la IA:', err);
+      setAiMessages(prev => {
+        const updated = [...prev];
+        updated[updated.length - 1] = { role: 'ai', text: 'Error al conectar con el asistente. Verificá tu conexión y la API key.' };
+        return updated;
+      });
+    }
+    setAiLoading(false);
   };
 
   if (!roleLoaded) {
@@ -307,6 +427,44 @@ export default function DMPanel({ user }) {
         }
       </div>
 
+      {/* ASISTENTE IA */}
+      <div style={s.section}>
+        <div style={s.sectionHeader}>
+          <span style={s.sectionTitle}>Asistente IA del DM</span>
+          <div style={s.sectionLine} />
+        </div>
+        <div style={s.aiBox}>
+          <div style={s.hint}>Preguntá sobre reglas de D&D 2024, los personajes o la campaña. El contexto de la party y las últimas sesiones ya está incluido.</div>
+          <div style={s.aiChat} ref={aiScrollRef}>
+            {aiMessages.length === 0 && (
+              <div style={s.aiEmpty}>¿En qué puedo ayudarte, Dungeon Master?</div>
+            )}
+            {aiMessages.map((msg, i) => (
+              <div key={i} style={msg.role === 'user' ? s.aiUserMsg : s.aiAssistantMsg}>
+                <span style={msg.role === 'user' ? s.aiUserLabel : s.aiAssistantLabel}>
+                  {msg.role === 'user' ? 'DM' : '✦ Asistente'}
+                </span>
+                <p style={s.aiMsgText}>
+                  {msg.text || (aiLoading && i === aiMessages.length - 1 ? '▌' : '')}
+                </p>
+              </div>
+            ))}
+          </div>
+          <form onSubmit={e => { e.preventDefault(); sendToAI(aiInput); }} style={s.aiForm}>
+            <input
+              value={aiInput}
+              onChange={e => setAiInput(e.target.value)}
+              style={s.aiInput}
+              placeholder="Preguntá sobre reglas, estrategias, la campaña..."
+              disabled={aiLoading}
+            />
+            <button type="submit" style={s.aiSendBtn} disabled={aiLoading || !aiInput.trim()}>
+              {aiLoading ? '...' : 'Consultar'}
+            </button>
+          </form>
+        </div>
+      </div>
+
       <div style={{ height: '80px' }} />
     </div>
   );
@@ -416,4 +574,16 @@ const s = {
   condRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(201,168,76,0.08)', paddingTop: '8px' },
   condLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1.5px', color: '#5a4820', textTransform: 'uppercase' },
   condVal: { fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: '#9a9080', textAlign: 'right' },
+
+  aiBox: { background: 'rgba(15,12,24,0.9)', border: '1px solid rgba(201,168,76,0.18)', borderTop: '2px solid #c9a84c', padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' },
+  aiChat: { minHeight: '80px', maxHeight: '420px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' },
+  aiEmpty: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '13px', color: '#5a4820', textAlign: 'center', padding: '24px 0' },
+  aiUserMsg: { alignSelf: 'flex-end', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', padding: '10px 14px', maxWidth: '80%' },
+  aiAssistantMsg: { alignSelf: 'flex-start', background: 'rgba(8,6,12,0.6)', border: '1px solid rgba(201,168,76,0.06)', padding: '10px 14px', maxWidth: '88%' },
+  aiUserLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1.5px', color: '#c9a84c', textTransform: 'uppercase', display: 'block', marginBottom: '5px' },
+  aiAssistantLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1.5px', color: '#5a4820', textTransform: 'uppercase', display: 'block', marginBottom: '5px' },
+  aiMsgText: { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: '#f5f0e8', lineHeight: '1.65', margin: 0, whiteSpace: 'pre-wrap' },
+  aiForm: { display: 'flex', gap: '10px', alignItems: 'stretch', borderTop: '1px solid rgba(201,168,76,0.08)', paddingTop: '14px' },
+  aiInput: { flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.2)', color: '#f5f0e8', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '10px 14px', outline: 'none' },
+  aiSendBtn: { background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.35)', color: '#e8c96a', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '10px 20px', cursor: 'pointer', textTransform: 'uppercase' },
 };
