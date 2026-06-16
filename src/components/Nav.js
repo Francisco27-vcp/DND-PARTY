@@ -75,3 +75,4 @@ const styles = {
   mobileNavBtn: { background: 'transparent', border: 'none', color: '#5a4820', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '4px 8px', cursor: 'pointer', transition: 'color 0.2s' },
   mobileNavBtnActive: { color: '#e8c96a' },
 };
+
