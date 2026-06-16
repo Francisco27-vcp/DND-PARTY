@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { uploadImage } from '../lib/uploadImage';
 import { db } from '../lib/firebase';
 
 export default function CharacterSheet({ user }) {
@@ -38,12 +39,17 @@ export default function CharacterSheet({ user }) {
   const update = (field, value) => setDraft(d => ({ ...d, [field]: value }));
   const updateStat = (stat, value) => setDraft(d => ({ ...d, stats: { ...d.stats, [stat]: parseInt(value) || 0 } }));
 
-  const handlePortrait = (e) => {
+  const handlePortrait = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setDraft(d => ({ ...d, portrait: ev.target.result }));
-    reader.readAsDataURL(file);
+    setSaving(true);
+    try {
+      const url = await uploadImage(file, `portraits/characters/${id}_${Date.now()}`);
+      setDraft(d => ({ ...d, portrait: url }));
+    } catch (err) {
+      console.error('Error subiendo imagen:', err);
+    }
+    setSaving(false);
   };
 
   if (!char) return <div style={s.loading}>Cargando personaje...</div>;
@@ -296,4 +302,3 @@ const ss = {
   combatVal: { fontFamily: 'Cinzel,serif', fontSize: '18px', fontWeight: '700', color: '#f5f0e8' },
   inputNum: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(201,168,76,0.2)', color: '#e8c96a', fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', padding: '4px 6px', textAlign: 'center', width: '60px' },
 };
-
