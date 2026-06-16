@@ -12,6 +12,7 @@ import Timeline from './pages/Timeline';
 import Notes from './pages/Notes';
 import Manual from './pages/Manual';
 import Profile from './pages/Profile';
+import DMPanel from './pages/DMPanel';
 import Nav from './components/Nav';
 
 export default function App() {
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="/notas" element={user ? <Notes user={user} /> : <Navigate to="/login" />} />
         <Route path="/manual" element={user ? <Manual /> : <Navigate to="/login" />} />
         <Route path="/perfil" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
+        <Route path="/dm" element={user ? <DMPanel user={user} /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );

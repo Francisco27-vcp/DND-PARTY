@@ -18,17 +18,22 @@ export default function Nav({ user }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [alias, setAlias] = useState(user.email?.split('@')[0] || '');
+  const [isDM, setIsDM] = useState(false);
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'profiles', user.uid), (snap) => {
-      if (snap.exists() && snap.data().alias) {
-        setAlias(snap.data().alias);
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.alias) setAlias(data.alias);
+        setIsDM(data.role === 'Dungeon Master' || data.role === 'Jugador / DM');
       }
     }, (err) => {
-      console.error('Error cargando alias del perfil:', err);
+      console.error('Error cargando perfil:', err);
     });
     return unsub;
   }, [user.uid]);
+
+  const items = isDM ? [...navItems, { path: '/dm', label: 'Panel DM', icon: '🛠️' }] : navItems;
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -44,7 +49,7 @@ export default function Nav({ user }) {
             <span style={styles.logoText}>DND PARTY</span>
           </div>
           <div style={styles.navLinks}>
-            {navItems.map(item => (
+            {items.map(item => (
               <button key={item.path} onClick={() => navigate(item.path)}
                 style={{ ...styles.navBtn, ...(location.pathname === item.path ? styles.navBtnActive : {}) }}>
                 <span>{item.icon}</span>
@@ -60,7 +65,7 @@ export default function Nav({ user }) {
       </nav>
 
       <nav style={styles.mobileNav}>
-        {navItems.map(item => (
+        {items.map(item => (
           <button key={item.path} onClick={() => navigate(item.path)}
             style={{ ...styles.mobileNavBtn, ...(location.pathname === item.path ? styles.mobileNavBtnActive : {}) }}>
             <span style={{ fontSize: '16px' }}>{item.icon}</span>
