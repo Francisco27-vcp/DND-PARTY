@@ -1,5 +1,5 @@
 // src/pages/DMPanel.js
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, doc, getDoc, setDoc, onSnapshot, writeBatch, serverTimestamp, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -81,7 +81,7 @@ export default function DMPanel({ user }) {
     loadRole();
   }, [user.uid]);
 
-  const loadCharacters = async () => {
+  const loadCharacters = useCallback(async () => {
     setLoadingChars(true);
     try {
       const snap = await getDocs(collection(db, 'characters'));
@@ -90,9 +90,9 @@ export default function DMPanel({ user }) {
       console.error('Error cargando personajes:', err);
     }
     setLoadingChars(false);
-  };
+  }, []);
 
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     try {
       const q = query(collection(db, 'sessions'), orderBy('createdAt', 'desc'), limit(5));
       const snap = await getDocs(q);
@@ -100,15 +100,14 @@ export default function DMPanel({ user }) {
     } catch (err) {
       console.error('Error cargando sesiones:', err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (roleLoaded && isDM) {
       loadCharacters();
       loadSessions();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roleLoaded, isDM]);
+  }, [roleLoaded, isDM, loadCharacters, loadSessions]);
 
   useEffect(() => {
     if (!roleLoaded || !isDM) return;
