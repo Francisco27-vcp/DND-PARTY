@@ -1,8 +1,9 @@
 // src/components/Nav.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { auth, db } from '../lib/firebase';
 
 const navItems = [
   { path: '/', label: 'Party', icon: '⚔️' },
@@ -16,6 +17,18 @@ const navItems = [
 export default function Nav({ user }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [alias, setAlias] = useState(user.email?.split('@')[0] || '');
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'profiles', user.uid), (snap) => {
+      if (snap.exists() && snap.data().alias) {
+        setAlias(snap.data().alias);
+      }
+    }, (err) => {
+      console.error('Error cargando alias del perfil:', err);
+    });
+    return unsub;
+  }, [user.uid]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -40,7 +53,7 @@ export default function Nav({ user }) {
             ))}
           </div>
           <div style={styles.userArea}>
-            <span style={styles.userName}>{user.email?.split('@')[0]}</span>
+            <span style={styles.userName}>{alias}</span>
             <button style={styles.logoutBtn} onClick={handleLogout}>Salir</button>
           </div>
         </div>
