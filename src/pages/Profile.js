@@ -11,7 +11,6 @@ export default function Profile({ user }) {
   const [draft, setDraft] = useState({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [saving, setSaving] = useState(false);
   const uid = user.uid;
 
   useEffect(() => {
