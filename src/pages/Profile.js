@@ -1,16 +1,20 @@
 // src/pages/Profile.js
 import React, { useEffect, useState } from 'react';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
+import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
 import { uploadImage } from '../lib/uploadImage';
 import { db } from '../lib/firebase';
 
 const ROLES = ['Jugador', 'Dungeon Master', 'Jugador / DM'];
 
 export default function Profile({ user }) {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [draft, setDraft] = useState({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [characters, setCharacters] = useState([]);
+  const [loadingChars, setLoadingChars] = useState(true);
   const uid = user.uid;
 
   useEffect(() => {
@@ -35,6 +39,21 @@ export default function Profile({ user }) {
     };
     load();
   }, [uid, user.email]);
+
+  useEffect(() => {
+    const loadCharacters = async () => {
+      setLoadingChars(true);
+      try {
+        const q = query(collection(db, 'characters'), where('ownerEmail', '==', user.email));
+        const snap = await getDocs(q);
+        setCharacters(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch (err) {
+        console.error('Error cargando personajes del usuario:', err);
+      }
+      setLoadingChars(false);
+    };
+    loadCharacters();
+  }, [user.email]);
 
   const save = async () => {
     setSaving(true);
@@ -158,6 +177,29 @@ export default function Profile({ user }) {
           {saved ? '✓ Guardado' : saving ? 'Guardando...' : '✦ Guardar perfil'}
         </button>
 
+        <div style={s.divider} />
+
+        {/* TUS PERSONAJES */}
+        <div style={s.charsSection}>
+          <div style={s.charsTitle}>Tus personajes</div>
+          {loadingChars
+            ? <div style={s.charsLoading}>Cargando personajes...</div>
+            : characters.length === 0
+              ? <div style={s.charsEmpty}>Todavía no tenés personajes asignados a tu email ({user.email}).</div>
+              : <div style={s.charsGrid}>
+                  {characters.map(char => (
+                    <button key={char.id} style={s.charCard} onClick={() => navigate(`/personaje/${char.id}`)}>
+                      <span style={{ fontSize: '22px' }}>{char.icon || '⚔️'}</span>
+                      <div style={{ flex: 1, textAlign: 'left' }}>
+                        <div style={s.charName}>{char.name}</div>
+                        <div style={s.charSub}>{char.race} {char.class} · Lv{char.level}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+          }
+        </div>
+
         {/* INFO CAMPAÑA ACTUAL */}
         <div style={s.infoBox}>
           <div style={s.infoTitle}>Campaña actual</div>
@@ -216,6 +258,14 @@ const s = {
   textarea: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.15)', color: '#c8c4bc', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '10px', width: '100%', resize: 'vertical', lineHeight: '1.6', outline: 'none' },
   emailReadOnly: { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: '#3a2e18', padding: '10px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' },
   saveBtn: { background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.35)', color: '#e8c96a', fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '2px', padding: '13px', cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.2s' },
+  charsSection: { display: 'flex', flexDirection: 'column', gap: '12px' },
+  charsTitle: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '3px', color: '#7a6030', textTransform: 'uppercase' },
+  charsLoading: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '13px', color: '#5a4820' },
+  charsEmpty: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '13px', color: '#5a4820' },
+  charsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px' },
+  charCard: { display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(201,168,76,0.15)', padding: '10px 14px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s' },
+  charName: { fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '700', color: '#e8c96a' },
+  charSub: { fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: '#7a6030', marginTop: '2px' },
   infoBox: { background: 'rgba(201,168,76,0.04)', border: '1px solid rgba(201,168,76,0.1)', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' },
   infoTitle: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '3px', color: '#7a6030', textTransform: 'uppercase' },
   infoGrid: { display: 'flex', flexDirection: 'column', gap: '6px' },
