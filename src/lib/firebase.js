@@ -1,10 +1,8 @@
 // src/lib/firebase.js
-// ⚠️  REEMPLAZÁ estos valores con los de tu proyecto Firebase
-// Los conseguís en: Firebase Console → Tu proyecto → Configuración → Web app
-
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -18,4 +16,5 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+export const storage = getStorage(app);
 export default app;
