@@ -12,8 +12,8 @@ export default function CharacterSheet({ user }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState({});
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  const isAdmin = user.email === 'sociosn5@gmail.com';
   const isOwner = char?.ownerEmail === user.email || isAdmin;
 
   useEffect(() => {
@@ -27,6 +27,21 @@ export default function CharacterSheet({ user }) {
     };
     load();
   }, [id]);
+
+  useEffect(() => {
+    const loadRole = async () => {
+      try {
+        const snap = await getDoc(doc(db, 'profiles', user.uid));
+        if (snap.exists()) {
+          const role = snap.data().role;
+          setIsAdmin(role === 'Dungeon Master' || role === 'Jugador / DM');
+        }
+      } catch (err) {
+        console.error('Error cargando rol del perfil:', err);
+      }
+    };
+    loadRole();
+  }, [user.uid]);
 
   const save = async () => {
     setSaving(true);

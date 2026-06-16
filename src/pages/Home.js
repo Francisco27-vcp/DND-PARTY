@@ -1,7 +1,7 @@
 // src/pages/Home.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, getDocs, doc, setDoc, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, setDoc, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { uploadImage } from '../lib/uploadImage';
 import { db } from '../lib/firebase';
 
@@ -81,6 +81,22 @@ export default function Home({ user }) {
   const [form, setForm] = useState({ ...EMPTY_CHAR });
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const loadRole = async () => {
+      try {
+        const snap = await getDoc(doc(db, 'profiles', user.uid));
+        if (snap.exists()) {
+          const role = snap.data().role;
+          setIsAdmin(role === 'Dungeon Master' || role === 'Jugador / DM');
+        }
+      } catch (err) {
+        console.error('Error cargando rol del perfil:', err);
+      }
+    };
+    loadRole();
+  }, [user.uid]);
 
   const load = async () => {
     try {
@@ -98,8 +114,6 @@ export default function Home({ user }) {
   };
 
   useEffect(() => { load(); }, []);
-
-  const isAdmin = user.email === 'sociosn5@gmail.com';
 
   const saveChar = async (e) => {
     e.preventDefault();
