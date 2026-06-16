@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, doc, setDoc, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { uploadImage } from '../lib/uploadImage';
 import { db } from '../lib/firebase';
 
 const INITIAL_CHARACTERS = [
@@ -127,12 +128,17 @@ export default function Home({ user }) {
     load();
   };
 
-  const handlePortrait = (e) => {
+  const handlePortrait = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setForm(f => ({ ...f, portrait: ev.target.result }));
-    reader.readAsDataURL(file);
+    setSaving(true);
+    try {
+      const url = await uploadImage(file, `portraits/characters/new_${Date.now()}`);
+      setForm(f => ({ ...f, portrait: url }));
+    } catch (err) {
+      console.error('Error subiendo imagen:', err);
+    }
+    setSaving(false);
   };
 
   if (loading) return <div style={s.loading}>Cargando party...</div>;
@@ -421,4 +427,3 @@ const s = {
   cancelBtn: { flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#8a8070', fontFamily: 'Cinzel,serif', fontSize: '10px', padding: '10px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' },
   deleteBtn: { flex: 1, background: 'rgba(139,26,26,0.2)', border: '1px solid rgba(139,26,26,0.5)', color: '#e07070', fontFamily: 'Cinzel,serif', fontSize: '10px', padding: '10px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' },
 };
-
