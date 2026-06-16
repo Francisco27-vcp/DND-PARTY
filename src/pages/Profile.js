@@ -1,6 +1,7 @@
 // src/pages/Profile.js
 import React, { useEffect, useState } from 'react';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { uploadImage } from '../lib/uploadImage';
 import { db } from '../lib/firebase';
 
 const ROLES = ['Jugador', 'Dungeon Master', 'Jugador / DM'];
@@ -10,6 +11,7 @@ export default function Profile({ user }) {
   const [draft, setDraft] = useState({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const uid = user.uid;
 
   useEffect(() => {
@@ -48,12 +50,17 @@ export default function Profile({ user }) {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleAvatar = (e) => {
+  const handleAvatar = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setDraft(d => ({ ...d, avatar: ev.target.result }));
-    reader.readAsDataURL(file);
+    setSaving(true);
+    try {
+      const url = await uploadImage(file, `portraits/profiles/${uid}_${Date.now()}`);
+      setDraft(d => ({ ...d, avatar: url }));
+    } catch (err) {
+      console.error('Error subiendo imagen:', err);
+    }
+    setSaving(false);
   };
 
   if (!profile) return <div style={s.loading}>Cargando perfil...</div>;
