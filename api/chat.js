@@ -1,5 +1,84 @@
 // api/chat.js — Vercel serverless function
-// Proxies chat requests to the Anthropic API to avoid browser CORS restrictions.
+// Proxies chat requests to the Anthropic API and augments with RAG from D&D manuals.
+
+const STOPWORDS = new Set([
+  // Spanish
+  'el','la','los','las','de','del','en','a','y','o','u','que','se','un','una',
+  'es','con','por','para','al','lo','le','me','te','nos','su','sus','mi','mis',
+  'tu','tus','no','si','hay','ser','mas','como','cual','cuales','cuando','donde',
+  'quien','este','esta','estos','estas','ese','esa','esos','esas','aquel','pero',
+  'sin','sobre','entre','hasta','desde','ante','tras','durante','mediante','segun',
+  'hacia','bajo','cada','todo','toda','todos','todas','muy','bien','asi','ya',
+  'tambien','solo','puede','pueden','tiene','tienen','hacer','haber','estar',
+  'son','han','era','fue','ha','he','les','ni','e','sino','aunque','porque',
+  'pues','luego','algo','algun','alguna','algunos','algunas',
+  // English
+  'the','an','is','are','was','were','be','been','have','has','had','do','does',
+  'did','will','would','could','should','may','might','shall','can','of','in',
+  'to','for','on','at','by','with','from','or','and','but','not','this','that',
+  'these','those','it','they','them','their','what','which','who','when','where',
+  'how','its','you','he','she','we',
+]);
+
+// Module-level cache — persists across requests in a warm Lambda instance.
+let chunks = null;
+let normalizedTexts = null;
+
+function loadIndex() {
+  if (chunks) return;
+  // require() caches the parsed JSON at the Node.js module level.
+  chunks = require('../src/data/manuals_chunks.json');
+  normalizedTexts = chunks.map(c => normalizeText(c.text));
+}
+
+// The source JSON contains UTF-8→Latin-1 mojibake for Spanish characters.
+// We fix the lowercase accented letters (most common in body text), then
+// lowercase and strip all remaining diacritics so query and text normalize identically.
+function normalizeText(text) {
+  return text
+    .replace(/Ã¡/g, 'a') // á
+    .replace(/Ã©/g, 'e') // é
+    .replace(/Ã­/g, 'i') // í
+    .replace(/Ã³/g, 'o') // ó
+    .replace(/Ãº/g, 'u') // ú
+    .replace(/Ã±/g, 'n') // ñ
+    .replace(/Ã¼/g, 'u') // ü
+    .replace(/Ã§/g, 'c') // ç
+    .replace(/Ã¶/g, 'o') // ö
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ');
+}
+
+function extractKeywords(query) {
+  return [...new Set(
+    normalizeText(query).split(/\s+/).filter(w => w.length > 2 && !STOPWORDS.has(w))
+  )];
+}
+
+function searchChunks(query, topK = 6, minScore = 2) {
+  loadIndex();
+  const keywords = extractKeywords(query);
+  if (keywords.length === 0) return [];
+
+  const results = normalizedTexts.map((normText, i) => {
+    let score = 0;
+    for (const kw of keywords) {
+      let pos = normText.indexOf(kw);
+      while (pos !== -1) {
+        score++;
+        pos = normText.indexOf(kw, pos + 1);
+      }
+    }
+    return { score, chunk: chunks[i] };
+  });
+
+  results.sort((a, b) => b.score - a.score);
+  if (results[0].score < minScore) return [];
+  return results.slice(0, topK).filter(r => r.score > 0).map(r => r.chunk);
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -15,6 +94,26 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'messages array is required.' });
   }
 
+  // Use the last user message for RAG retrieval.
+  const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+  const query = typeof lastUserMsg?.content === 'string' ? lastUserMsg.content : '';
+
+  const relevantChunks = searchChunks(query);
+
+  let finalSystemPrompt = systemPrompt || '';
+  if (relevantChunks.length > 0) {
+    const ragSection = relevantChunks
+      .map(c => {
+        const loc = c.chapter != null ? `Capítulo ${c.chapter}: ${c.chapter_title}` : c.chapter_title;
+        return `[${c.source} — ${loc}]\n${c.text}`;
+      })
+      .join('\n\n---\n\n');
+    finalSystemPrompt +=
+      '\n\n## Fragmentos relevantes de los manuales de D&D\n\n' +
+      'Usa la siguiente información como referencia cuando sea pertinente:\n\n' +
+      ragSection;
+  }
+
   let anthropicRes;
   try {
     anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -28,7 +127,7 @@ module.exports = async function handler(req, res) {
         model: 'claude-sonnet-4-6',
         max_tokens: 1024,
         stream: true,
-        system: systemPrompt || '',
+        system: finalSystemPrompt,
         messages,
       }),
     });
