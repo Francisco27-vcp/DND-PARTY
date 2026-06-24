@@ -91,8 +91,8 @@ function Section({ title, children }) {
   return (
     <div style={{ marginBottom: '28px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
-        <span style={{ fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '3px', color: '#7a6030', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{title}</span>
-        <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, rgba(201,168,76,0.2), transparent)' }} />
+        <span style={{ fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '3px', color: 'var(--gold-dim)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{title}</span>
+        <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, var(--line), transparent)' }} />
       </div>
       {children}
     </div>
@@ -106,8 +106,8 @@ function PartyCard({ char, onClick }) {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
         <span style={{ fontSize: '22px' }}>{char.icon || '⚔️'}</span>
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '700', color: '#e8c96a' }}>{char.name}</div>
-          <div style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: '#7a6030', marginTop: '2px' }}>{char.race} {char.class} · Lv{char.level}</div>
+          <div style={{ fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '700', color: 'var(--gold-bright)' }}>{char.name}</div>
+          <div style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--gold-dim)', marginTop: '2px' }}>{char.race} {char.class} · Lv{char.level}</div>
         </div>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-around' }}>
@@ -117,9 +117,9 @@ function PartyCard({ char, onClick }) {
       <div style={{ height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
         <div style={{ height: '100%', borderRadius: '2px', width: `${hpPct}%`, background: hpPct > 50 ? '#4a8a4a' : hpPct > 25 ? '#a07020' : '#8b1a1a', transition: 'width 0.3s' }} />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(201,168,76,0.08)', paddingTop: '8px' }}>
-        <span style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1.5px', color: '#5a4820', textTransform: 'uppercase' }}>Condiciones</span>
-        <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: '#9a9080' }}>{char.conditions || 'Ninguna'}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--line)', paddingTop: '8px' }}>
+        <span style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1.5px', color: 'var(--gold-dim)', textTransform: 'uppercase' }}>Condiciones</span>
+        <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--parchment-dim)' }}>{char.conditions || 'Ninguna'}</span>
       </div>
     </div>
   );
@@ -128,23 +128,23 @@ function PartyCard({ char, onClick }) {
 function MiniStat({ label, value }) {
   return (
     <div style={{ textAlign: 'center' }}>
-      <div style={{ fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', color: '#e8c96a' }}>{value}</div>
-      <div style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: '#5a4820', textTransform: 'uppercase' }}>{label}</div>
+      <div style={{ fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', color: 'var(--gold-bright)' }}>{value}</div>
+      <div style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: 'var(--gold-dim)', textTransform: 'uppercase' }}>{label}</div>
     </div>
   );
 }
 
 const s = {
   quickNav: { display: 'flex', gap: '10px', flexWrap: 'wrap' },
-  quickBtn: { display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(15,12,24,0.9)', border: '1px solid rgba(201,168,76,0.2)', color: '#c9a84c', fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '1.5px', padding: '10px 16px', cursor: 'pointer', textTransform: 'uppercase' },
-  box: { background: 'rgba(15,12,24,0.9)', border: '1px solid rgba(201,168,76,0.18)', borderTop: '2px solid #c9a84c', padding: '18px', display: 'flex', flexDirection: 'column', gap: '8px' },
+  quickBtn: { display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--panel)', border: '1px solid var(--line)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '1.5px', padding: '10px 16px', cursor: 'pointer', textTransform: 'uppercase' },
+  box: { background: 'var(--panel)', border: '1px solid var(--line)', borderTop: '2px solid var(--gold)', padding: '18px', display: 'flex', flexDirection: 'column', gap: '8px' },
   row: { display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' },
-  xpInput: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.2)', color: '#f5f0e8', fontFamily: 'Crimson Pro,serif', fontSize: '15px', padding: '10px 14px', outline: 'none', width: '160px' },
+  xpInput: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '15px', padding: '10px 14px', outline: 'none', width: '160px' },
   btnGreen: { background: 'rgba(74,138,74,0.12)', border: '1px solid rgba(74,138,74,0.4)', color: '#7aaa7a', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '10px 16px', cursor: 'pointer', textTransform: 'uppercase' },
-  btnRed: { background: 'rgba(139,26,26,0.12)', border: '1px solid rgba(139,26,26,0.4)', color: '#e07070', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '10px 16px', cursor: 'pointer', textTransform: 'uppercase' },
+  btnRed: { background: 'rgba(184,100,63,0.12)', border: '1px solid rgba(184,100,63,0.4)', color: 'var(--ember)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '10px 16px', cursor: 'pointer', textTransform: 'uppercase' },
   applied: { fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', color: '#7aaa7a', textTransform: 'uppercase' },
-  hint: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '12px', color: '#3a2e18' },
-  muted: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '13px', color: '#5a4820', padding: '10px 0' },
+  hint: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '12px', color: 'var(--gold-dim)' },
+  muted: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '13px', color: 'var(--gold-dim)', padding: '10px 0' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px' },
-  card: { background: 'rgba(15,12,24,0.9)', border: '1px solid rgba(201,168,76,0.15)', borderTop: '3px solid #c9a84c', cursor: 'pointer', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px', transition: 'transform 0.2s' },
+  card: { background: 'var(--panel)', border: '1px solid var(--line)', borderTop: '3px solid var(--gold)', cursor: 'pointer', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px', transition: 'transform 0.2s' },
 };

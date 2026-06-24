@@ -1,0 +1,14 @@
+/* src/styles/tokens.css — design tokens for the full app */
+:root {
+  --void:         #0b0906;
+  --panel:        #15110a;
+  --panel-raised: #1c1610;
+  --gold:         #c9a449;
+  --gold-bright:  #e3c878;
+  --gold-dim:     #6e5a2c;
+  --ember:        #b8643f;
+  --ember-dim:    #7a4530;
+  --parchment:    #e9ddc2;
+  --parchment-dim:#a99d80;
+  --line:         #332a1c;
+}

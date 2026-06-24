@@ -232,7 +232,7 @@ export default function Home({ user }) {
               <div style={{ flex: 1 }}>
                 <div style={s.formLabel}>Foto / Ilustración del personaje</div>
                 <input type="file" accept="image/*" onChange={handlePortrait} style={s.fileInput} />
-                <div style={{ fontSize: '11px', color: '#5a4820', marginTop: '4px' }}>JPG, PNG o cualquier imagen. Aparecerá como portada.</div>
+                <div style={{ fontSize: '11px', color: 'var(--gold-dim)', marginTop: '4px' }}>JPG, PNG o cualquier imagen. Aparecerá como portada.</div>
               </div>
             </div>
 
@@ -356,7 +356,7 @@ function CharCard({ char, user, isAdmin, onClick, onDelete }) {
       {char.portrait
         ? <div style={{ position: 'relative', height: '160px', overflow: 'hidden', margin: '-0px' }}>
             <img src={char.portrait} alt={char.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60px', background: 'linear-gradient(to top, rgba(15,12,24,1), transparent)' }} />
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60px', background: 'linear-gradient(to top, rgba(11,9,6,1), transparent)' }} />
           </div>
         : null
       }
@@ -383,14 +383,14 @@ function CharCard({ char, user, isAdmin, onClick, onDelete }) {
         <div style={s.barTrack}>
           <div style={{ ...s.barFill, width: `${hpPct}%`, background: hpPct > 50 ? '#4a8a4a' : hpPct > 25 ? '#a07020' : '#8b1a1a' }} />
         </div>
-        <div style={s.barLabel}><span style={{ color: '#5a4820' }}>PG</span></div>
+        <div style={s.barLabel}><span style={{ color: 'var(--gold-dim)' }}>PG</span></div>
 
         <div style={{ ...s.barTrack, marginTop: '6px' }}>
           <div style={{ ...s.barFill, width: `${xpPct}%`, background: `${char.color}80` }} />
         </div>
         <div style={s.barLabel}>
-          <span style={{ color: '#5a4820' }}>XP</span>
-          <span style={{ color: '#5a4820' }}>{(char.xp || 0).toLocaleString()} / {(char.xpNext || 2700).toLocaleString()}</span>
+          <span style={{ color: 'var(--gold-dim)' }}>XP</span>
+          <span style={{ color: 'var(--gold-dim)' }}>{(char.xp || 0).toLocaleString()} / {(char.xpNext || 2700).toLocaleString()}</span>
         </div>
 
         <div style={{ ...s.subclassBadge, borderColor: `${char.color}40`, color: char.color }}>{char.subclass}</div>
@@ -417,8 +417,8 @@ function Field({ label, children }) {
 function MiniStat({ label, value, small }) {
   return (
     <div style={{ textAlign: 'center' }}>
-      <div style={{ fontFamily: 'Cinzel,serif', fontSize: small ? '11px' : '14px', fontWeight: '700', color: '#e8c96a' }}>{value}</div>
-      <div style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: '#5a4820', textTransform: 'uppercase' }}>{label}</div>
+      <div style={{ fontFamily: 'Cinzel,serif', fontSize: small ? '11px' : '14px', fontWeight: '700', color: 'var(--gold-bright)' }}>{value}</div>
+      <div style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: 'var(--gold-dim)', textTransform: 'uppercase' }}>{label}</div>
     </div>
   );
 }
@@ -434,44 +434,44 @@ function StatPill({ label, value }) {
 
 const s = {
   page: { maxWidth: '900px', margin: '0 auto', padding: '0 16px' },
-  loading: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', fontFamily: 'Cinzel,serif', color: '#7a6030', letterSpacing: '3px', fontSize: '11px' },
+  loading: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', fontFamily: 'Cinzel,serif', color: 'var(--gold-dim)', letterSpacing: '3px', fontSize: '11px' },
   hero: { position: 'relative', padding: '40px 20px 28px', textAlign: 'center', overflow: 'hidden' },
   heroGlow: { position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 30%, rgba(201,168,76,0.08) 0%, transparent 70%)', pointerEvents: 'none' },
   heroContent: { position: 'relative', zIndex: 1 },
-  heroLabel: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '4px', color: '#5a4820', textTransform: 'uppercase', marginBottom: '8px' },
-  heroTitle: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(28px,6vw,48px)', fontWeight: '900', letterSpacing: '6px', color: '#e8c96a', textShadow: '0 0 30px rgba(232,201,106,0.3)' },
-  combatBanner: { background: 'rgba(15,12,24,0.92)', border: '1px solid rgba(139,26,26,0.35)', borderTop: '2px solid #8b1a1a', padding: '16px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '10px' },
+  heroLabel: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '4px', color: 'var(--gold-dim)', textTransform: 'uppercase', marginBottom: '8px' },
+  heroTitle: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(28px,6vw,48px)', fontWeight: '900', letterSpacing: '6px', color: 'var(--gold-bright)', textShadow: '0 0 30px rgba(227,200,120,0.3)' },
+  combatBanner: { background: 'var(--panel)', border: '1px solid rgba(139,26,26,0.35)', borderTop: '2px solid #8b1a1a', padding: '16px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '10px' },
   combatBannerHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' },
-  combatBannerTitle: { fontFamily: 'Cinzel,serif', fontSize: '12px', letterSpacing: '2px', color: '#e07070', textTransform: 'uppercase' },
-  combatBannerRound: { fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', color: '#c9a84c', border: '1px solid rgba(201,168,76,0.3)', padding: '3px 10px', textTransform: 'uppercase' },
+  combatBannerTitle: { fontFamily: 'Cinzel,serif', fontSize: '12px', letterSpacing: '2px', color: 'var(--ember)', textTransform: 'uppercase' },
+  combatBannerRound: { fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', color: 'var(--gold)', border: '1px solid var(--line)', padding: '3px 10px', textTransform: 'uppercase' },
   combatBannerList: { display: 'flex', flexDirection: 'column', gap: '5px' },
-  combatBannerRow: { display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 10px', background: 'rgba(8,6,12,0.4)', border: '1px solid rgba(201,168,76,0.06)' },
+  combatBannerRow: { display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 10px', background: 'rgba(11,9,6,0.5)', border: '1px solid var(--line)' },
   combatBannerRowActive: { background: 'rgba(201,168,76,0.1)', borderColor: 'rgba(201,168,76,0.5)', boxShadow: '0 0 12px rgba(201,168,76,0.15)' },
-  combatBannerTurnIcon: { width: '14px', color: '#e8c96a', fontSize: '11px', flexShrink: 0 },
+  combatBannerTurnIcon: { width: '14px', color: 'var(--gold-bright)', fontSize: '11px', flexShrink: 0 },
   combatBannerType: { border: '1px solid', fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', padding: '3px 8px', textTransform: 'uppercase', flexShrink: 0 },
-  combatBannerName: { flex: 1, fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: '#e8c96a' },
-  combatBannerInit: { fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', color: '#c9a84c', minWidth: '24px', textAlign: 'right' },
+  combatBannerName: { flex: 1, fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--gold-bright)' },
+  combatBannerInit: { fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', color: 'var(--gold)', minWidth: '24px', textAlign: 'right' },
   section: { marginBottom: '28px' },
   sectionHeader: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' },
-  sectionTitle: { fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '3px', color: '#7a6030', textTransform: 'uppercase', whiteSpace: 'nowrap' },
-  sectionLine: { flex: 1, height: '1px', background: 'linear-gradient(to right, rgba(201,168,76,0.2), transparent)' },
-  addBtn: { background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)', color: '#c9a84c', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase', whiteSpace: 'nowrap' },
-  form: { background: 'rgba(15,12,24,0.9)', border: '1px solid rgba(201,168,76,0.2)', borderTop: '2px solid #c9a84c', padding: '20px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '14px' },
-  formTitle: { fontFamily: 'Cinzel,serif', fontSize: '12px', letterSpacing: '3px', color: '#c9a84c', textTransform: 'uppercase' },
-  formLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: '#7a6030', textTransform: 'uppercase' },
+  sectionTitle: { fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '3px', color: 'var(--gold-dim)', textTransform: 'uppercase', whiteSpace: 'nowrap' },
+  sectionLine: { flex: 1, height: '1px', background: 'linear-gradient(to right, var(--line), transparent)' },
+  addBtn: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase', whiteSpace: 'nowrap' },
+  form: { background: 'var(--panel)', border: '1px solid var(--line)', borderTop: '2px solid var(--gold)', padding: '20px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '14px' },
+  formTitle: { fontFamily: 'Cinzel,serif', fontSize: '12px', letterSpacing: '3px', color: 'var(--gold)', textTransform: 'uppercase' },
+  formLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
   formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
-  input: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.15)', color: '#f5f0e8', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '8px 12px', outline: 'none', width: '100%' },
-  fileInput: { background: 'transparent', border: '1px solid rgba(201,168,76,0.15)', color: '#c9a84c', fontFamily: 'Cinzel,serif', fontSize: '10px', padding: '6px', cursor: 'pointer', width: '100%', marginTop: '4px' },
-  portraitUploadArea: { display: 'flex', gap: '14px', alignItems: 'flex-start', padding: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(201,168,76,0.1)' },
-  portraitPreview: { width: '80px', height: '100px', objectFit: 'cover', objectPosition: 'top', border: '1px solid rgba(201,168,76,0.3)', flexShrink: 0 },
-  portraitPlaceholder: { width: '80px', height: '100px', background: 'rgba(201,168,76,0.06)', border: '1px dashed rgba(201,168,76,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', flexShrink: 0 },
-  submitBtn: { background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.35)', color: '#e8c96a', fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '2px', padding: '12px', cursor: 'pointer', textTransform: 'uppercase' },
+  input: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '8px 12px', outline: 'none', width: '100%' },
+  fileInput: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '10px', padding: '6px', cursor: 'pointer', width: '100%', marginTop: '4px' },
+  portraitUploadArea: { display: 'flex', gap: '14px', alignItems: 'flex-start', padding: '12px', background: 'rgba(11,9,6,0.5)', border: '1px solid var(--line)' },
+  portraitPreview: { width: '80px', height: '100px', objectFit: 'cover', objectPosition: 'top', border: '1px solid var(--line)', flexShrink: 0 },
+  portraitPlaceholder: { width: '80px', height: '100px', background: 'var(--panel-raised)', border: '1px dashed var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', flexShrink: 0 },
+  submitBtn: { background: 'linear-gradient(135deg, var(--gold-bright), var(--gold))', border: 'none', color: '#1a1206', fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '2px', padding: '12px', cursor: 'pointer', textTransform: 'uppercase' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px' },
-  card: { background: 'rgba(15,12,24,0.9)', border: '1px solid rgba(201,168,76,0.15)', borderTop: '3px solid #c9a84c', cursor: 'pointer', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' },
+  card: { background: 'var(--panel)', border: '1px solid var(--line)', borderTop: '3px solid var(--gold)', cursor: 'pointer', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' },
   cardBody: { padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' },
   cardHeader: { display: 'flex', alignItems: 'flex-start', gap: '12px' },
-  cardName: { fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', color: '#e8c96a', letterSpacing: '0.5px' },
-  cardSub: { fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: '#7a6030', marginTop: '2px' },
+  cardName: { fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', color: 'var(--gold-bright)', letterSpacing: '0.5px' },
+  cardSub: { fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--gold-dim)', marginTop: '2px' },
   levelBadge: { border: '1px solid', fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '700', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   cardDivider: { height: '1px' },
   cardStats: { display: 'flex', justifyContent: 'space-between' },
@@ -479,17 +479,17 @@ const s = {
   barFill: { height: '100%', borderRadius: '2px', transition: 'width 0.3s' },
   barLabel: { display: 'flex', justifyContent: 'space-between', marginTop: '2px' },
   subclassBadge: { border: '1px solid', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', padding: '3px 8px', textTransform: 'uppercase', alignSelf: 'flex-start' },
-  cardCta: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2px', color: '#5a4820', textTransform: 'uppercase', marginTop: '2px' },
-  deleteCharBtn: { position: 'absolute', top: '8px', right: '8px', background: 'rgba(139,26,26,0.2)', border: '1px solid rgba(139,26,26,0.4)', color: '#e07070', fontFamily: 'Cinzel,serif', fontSize: '10px', width: '22px', height: '22px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 },
-  statsBar: { display: 'flex', gap: '8px', flexWrap: 'wrap', padding: '16px 0', borderTop: '1px solid rgba(201,168,76,0.1)', marginTop: '8px' },
-  pill: { background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.12)', padding: '8px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' },
-  pillVal: { fontFamily: 'Cinzel,serif', fontSize: '16px', fontWeight: '700', color: '#e8c96a' },
-  pillLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: '#5a4820', textTransform: 'uppercase' },
+  cardCta: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase', marginTop: '2px' },
+  deleteCharBtn: { position: 'absolute', top: '8px', right: '8px', background: 'rgba(184,100,63,0.1)', border: '1px solid rgba(184,100,63,0.4)', color: 'var(--ember)', fontFamily: 'Cinzel,serif', fontSize: '10px', width: '22px', height: '22px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 },
+  statsBar: { display: 'flex', gap: '8px', flexWrap: 'wrap', padding: '16px 0', borderTop: '1px solid var(--line)', marginTop: '8px' },
+  pill: { background: 'rgba(11,9,6,0.8)', border: '1px solid var(--line)', padding: '8px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' },
+  pillVal: { fontFamily: 'Cinzel,serif', fontSize: '16px', fontWeight: '700', color: 'var(--gold-bright)' },
+  pillLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '20px' },
-  confirmBox: { background: '#0f0c18', border: '1px solid rgba(139,26,26,0.4)', borderTop: '2px solid #8b1a1a', padding: '24px', maxWidth: '320px', width: '100%' },
-  confirmTitle: { fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', color: '#e07070', marginBottom: '8px', letterSpacing: '1px' },
-  confirmText: { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: '#8a8070' },
-  cancelBtn: { flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#8a8070', fontFamily: 'Cinzel,serif', fontSize: '10px', padding: '10px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' },
-  deleteBtn: { flex: 1, background: 'rgba(139,26,26,0.2)', border: '1px solid rgba(139,26,26,0.5)', color: '#e07070', fontFamily: 'Cinzel,serif', fontSize: '10px', padding: '10px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' },
+  confirmBox: { background: 'var(--panel)', border: '1px solid rgba(139,26,26,0.4)', borderTop: '2px solid #8b1a1a', padding: '24px', maxWidth: '320px', width: '100%' },
+  confirmTitle: { fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', color: 'var(--ember)', marginBottom: '8px', letterSpacing: '1px' },
+  confirmText: { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--parchment-dim)' },
+  cancelBtn: { flex: 1, background: 'transparent', border: '1px solid var(--line)', color: 'var(--parchment-dim)', fontFamily: 'Cinzel,serif', fontSize: '10px', padding: '10px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' },
+  deleteBtn: { flex: 1, background: 'rgba(184,100,63,0.1)', border: '1px solid rgba(184,100,63,0.4)', color: 'var(--ember)', fontFamily: 'Cinzel,serif', fontSize: '10px', padding: '10px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' },
 };
 

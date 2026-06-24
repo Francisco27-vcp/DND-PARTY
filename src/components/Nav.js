@@ -78,19 +78,19 @@ export default function Nav({ user }) {
 }
 
 const styles = {
-  nav: { background: 'rgba(8,6,12,0.95)', borderBottom: '1px solid rgba(201,168,76,0.15)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 100 },
+  nav: { background: 'rgba(11,9,6,0.95)', borderBottom: '1px solid var(--line)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 100 },
   navInner: { maxWidth: '1100px', margin: '0 auto', padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px' },
   logo: { display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' },
-  logoGem: { fontSize: '18px', color: '#c9a84c', textShadow: '0 0 12px rgba(201,168,76,0.6)' },
-  logoText: { fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '700', letterSpacing: '3px', color: '#e8c96a' },
+  logoGem: { fontSize: '18px', color: 'var(--gold)', textShadow: '0 0 12px rgba(201,164,73,0.6)' },
+  logoText: { fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '700', letterSpacing: '3px', color: 'var(--gold-bright)' },
   navLinks: { display: 'flex', gap: '2px', flex: 1, justifyContent: 'center' },
-  navBtn: { background: 'transparent', border: 'none', color: '#7a6030', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '8px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', textTransform: 'uppercase', transition: 'all 0.2s' },
-  navBtnActive: { color: '#e8c96a', background: 'rgba(201,168,76,0.08)', borderBottom: '1px solid #c9a84c' },
+  navBtn: { background: 'transparent', border: 'none', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '8px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', textTransform: 'uppercase', transition: 'all 0.2s' },
+  navBtnActive: { color: 'var(--gold-bright)', background: 'rgba(201,164,73,0.08)', borderBottom: '1px solid var(--gold)' },
   userArea: { display: 'flex', alignItems: 'center', gap: '12px' },
-  userName: { fontFamily: 'Cinzel,serif', fontSize: '10px', color: '#7a6030', letterSpacing: '1px', textTransform: 'uppercase' },
-  logoutBtn: { background: 'transparent', border: '1px solid rgba(201,168,76,0.2)', color: '#7a6030', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1px', padding: '4px 10px', cursor: 'pointer', textTransform: 'uppercase' },
-  mobileNav: { position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(8,6,12,0.98)', borderTop: '1px solid rgba(201,168,76,0.15)', display: 'flex', justifyContent: 'space-around', padding: '6px 0 max(6px, env(safe-area-inset-bottom))', zIndex: 100, backdropFilter: 'blur(10px)' },
-  mobileNavBtn: { background: 'transparent', border: 'none', color: '#5a4820', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '4px 8px', cursor: 'pointer', transition: 'color 0.2s' },
-  mobileNavBtnActive: { color: '#e8c96a' },
+  userName: { fontFamily: 'Cinzel,serif', fontSize: '10px', color: 'var(--parchment-dim)', letterSpacing: '1px', textTransform: 'uppercase' },
+  logoutBtn: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1px', padding: '4px 10px', cursor: 'pointer', textTransform: 'uppercase' },
+  mobileNav: { position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(11,9,6,0.98)', borderTop: '1px solid var(--line)', display: 'flex', justifyContent: 'space-around', padding: '6px 0 max(6px, env(safe-area-inset-bottom))', zIndex: 100, backdropFilter: 'blur(10px)' },
+  mobileNavBtn: { background: 'transparent', border: 'none', color: 'var(--gold-dim)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '4px 8px', cursor: 'pointer', transition: 'color 0.2s' },
+  mobileNavBtnActive: { color: 'var(--gold-bright)' },
 };
 

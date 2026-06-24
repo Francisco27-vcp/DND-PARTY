@@ -89,7 +89,7 @@ export default function TabCombate() {
               const t = PARTICIPANT_TYPES.find(t => t.id === p.type) || PARTICIPANT_TYPES[0];
               const isCurrent = combat.active && i === (combat.currentIndex || 0);
               return (
-                <div key={p.id} style={{ ...s.row, ...(isCurrent ? s.rowActive : {}) }}>
+                <div key={p.id} className={isCurrent ? 'combat-active' : ''} style={{ ...s.row, ...(isCurrent ? s.rowActive : {}) }}>
                   <span style={s.turnIcon}>{isCurrent ? '▶' : ''}</span>
                   <span style={{ ...s.typeBadge, borderColor: `${t.color}50`, color: t.color }}>{t.label}</span>
                   <span style={s.pName}>{p.name}</span>
@@ -116,28 +116,28 @@ export default function TabCombate() {
 }
 
 const s = {
-  box: { background: 'rgba(15,12,24,0.9)', border: '1px solid rgba(201,168,76,0.18)', borderTop: '2px solid #c9a84c', padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' },
+  box: { background: 'var(--panel)', border: '1px solid var(--line)', borderTop: '2px solid var(--gold)', padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px' },
   statusRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' },
-  status: { fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '1.5px', color: '#5a4820', textTransform: 'uppercase' },
-  statusActive: { color: '#e07070' },
-  roundBadge: { fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', color: '#c9a84c', border: '1px solid rgba(201,168,76,0.3)', padding: '4px 12px', textTransform: 'uppercase' },
+  status: { fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '1.5px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
+  statusActive: { color: 'var(--ember)' },
+  roundBadge: { fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', color: 'var(--gold)', border: '1px solid var(--gold-dim)', padding: '4px 12px', textTransform: 'uppercase' },
   form: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' },
-  inputName: { flex: '2 1 160px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.2)', color: '#f5f0e8', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '9px 12px', outline: 'none' },
-  inputNum: { flex: '0 1 100px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.2)', color: '#f5f0e8', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '9px 12px', outline: 'none', width: '100px' },
-  typeBtn: { background: 'transparent', border: '1px solid rgba(201,168,76,0.15)', color: '#5a4820', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1px', padding: '9px 12px', cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.2s' },
-  addBtn: { background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.35)', color: '#e8c96a', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '9px 16px', cursor: 'pointer', textTransform: 'uppercase' },
+  inputName: { flex: '2 1 160px', background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '9px 12px', outline: 'none' },
+  inputNum: { flex: '0 1 100px', background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '9px 12px', outline: 'none', width: '100px' },
+  typeBtn: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1px', padding: '9px 12px', cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.2s' },
+  addBtn: { background: 'linear-gradient(135deg, var(--gold-bright), var(--gold))', border: 'none', color: '#1a1206', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '9px 16px', cursor: 'pointer', textTransform: 'uppercase' },
   list: { display: 'flex', flexDirection: 'column', gap: '6px' },
-  row: { display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(8,6,12,0.5)', border: '1px solid rgba(201,168,76,0.08)', padding: '8px 12px', transition: 'all 0.2s' },
-  rowActive: { background: 'rgba(201,168,76,0.1)', borderColor: 'rgba(201,168,76,0.5)', boxShadow: '0 0 12px rgba(201,168,76,0.15)' },
-  turnIcon: { width: '14px', color: '#e8c96a', fontSize: '11px', flexShrink: 0 },
+  row: { display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(11,9,6,0.5)', border: '1px solid var(--line)', padding: '8px 12px', transition: 'all 0.2s' },
+  rowActive: { background: 'rgba(201,164,73,0.1)', borderColor: 'var(--gold-dim)', boxShadow: '0 0 16px rgba(201,164,73,0.25)' },
+  turnIcon: { width: '14px', color: 'var(--gold-bright)', fontSize: '11px', flexShrink: 0 },
   typeBadge: { border: '1px solid', fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', padding: '3px 8px', textTransform: 'uppercase', flexShrink: 0 },
-  pName: { flex: 1, fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: '#e8c96a' },
-  pInit: { fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', color: '#c9a84c', minWidth: '24px', textAlign: 'right' },
-  removeBtn: { background: 'transparent', border: 'none', color: '#5a4820', fontSize: '12px', cursor: 'pointer', padding: '2px 6px' },
-  controls: { display: 'flex', gap: '10px', flexWrap: 'wrap', borderTop: '1px solid rgba(201,168,76,0.08)', paddingTop: '12px' },
+  pName: { flex: 1, fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--gold-bright)' },
+  pInit: { fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', color: 'var(--gold)', minWidth: '24px', textAlign: 'right' },
+  removeBtn: { background: 'transparent', border: 'none', color: 'var(--gold-dim)', fontSize: '12px', cursor: 'pointer', padding: '2px 6px' },
+  controls: { display: 'flex', gap: '10px', flexWrap: 'wrap', borderTop: '1px solid var(--line)', paddingTop: '12px' },
   startBtn: { background: 'rgba(74,138,74,0.12)', border: '1px solid rgba(74,138,74,0.4)', color: '#7aaa7a', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '10px 16px', cursor: 'pointer', textTransform: 'uppercase' },
-  nextBtn: { background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.35)', color: '#e8c96a', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '10px 16px', cursor: 'pointer', textTransform: 'uppercase' },
-  endBtn: { background: 'rgba(139,26,26,0.12)', border: '1px solid rgba(139,26,26,0.4)', color: '#e07070', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '10px 16px', cursor: 'pointer', textTransform: 'uppercase' },
-  clearBtn: { background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#5a4820', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '10px 16px', cursor: 'pointer', textTransform: 'uppercase', marginLeft: 'auto' },
-  empty: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '13px', color: '#5a4820', padding: '10px 0' },
+  nextBtn: { background: 'transparent', border: '1px solid var(--gold-dim)', color: 'var(--gold-bright)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '10px 16px', cursor: 'pointer', textTransform: 'uppercase' },
+  endBtn: { background: 'rgba(184,100,63,0.12)', border: '1px solid rgba(184,100,63,0.4)', color: 'var(--ember)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '10px 16px', cursor: 'pointer', textTransform: 'uppercase' },
+  clearBtn: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '10px 16px', cursor: 'pointer', textTransform: 'uppercase', marginLeft: 'auto' },
+  empty: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '13px', color: 'var(--gold-dim)', padding: '10px 0' },
 };

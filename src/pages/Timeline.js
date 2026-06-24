@@ -58,7 +58,7 @@ export default function Timeline({ user }) {
             {c.icon} {c.label}
           </button>
         ))}
-        <button style={{ ...s.filterBtn, marginLeft: 'auto', borderColor: 'rgba(201,168,76,0.3)', color: '#c9a84c' }} onClick={() => setAdding(!adding)}>
+        <button style={{ ...s.filterBtn, marginLeft: 'auto', borderColor: 'var(--gold-dim)', color: 'var(--gold)' }} onClick={() => setAdding(!adding)}>
           {adding ? '✕' : '+ Evento'}
         </button>
       </div>
@@ -129,7 +129,7 @@ function Empty({ filter }) {
   return (
     <div style={{ textAlign: 'center', padding: '60px 20px' }}>
       <div style={{ fontSize: '36px', marginBottom: '12px', opacity: 0.3 }}>🗺️</div>
-      <div style={{ fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '3px', color: '#3a2e18', textTransform: 'uppercase' }}>
+      <div style={{ fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '3px', color: 'var(--gold-dim)', textTransform: 'uppercase' }}>
         {filter === 'all' ? 'La historia está por escribirse' : `Sin eventos de tipo "${filter}"`}
       </div>
     </div>
@@ -139,30 +139,30 @@ function Empty({ filter }) {
 const s = {
   page: { maxWidth: '800px', margin: '0 auto', padding: '0 16px' },
   hero: { textAlign: 'center', padding: '40px 20px 24px' },
-  heroLabel: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '4px', color: '#5a4820', textTransform: 'uppercase', marginBottom: '8px' },
-  heroTitle: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(26px,6vw,42px)', fontWeight: '900', letterSpacing: '6px', color: '#e8c96a', textShadow: '0 0 30px rgba(232,201,106,0.3)' },
-  heroSub: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '14px', color: '#7a6030', marginTop: '8px' },
+  heroLabel: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '4px', color: 'var(--gold-dim)', textTransform: 'uppercase', marginBottom: '8px' },
+  heroTitle: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(26px,6vw,42px)', fontWeight: '900', letterSpacing: '6px', color: 'var(--gold-bright)', textShadow: '0 0 30px rgba(227,200,120,0.3)' },
+  heroSub: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '14px', color: 'var(--gold-dim)', marginTop: '8px' },
   filters: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px', alignItems: 'center' },
-  filterBtn: { background: 'transparent', border: '1px solid rgba(201,168,76,0.12)', color: '#5a4820', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1px', padding: '6px 12px', cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.2s' },
-  filterActive: { background: 'rgba(201,168,76,0.1)', borderColor: 'rgba(201,168,76,0.4)', color: '#c9a84c' },
-  form: { background: 'rgba(15,12,24,0.9)', border: '1px solid rgba(201,168,76,0.2)', borderTop: '2px solid #c9a84c', padding: '20px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '12px' },
+  filterBtn: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1px', padding: '6px 12px', cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.2s' },
+  filterActive: { background: 'rgba(201,164,73,0.1)', borderColor: 'var(--gold-dim)', color: 'var(--gold)' },
+  form: { background: 'var(--panel)', border: '1px solid var(--line)', borderTop: '2px solid var(--gold)', padding: '20px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '12px' },
   formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
-  label: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: '#7a6030', textTransform: 'uppercase' },
-  input: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.15)', color: '#f5f0e8', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '8px 12px', outline: 'none', width: '100%' },
-  textarea: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.15)', color: '#c8c4bc', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '10px', width: '100%', resize: 'vertical', lineHeight: '1.7' },
-  submitBtn: { background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.35)', color: '#e8c96a', fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '2px', padding: '10px 20px', cursor: 'pointer', textTransform: 'uppercase', alignSelf: 'flex-start' },
+  label: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
+  input: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '8px 12px', outline: 'none', width: '100%' },
+  textarea: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment-dim)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '10px', width: '100%', resize: 'vertical', lineHeight: '1.7' },
+  submitBtn: { background: 'linear-gradient(135deg, var(--gold-bright), var(--gold))', border: 'none', color: '#1a1206', fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '2px', padding: '10px 20px', cursor: 'pointer', textTransform: 'uppercase', alignSelf: 'flex-start' },
   timeline: { display: 'flex', flexDirection: 'column', gap: '0' },
   timelineItem: { display: 'flex', gap: '16px', paddingBottom: '4px' },
   timelineLeft: { display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: '36px' },
   timelineDot: { width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 },
-  timelineLine: { width: '1px', flex: 1, background: 'rgba(201,168,76,0.12)', margin: '4px 0', minHeight: '20px' },
-  timelineCard: { flex: 1, background: 'rgba(15,12,24,0.8)', border: '1px solid rgba(201,168,76,0.1)', padding: '14px', marginBottom: '10px', display: 'flex', flexDirection: 'column', gap: '6px' },
+  timelineLine: { width: '1px', flex: 1, background: 'var(--line)', margin: '4px 0', minHeight: '20px' },
+  timelineCard: { flex: 1, background: 'var(--panel)', border: '1px solid var(--line)', padding: '14px', marginBottom: '10px', display: 'flex', flexDirection: 'column', gap: '6px' },
   timelineHeader: { display: 'flex', gap: '8px', alignItems: 'center' },
   catBadge: { border: '1px solid', fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1.5px', padding: '2px 7px', textTransform: 'uppercase' },
-  sessionBadge: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: '#5a4820', padding: '2px 7px', border: '1px solid rgba(201,168,76,0.1)' },
-  timelineTitle: { fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '600', color: '#e8c96a' },
-  timelineText: { fontFamily: 'Crimson Pro,serif', fontSize: '13px', color: '#8a8070', lineHeight: '1.6', whiteSpace: 'pre-wrap' },
-  timelineMeta: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: '#3a2e18', textTransform: 'uppercase' },
-  loading: { textAlign: 'center', padding: '40px', fontFamily: 'Cinzel,serif', color: '#5a4820', letterSpacing: '2px', fontSize: '10px' },
+  sessionBadge: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: 'var(--gold-dim)', padding: '2px 7px', border: '1px solid var(--line)' },
+  timelineTitle: { fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '600', color: 'var(--gold-bright)' },
+  timelineText: { fontFamily: 'Crimson Pro,serif', fontSize: '13px', color: 'var(--parchment-dim)', lineHeight: '1.6', whiteSpace: 'pre-wrap' },
+  timelineMeta: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
+  loading: { textAlign: 'center', padding: '40px', fontFamily: 'Cinzel,serif', color: 'var(--gold-dim)', letterSpacing: '2px', fontSize: '10px' },
 };
  

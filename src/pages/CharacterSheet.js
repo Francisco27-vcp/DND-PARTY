@@ -116,7 +116,7 @@ export default function CharacterSheet({ user }) {
           {editing
             ? <input type="number" value={draft.level} onChange={e => update('level', parseInt(e.target.value))} style={{ ...s.inputNum, fontSize: '28px', width: '60px' }} />
             : <span style={{ fontFamily: 'Cinzel,serif', fontSize: '32px', fontWeight: '900', color: draft.color || '#c9a84c' }}>{draft.level}</span>}
-          <span style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2px', color: '#5a4820', textTransform: 'uppercase' }}>Nivel</span>
+          <span style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase' }}>Nivel</span>
         </div>
       </div>
 
@@ -178,7 +178,7 @@ export default function CharacterSheet({ user }) {
                        <span style={{ color: '#5a4820' }}>/</span>
                        <input type="number" value={draft.hpMax} onChange={e => update('hpMax', parseInt(e.target.value) || 0)} style={{ ...s.inputNum, width: '48px' }} />
                       </>
-                    : <span style={{ fontFamily: 'Cinzel,serif', fontSize: '20px', color: '#c0392b', fontWeight: '700' }}>{draft.hp} <span style={{ color: '#5a4820', fontSize: '13px' }}>/ {draft.hpMax}</span></span>}
+                    : <span style={{ fontFamily: 'Cinzel,serif', fontSize: '20px', color: 'var(--ember)', fontWeight: '700' }}>{draft.hp} <span style={{ color: 'var(--gold-dim)', fontSize: '13px' }}>/ {draft.hpMax}</span></span>}
                 </div>
               </div>
               <div style={s.barTrack}><div style={{ ...s.barFill, width: `${hpPct}%`, background: hpPct > 50 ? '#4a8a4a' : hpPct > 25 ? '#a07020' : '#8b1a1a' }} /></div>
@@ -191,7 +191,7 @@ export default function CharacterSheet({ user }) {
                   <input value={draft.player || ''} onChange={e => update('player', e.target.value)} style={s.inputFull} placeholder="Nombre del jugador" />
                   <input value={draft.ownerEmail || ''} onChange={e => update('ownerEmail', e.target.value)} style={s.inputFull} placeholder="Email del jugador (para permisos de edición)" />
                 </div>
-              : <span style={{ fontFamily: 'Cinzel,serif', fontSize: '15px', color: '#e8c96a' }}>{draft.player || '—'}</span>}
+              : <span style={{ fontFamily: 'Cinzel,serif', fontSize: '15px', color: 'var(--gold-bright)' }}>{draft.player || '—'}</span>}
           </Section>
         </div>
 
@@ -200,7 +200,7 @@ export default function CharacterSheet({ user }) {
           <Section title="Notas del personaje">
             {editing
               ? <textarea value={draft.notes || ''} onChange={e => update('notes', e.target.value)} style={s.textarea} placeholder="Motivaciones, lore personal, backstory..." rows={5} />
-              : <p style={s.notesText}>{draft.notes || <span style={{ color: '#3a2e18', fontStyle: 'italic' }}>Sin notas. Editá para agregar.</span>}</p>}
+              : <p style={s.notesText}>{draft.notes || <span style={{ color: 'var(--gold-dim)', fontStyle: 'italic' }}>Sin notas. Editá para agregar.</span>}</p>}
           </Section>
 
           <Section title="Estado actual">
@@ -212,7 +212,7 @@ export default function CharacterSheet({ user }) {
           <Section title="Equipo e Inventario">
             {editing
               ? <textarea value={draft.inventory || ''} onChange={e => update('inventory', e.target.value)} style={s.textarea} placeholder="Espada larga, armadura de placas..." rows={4} />
-              : <p style={s.notesText}>{draft.inventory || <span style={{ color: '#3a2e18', fontStyle: 'italic' }}>Sin inventario registrado.</span>}</p>}
+              : <p style={s.notesText}>{draft.inventory || <span style={{ color: 'var(--gold-dim)', fontStyle: 'italic' }}>Sin inventario registrado.</span>}</p>}
           </Section>
         </div>
       </div>
@@ -248,72 +248,72 @@ function CombatStat({ label, value, field, editing, update }) {
 
 function StatusRow({ label, value, field, editing, update, isToggle }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(201,168,76,0.08)' }}>
-      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', color: '#7a6030', textTransform: 'uppercase' }}>{label}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--line)' }}>
+      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--gold-dim)', textTransform: 'uppercase' }}>{label}</span>
       {editing
         ? isToggle
-          ? <button onClick={() => update(field, !value)} style={{ background: value ? 'rgba(201,168,76,0.2)' : 'transparent', border: '1px solid rgba(201,168,76,0.3)', color: '#e8c96a', padding: '3px 10px', fontFamily: 'Cinzel,serif', fontSize: '9px', cursor: 'pointer' }}>{value ? 'Quitar' : 'Dar'}</button>
-          : <input value={value} onChange={e => update(field, e.target.value)} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.15)', color: '#f5f0e8', fontFamily: 'Crimson Pro,serif', fontSize: '13px', padding: '3px 8px', maxWidth: '160px' }} />
-        : <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '13px', color: '#c8c4bc' }}>{value}</span>}
+          ? <button onClick={() => update(field, !value)} style={{ background: value ? 'rgba(201,168,76,0.2)' : 'transparent', border: '1px solid var(--line)', color: 'var(--gold-bright)', padding: '3px 10px', fontFamily: 'Cinzel,serif', fontSize: '9px', cursor: 'pointer' }}>{value ? 'Quitar' : 'Dar'}</button>
+          : <input value={value} onChange={e => update(field, e.target.value)} style={{ background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '13px', padding: '3px 8px', maxWidth: '160px' }} />
+        : <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '13px', color: 'var(--parchment)' }}>{value}</span>}
     </div>
   );
 }
 
 const s = {
   page: { maxWidth: '900px', margin: '0 auto', padding: '0 16px 20px' },
-  loading: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', fontFamily: 'Cinzel,serif', color: '#7a6030', letterSpacing: '3px', fontSize: '11px' },
+  loading: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', fontFamily: 'Cinzel,serif', color: 'var(--gold-dim)', letterSpacing: '3px', fontSize: '11px' },
   coverWrap: { position: 'relative', height: '280px', overflow: 'hidden', margin: '0 -16px' },
   coverImg: { width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' },
-  coverOverlay: { position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,6,12,1) 0%, rgba(8,6,12,0.5) 50%, transparent 100%)' },
+  coverOverlay: { position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(11,9,6,1) 0%, rgba(11,9,6,0.5) 50%, transparent 100%)' },
   coverText: { position: 'absolute', bottom: '20px', left: '20px', right: '20px', zIndex: 2 },
-  coverName: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(20px,5vw,34px)', fontWeight: '900', color: '#e8c96a', letterSpacing: '2px', textShadow: '0 0 20px rgba(201,168,76,0.5)' },
+  coverName: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(20px,5vw,34px)', fontWeight: '900', color: 'var(--gold-bright)', letterSpacing: '2px', textShadow: '0 0 20px rgba(227,200,120,0.5)' },
   coverSub: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '14px', color: 'rgba(201,168,76,0.6)', marginTop: '4px' },
   topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' },
-  backBtn: { background: 'transparent', border: 'none', color: '#7a6030', fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '1px', cursor: 'pointer', padding: '6px 0' },
-  editBtn: { background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', color: '#c9a84c', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase' },
+  backBtn: { background: 'transparent', border: 'none', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '1px', cursor: 'pointer', padding: '6px 0' },
+  editBtn: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase' },
   saveBtn: { background: 'rgba(74,138,74,0.15)', border: '1px solid rgba(74,138,74,0.4)', color: '#7aaa7a', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase' },
-  cancelBtn: { background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#5a4820', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '20px', background: 'rgba(15,12,24,0.9)', borderTop: '3px solid', borderLeft: '1px solid rgba(201,168,76,0.15)', borderRight: '1px solid rgba(201,168,76,0.15)', borderBottom: '1px solid rgba(201,168,76,0.15)', marginBottom: '12px' },
+  cancelBtn: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--parchment-dim)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '20px', background: 'var(--panel)', borderTop: '3px solid', borderLeft: '1px solid var(--line)', borderRight: '1px solid var(--line)', borderBottom: '1px solid var(--line)', marginBottom: '12px' },
   headerLeft: { display: 'flex', alignItems: 'flex-start', gap: '16px', flex: 1 },
-  charName: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(18px,4vw,26px)', fontWeight: '900', color: '#e8c96a', letterSpacing: '2px' },
-  charSub: { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: '#7a6030', marginTop: '4px' },
-  charSubclass: { fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '2px', color: '#5a4820', marginTop: '4px', textTransform: 'uppercase' },
-  levelCircle: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 16px', border: '1px solid rgba(201,168,76,0.2)', minWidth: '70px' },
-  portraitEditBox: { background: 'rgba(15,12,24,0.7)', border: '1px solid rgba(201,168,76,0.12)', padding: '12px', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '6px' },
-  formLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: '#7a6030', textTransform: 'uppercase' },
-  fileInput: { background: 'transparent', border: '1px solid rgba(201,168,76,0.15)', color: '#c9a84c', fontFamily: 'Cinzel,serif', fontSize: '10px', padding: '6px', cursor: 'pointer' },
-  inputLarge: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(201,168,76,0.3)', color: '#e8c96a', fontFamily: 'Cinzel,serif', fontSize: '20px', fontWeight: '700', padding: '4px 8px', width: '100%' },
-  inputFull: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.2)', color: '#f5f0e8', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '8px', width: '100%' },
-  inputNum: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(201,168,76,0.2)', color: '#e8c96a', fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', padding: '4px 6px', textAlign: 'center', width: '60px' },
-  textarea: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.15)', color: '#c8c4bc', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '10px', width: '100%', resize: 'vertical', lineHeight: '1.6' },
-  xpSection: { background: 'rgba(15,12,24,0.7)', border: '1px solid rgba(201,168,76,0.12)', padding: '12px', marginBottom: '12px' },
+  charName: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(18px,4vw,26px)', fontWeight: '900', color: 'var(--gold-bright)', letterSpacing: '2px' },
+  charSub: { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--gold-dim)', marginTop: '4px' },
+  charSubclass: { fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '2px', color: 'var(--gold-dim)', marginTop: '4px', textTransform: 'uppercase' },
+  levelCircle: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 16px', border: '1px solid var(--line)', minWidth: '70px' },
+  portraitEditBox: { background: 'var(--panel)', border: '1px solid var(--line)', padding: '12px', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '6px' },
+  formLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
+  fileInput: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '10px', padding: '6px', cursor: 'pointer' },
+  inputLarge: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--gold-bright)', fontFamily: 'Cinzel,serif', fontSize: '20px', fontWeight: '700', padding: '4px 8px', width: '100%' },
+  inputFull: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '8px', width: '100%' },
+  inputNum: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--gold-bright)', fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', padding: '4px 6px', textAlign: 'center', width: '60px' },
+  textarea: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '10px', width: '100%', resize: 'vertical', lineHeight: '1.6' },
+  xpSection: { background: 'var(--panel)', border: '1px solid var(--line)', padding: '12px', marginBottom: '12px' },
   xpRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' },
-  xpLabel: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2px', color: '#7a6030', textTransform: 'uppercase' },
-  xpVal: { fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '700', color: '#c9a84c' },
-  dimLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', color: '#3a2e18', letterSpacing: '1px' },
+  xpLabel: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
+  xpVal: { fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '700', color: 'var(--gold)' },
+  dimLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', color: 'var(--gold-dim)', letterSpacing: '1px' },
   barTrack: { height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: '2px', transition: 'width 0.4s' },
   mainGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
   leftCol: { display: 'flex', flexDirection: 'column', gap: '12px' },
   rightCol: { display: 'flex', flexDirection: 'column', gap: '12px' },
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' },
-  statBlock: { background: 'rgba(8,6,12,0.6)', border: '1px solid rgba(201,168,76,0.1)', padding: '10px 6px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' },
-  statName: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1.5px', color: '#5a4820', textTransform: 'uppercase' },
-  statScore: { fontFamily: 'Cinzel,serif', fontSize: '22px', fontWeight: '700', color: '#f5f0e8' },
-  statMod: { fontFamily: 'Cinzel,serif', fontSize: '12px', fontWeight: '600', color: '#c9a84c' },
+  statBlock: { background: 'rgba(11,9,6,0.6)', border: '1px solid var(--line)', padding: '10px 6px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' },
+  statName: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1.5px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
+  statScore: { fontFamily: 'Cinzel,serif', fontSize: '22px', fontWeight: '700', color: 'var(--parchment)' },
+  statMod: { fontFamily: 'Cinzel,serif', fontSize: '12px', fontWeight: '600', color: 'var(--gold)' },
   combatRow: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '8px', marginBottom: '10px' },
-  hpBox: { background: 'rgba(8,6,12,0.5)', border: '1px solid rgba(201,168,76,0.1)', padding: '10px' },
-  notesText: { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: '#9a9080', lineHeight: '1.7', whiteSpace: 'pre-wrap' },
-  readOnlyBadge: { textAlign: 'center', padding: '10px', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2px', color: '#5a4820', border: '1px solid rgba(201,168,76,0.1)', marginTop: '12px', textTransform: 'uppercase' },
+  hpBox: { background: 'rgba(11,9,6,0.5)', border: '1px solid var(--line)', padding: '10px' },
+  notesText: { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--parchment-dim)', lineHeight: '1.7', whiteSpace: 'pre-wrap' },
+  readOnlyBadge: { textAlign: 'center', padding: '10px', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-dim)', border: '1px solid var(--line)', marginTop: '12px', textTransform: 'uppercase' },
 };
 
 const ss = {
-  section: { background: 'rgba(15,12,24,0.7)', border: '1px solid rgba(201,168,76,0.12)', padding: '14px' },
+  section: { background: 'var(--panel)', border: '1px solid var(--line)', padding: '14px' },
   sectionHeader: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' },
-  sectionTitle: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2.5px', color: '#7a6030', textTransform: 'uppercase', whiteSpace: 'nowrap' },
-  sectionLine: { flex: 1, height: '1px', background: 'linear-gradient(to right, rgba(201,168,76,0.2), transparent)' },
-  combatStat: { background: 'rgba(8,6,12,0.6)', border: '1px solid rgba(201,168,76,0.1)', padding: '8px 6px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' },
-  combatLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: '#5a4820', textTransform: 'uppercase' },
-  combatVal: { fontFamily: 'Cinzel,serif', fontSize: '18px', fontWeight: '700', color: '#f5f0e8' },
-  inputNum: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(201,168,76,0.2)', color: '#e8c96a', fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', padding: '4px 6px', textAlign: 'center', width: '60px' },
+  sectionTitle: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2.5px', color: 'var(--gold-dim)', textTransform: 'uppercase', whiteSpace: 'nowrap' },
+  sectionLine: { flex: 1, height: '1px', background: 'linear-gradient(to right, var(--line), transparent)' },
+  combatStat: { background: 'rgba(11,9,6,0.6)', border: '1px solid var(--line)', padding: '8px 6px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' },
+  combatLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
+  combatVal: { fontFamily: 'Cinzel,serif', fontSize: '18px', fontWeight: '700', color: 'var(--parchment)' },
+  inputNum: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--gold-bright)', fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', padding: '4px 6px', textAlign: 'center', width: '60px' },
 };

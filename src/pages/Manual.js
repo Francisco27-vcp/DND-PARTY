@@ -63,13 +63,13 @@ export default function Manual() {
   const renderContent = (text) => {
     return text.split('\n').map((line, i) => {
       if (line.startsWith('**') && line.endsWith('**')) {
-        return <div key={i} style={{ fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '1px', color: '#c9a84c', textTransform: 'uppercase', margin: '10px 0 4px' }}>{line.replace(/\*\*/g, '')}</div>;
+        return <div key={i} style={{ fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '1px', color: 'var(--gold)', textTransform: 'uppercase', margin: '10px 0 4px' }}>{line.replace(/\*\*/g, '')}</div>;
       }
       if (line.startsWith('• ')) {
-        return <div key={i} style={{ paddingLeft: '12px', marginBottom: '3px', color: '#c8c4bc', fontSize: '14px', lineHeight: '1.6' }}>• {line.slice(2).replace(/\*\*(.*?)\*\*/g, '$1')}</div>;
+        return <div key={i} style={{ paddingLeft: '12px', marginBottom: '3px', color: 'var(--parchment-dim)', fontSize: '14px', lineHeight: '1.6' }}>• {line.slice(2).replace(/\*\*(.*?)\*\*/g, '$1')}</div>;
       }
       if (line === '') return <div key={i} style={{ height: '6px' }} />;
-      return <div key={i} style={{ marginBottom: '3px', color: '#c8c4bc', fontSize: '14px', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#e8c96a">$1</strong>') }} />;
+      return <div key={i} style={{ marginBottom: '3px', color: 'var(--parchment-dim)', fontSize: '14px', lineHeight: '1.6' }} dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--gold-bright)">$1</strong>') }} />;
     });
   };
 
@@ -106,13 +106,13 @@ export default function Manual() {
         {/* TOPIC LIST */}
         <div style={s.topicList}>
           {search && filteredTopics.length === 0 && (
-            <div style={{ fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', color: '#5a4820', padding: '20px', textAlign: 'center' }}>Sin resultados para "{search}"</div>
+            <div style={{ fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', color: 'var(--gold-dim)', padding: '20px', textAlign: 'center' }}>Sin resultados para "{search}"</div>
           )}
           {filteredTopics.map((topic, i) => (
             <button key={i} onClick={() => setActiveTopic(topic)}
               style={{ ...s.topicBtn, ...(activeTopic?.title === topic.title ? s.topicBtnActive : {}) }}>
               <div style={s.topicTitle}>{topic.title}</div>
-              {topic.sectionLabel && <div style={{ fontSize: '11px', color: topic.sectionColor, fontFamily: 'Cinzel,serif', letterSpacing: '1px', marginTop: '2px' }}>{topic.sectionLabel}</div>}
+              {topic.sectionLabel && <div style={{ fontSize: '10px', color: topic.sectionColor, fontFamily: 'Cinzel,serif', letterSpacing: '1px', marginTop: '2px', opacity: 0.85 }}>{topic.sectionLabel}</div>}
             </button>
           ))}
         </div>
@@ -127,7 +127,7 @@ export default function Manual() {
               </>
             : <div style={s.contentEmpty}>
                 <div style={{ fontSize: '32px', marginBottom: '12px', opacity: 0.3 }}>📖</div>
-                <div style={{ fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '2px', color: '#3a2e18', textTransform: 'uppercase' }}>Seleccioná un tema</div>
+                <div style={{ fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase' }}>Seleccioná un tema</div>
               </div>
           }
         </div>
@@ -141,22 +141,22 @@ export default function Manual() {
 const s = {
   page: { maxWidth: '900px', margin: '0 auto', padding: '0 16px' },
   hero: { textAlign: 'center', padding: '40px 20px 24px' },
-  heroLabel: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '4px', color: '#5a4820', textTransform: 'uppercase', marginBottom: '8px' },
-  heroTitle: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(26px,6vw,42px)', fontWeight: '900', letterSpacing: '6px', color: '#e8c96a', textShadow: '0 0 30px rgba(232,201,106,0.3)' },
-  heroSub: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '14px', color: '#7a6030', marginTop: '8px' },
+  heroLabel: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '4px', color: 'var(--gold-dim)', textTransform: 'uppercase', marginBottom: '8px' },
+  heroTitle: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(26px,6vw,42px)', fontWeight: '900', letterSpacing: '6px', color: 'var(--gold-bright)', textShadow: '0 0 30px rgba(227,200,120,0.3)' },
+  heroSub: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '14px', color: 'var(--gold-dim)', marginTop: '8px' },
   searchWrap: { marginBottom: '16px' },
-  searchInput: { width: '100%', background: 'rgba(15,12,24,0.9)', border: '1px solid rgba(201,168,76,0.2)', color: '#f5f0e8', fontFamily: 'Crimson Pro,serif', fontSize: '15px', padding: '12px 16px', outline: 'none' },
+  searchInput: { width: '100%', background: 'var(--panel)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '15px', padding: '12px 16px', outline: 'none' },
   tabs: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px' },
-  tab: { background: 'transparent', border: '1px solid rgba(201,168,76,0.12)', color: '#5a4820', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '7px 14px', cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.2s' },
-  tabActive: { background: 'rgba(201,168,76,0.08)' },
+  tab: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '7px 14px', cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.2s' },
+  tabActive: { background: 'rgba(201,164,73,0.08)' },
   layout: { display: 'grid', gridTemplateColumns: '220px 1fr', gap: '12px', alignItems: 'start' },
   topicList: { display: 'flex', flexDirection: 'column', gap: '4px', position: 'sticky', top: '70px' },
-  topicBtn: { background: 'rgba(15,12,24,0.7)', border: '1px solid rgba(201,168,76,0.1)', padding: '10px 14px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s' },
-  topicBtnActive: { background: 'rgba(201,168,76,0.1)', borderColor: 'rgba(201,168,76,0.4)' },
-  topicTitle: { fontFamily: 'Cinzel,serif', fontSize: '12px', fontWeight: '600', color: '#e8c96a', letterSpacing: '0.5px' },
-  content: { background: 'rgba(15,12,24,0.8)', border: '1px solid rgba(201,168,76,0.15)', padding: '20px', minHeight: '400px' },
-  contentTitle: { fontFamily: 'Cinzel,serif', fontSize: '18px', fontWeight: '700', color: '#e8c96a', letterSpacing: '1px' },
-  contentDivider: { height: '1px', background: 'linear-gradient(to right, rgba(201,168,76,0.4), transparent)', margin: '12px 0' },
+  topicBtn: { background: 'var(--panel)', border: '1px solid var(--line)', padding: '10px 14px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s' },
+  topicBtnActive: { background: 'rgba(201,164,73,0.1)', borderColor: 'var(--gold-dim)' },
+  topicTitle: { fontFamily: 'Cinzel,serif', fontSize: '12px', fontWeight: '600', color: 'var(--gold-bright)', letterSpacing: '0.5px' },
+  content: { background: 'var(--panel)', border: '1px solid var(--line)', padding: '20px', minHeight: '400px' },
+  contentTitle: { fontFamily: 'Cinzel,serif', fontSize: '18px', fontWeight: '700', color: 'var(--gold-bright)', letterSpacing: '1px' },
+  contentDivider: { height: '1px', background: 'linear-gradient(to right, var(--gold-dim), transparent)', margin: '12px 0' },
   contentBody: { lineHeight: '1.7' },
   contentEmpty: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px' },
   '@media (max-width: 600px)': { layout: { gridTemplateColumns: '1fr' } },

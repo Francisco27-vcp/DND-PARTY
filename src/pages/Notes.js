@@ -46,7 +46,7 @@ export default function Notes({ user }) {
         {notes.length === 0 && (
           <div style={s.empty}>
             <div style={{ fontSize: '32px', marginBottom: '10px', opacity: 0.3 }}>📝</div>
-            <div style={{ fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '2px', color: '#3a2e18', textTransform: 'uppercase' }}>Sin notas todavía</div>
+            <div style={{ fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase' }}>Sin notas todavía</div>
           </div>
         )}
         {notes.map(note => {
@@ -54,7 +54,7 @@ export default function Notes({ user }) {
           return (
             <div key={note.id} style={{ ...s.bubble, alignSelf: isMe ? 'flex-end' : 'flex-start' }} className="fade-in">
               {!isMe && <div style={s.bubbleAuthor}>{note.author}</div>}
-              <div style={{ ...s.bubbleText, background: isMe ? 'rgba(201,168,76,0.12)' : 'rgba(74,127,165,0.1)', borderColor: isMe ? 'rgba(201,168,76,0.25)' : 'rgba(74,127,165,0.2)' }}>
+              <div style={{ ...s.bubbleText, background: isMe ? 'rgba(201,164,73,0.12)' : 'var(--panel-raised)', borderColor: isMe ? 'rgba(201,164,73,0.25)' : 'var(--line)' }}>
                 {note.text}
               </div>
               {note.createdAt && (
@@ -90,26 +90,26 @@ export default function Notes({ user }) {
 const s = {
   page: { maxWidth: '700px', margin: '0 auto', padding: '0 16px', display: 'flex', flexDirection: 'column', minHeight: '100vh' },
   hero: { textAlign: 'center', padding: '32px 20px 20px' },
-  heroLabel: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '4px', color: '#5a4820', textTransform: 'uppercase', marginBottom: '8px' },
-  heroTitle: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(24px,5vw,36px)', fontWeight: '900', letterSpacing: '6px', color: '#e8c96a', textShadow: '0 0 30px rgba(232,201,106,0.3)' },
-  heroSub: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '13px', color: '#7a6030', marginTop: '6px' },
+  heroLabel: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '4px', color: 'var(--gold-dim)', textTransform: 'uppercase', marginBottom: '8px' },
+  heroTitle: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(24px,5vw,36px)', fontWeight: '900', letterSpacing: '6px', color: 'var(--gold-bright)', textShadow: '0 0 30px rgba(227,200,120,0.3)' },
+  heroSub: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '13px', color: 'var(--gold-dim)', marginTop: '6px' },
   feed: { flex: 1, display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0 20px', overflowY: 'auto' },
   empty: { textAlign: 'center', padding: '60px 20px', margin: 'auto' },
   bubble: { maxWidth: '80%', display: 'flex', flexDirection: 'column', gap: '3px' },
-  bubbleAuthor: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: '#7a6030', textTransform: 'uppercase', paddingLeft: '4px' },
-  bubbleText: { border: '1px solid', padding: '10px 14px', fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: '#c8c4bc', lineHeight: '1.6', borderRadius: '2px' },
-  bubbleTime: { fontFamily: 'Cinzel,serif', fontSize: '8px', color: '#3a2e18', letterSpacing: '1px', paddingLeft: '4px' },
+  bubbleAuthor: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase', paddingLeft: '4px' },
+  bubbleText: { border: '1px solid', padding: '10px 14px', fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--parchment)', lineHeight: '1.6', borderRadius: '2px' },
+  bubbleTime: { fontFamily: 'Cinzel,serif', fontSize: '8px', color: 'var(--gold-dim)', letterSpacing: '1px', paddingLeft: '4px' },
   inputBar: {
     display: 'flex',
     gap: '8px',
     position: 'sticky',
     bottom: '60px',
-    background: 'rgba(8,6,12,0.95)',
+    background: 'rgba(11,9,6,0.95)',
     padding: '12px 0',
     backdropFilter: 'blur(10px)',
-    borderTop: '1px solid rgba(201,168,76,0.1)',
+    borderTop: '1px solid var(--line)',
   },
-  input: { flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(201,168,76,0.15)', color: '#f5f0e8', fontFamily: 'Crimson Pro,serif', fontSize: '15px', padding: '10px 14px', outline: 'none' },
-  sendBtn: { background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.3)', color: '#c9a84c', fontFamily: 'Cinzel,serif', fontSize: '16px', width: '44px', cursor: 'pointer', flexShrink: 0 },
+  input: { flex: 1, background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '15px', padding: '10px 14px', outline: 'none' },
+  sendBtn: { background: 'linear-gradient(135deg, var(--gold-bright), var(--gold))', border: 'none', color: '#1a1206', fontFamily: 'Cinzel,serif', fontSize: '16px', width: '44px', cursor: 'pointer', flexShrink: 0 },
 };
  
