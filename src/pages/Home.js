@@ -301,6 +301,7 @@ export default function Home({ user }) {
       <header style={s.campaignHeader} className="campaign-header-grid">
         <div style={s.campaignEmblem}>✦</div>
         <div style={s.campaignInfo}>
+
           <div style={s.eyebrow}>Campaña activa · D&D 5e 2024</div>
           <h1 style={s.campaignTitle}>{meta.nombre || 'DND PARTY'}</h1>
           <p style={s.campaignTagline}>{meta.tagline || ''}</p>
@@ -310,6 +311,17 @@ export default function Home({ user }) {
             <span>Sesión actual: {sessions.length || '—'}</span>
             <span style={s.metaDot}>·</span>
             <span>XP del grupo: {groupXP.toLocaleString()}</span>
+            <button style={s.editMetaInlineBtn} onClick={() => {
+              setMetaForm({
+                nombre: meta.nombre,
+                tagline: meta.tagline,
+                worldLevel: meta.worldLevel,
+                objetivo: meta.objetivo,
+                objetivoDesc: meta.objetivoDesc,
+                objetivoProgreso: meta.objetivoProgreso,
+              });
+              setEditingMeta(true);
+            }}>✎ Editar campaña</button>
           </div>
         </div>
         <div style={s.campaignActions} className="campaign-actions-grid">
@@ -468,19 +480,6 @@ export default function Home({ user }) {
             <div style={s.dashCard}>
               <div style={s.dashCardHeader}>
                 <span style={s.dashCardTitle}>Próximo objetivo</span>
-                {isAdmin && (
-                  <button style={s.dashLinkBtn} onClick={() => {
-                    setMetaForm({
-                      nombre: meta.nombre,
-                      tagline: meta.tagline,
-                      worldLevel: meta.worldLevel,
-                      objetivo: meta.objetivo,
-                      objetivoDesc: meta.objetivoDesc,
-                      objetivoProgreso: meta.objetivoProgreso,
-                    });
-                    setEditingMeta(true);
-                  }}>✎ Editar</button>
-                )}
               </div>
               <div style={s.dashCardBody}>
                 <h3 style={s.dashGold}>{meta.objetivo || '—'}</h3>
@@ -843,6 +842,7 @@ const s = {
   campaignTagline: { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--text-soft, #b8a87a)', margin: '2px 0 0', fontStyle: 'italic' },
   campaignMeta: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '4px' },
   metaDot: { color: 'var(--gold-dim)', opacity: 0.5 },
+  editMetaInlineBtn: { background: 'transparent', border: '1px solid rgba(201,168,76,0.25)', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1px', padding: '3px 10px', cursor: 'pointer', textTransform: 'uppercase', borderRadius: '4px', marginLeft: '8px' },
   campaignActions: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(72px, 1fr))', gap: '8px', flexShrink: 0 },
   quickAction: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px', minHeight: '72px', padding: '10px 8px', background: 'var(--bg-panel, rgba(20,18,12,0.8))', border: '1px solid var(--line, rgba(201,168,76,0.15))', borderRadius: '12px', cursor: 'pointer', transition: 'border-color 0.2s, background 0.2s' },
   qaIcon: { fontSize: '1.4rem', color: 'var(--gold-bright, #f7dd78)', lineHeight: 1 },
