@@ -339,7 +339,7 @@
     "id": "capa-de-proteccion",
     "nombre": "Capa de Protección",
     "tipo": "magic",
-    "slot": "back",
+    "slot": "cloak",
     "descripcion": "Capa encantada que forma un escudo invisible alrededor del portador. Requiere sintonización.",
     "stats": {
       "efecto": "+1 a la CA y a todas las tiradas de salvación mientras la llevés puesta.",

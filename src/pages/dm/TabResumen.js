@@ -1,6 +1,6 @@
 // src/pages/dm/TabResumen.js
-import React, { useCallback, useEffect, useState } from 'react';
-import { collection, getDocs, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
+import { collection, getDocs, onSnapshot, doc, updateDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 
 const QUICK_LINKS = [
@@ -17,16 +17,20 @@ export default function TabResumen({ navigate }) {
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
 
-  const loadCharacters = useCallback(async () => {
-    setLoadingChars(true);
-    try {
-      const snap = await getDocs(collection(db, 'characters'));
+  // Real-time subscription to all characters
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'characters'), snap => {
       setCharacters(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    } catch (err) { console.error(err); }
-    setLoadingChars(false);
+      setLoadingChars(false);
+    }, err => { console.error(err); setLoadingChars(false); });
+    return () => unsub();
   }, []);
 
-  useEffect(() => { loadCharacters(); }, [loadCharacters]);
+  const toggleInspiration = async (charId, current) => {
+    try {
+      await updateDoc(doc(db, 'characters', charId), { inspiration: !current });
+    } catch (err) { console.error(err); }
+  };
 
   const applyXpToAll = async (sign) => {
     const amount = parseInt(xpAmount, 10);
@@ -39,7 +43,6 @@ export default function TabResumen({ navigate }) {
         batch.update(doc(db, 'characters', char.id), { xp: newXp, updatedAt: serverTimestamp() });
       });
       await batch.commit();
-      await loadCharacters();
       setApplied(true);
       setTimeout(() => setApplied(false), 2000);
     } catch (err) { console.error(err); }
@@ -71,6 +74,19 @@ export default function TabResumen({ navigate }) {
         </div>
       </Section>
 
+      <Section title="Inspiración de la party">
+        {loadingChars
+          ? <div style={s.muted}>Cargando personajes...</div>
+          : characters.length === 0
+            ? <div style={s.muted}>No hay personajes registrados todavía.</div>
+            : <div style={s.inspirationList}>
+                {characters.map(char => (
+                  <InspirationRow key={char.id} char={char} onToggle={() => toggleInspiration(char.id, char.inspiration)} />
+                ))}
+              </div>
+        }
+      </Section>
+
       <Section title="Resumen de la party">
         {loadingChars
           ? <div style={s.muted}>Cargando personajes...</div>
@@ -83,6 +99,37 @@ export default function TabResumen({ navigate }) {
               </div>
         }
       </Section>
+    </div>
+  );
+}
+
+function InspirationRow({ char, onToggle }) {
+  return (
+    <div style={s.inspRow}>
+      <span style={{ fontSize: '20px', minWidth: '26px' }}>{char.icon || '⚔️'}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: 'Cinzel,serif', fontSize: '13px', color: 'var(--gold-bright)', fontWeight: '700' }}>{char.name}</div>
+        {char.player && <div style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--gold-dim)', marginTop: '1px' }}>{char.player}</div>}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+          <span style={{ fontFamily: 'Cinzel,serif', fontSize: '11px', color: 'var(--gold-dim)', letterSpacing: '0.5px' }}>
+            {char.hp ?? '—'}<span style={{ color: 'var(--line)' }}>/{char.hpMax ?? '—'}</span>
+          </span>
+          <span style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: 'var(--gold-dim)', textTransform: 'uppercase' }}>PG</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontFamily: 'Cinzel,serif', fontSize: '12px', color: char.inspiration ? 'var(--gold)' : 'var(--gold-dim)' }}>
+            {char.inspiration ? '✦ Con inspiración' : '✧ Sin inspiración'}
+          </span>
+          <button
+            onClick={onToggle}
+            style={{ background: char.inspiration ? 'rgba(201,168,76,0.15)' : 'rgba(11,9,6,0.5)', border: `1px solid ${char.inspiration ? 'var(--gold-dim)' : 'var(--line)'}`, color: char.inspiration ? 'var(--gold)' : 'var(--parchment-dim)', fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1.5px', padding: '5px 10px', cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.2s', whiteSpace: 'nowrap' }}
+          >
+            {char.inspiration ? 'Quitar' : 'Dar Inspiración'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -102,13 +149,14 @@ function Section({ title, children }) {
 function PartyCard({ char, onClick }) {
   const hpPct = Math.min(100, Math.round(((char.hp || 0) / (char.hpMax || 1)) * 100));
   return (
-    <div style={{ ...s.card, borderTopColor: char.color || '#c9a84c' }} onClick={onClick} className="fade-in">
+    <div style={{ ...s.card, borderTopColor: char.accentColor || char.color || '#c9a84c' }} onClick={onClick} className="fade-in">
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
         <span style={{ fontSize: '22px' }}>{char.icon || '⚔️'}</span>
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '700', color: 'var(--gold-bright)' }}>{char.name}</div>
           <div style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--gold-dim)', marginTop: '2px' }}>{char.race} {char.class} · Lv{char.level}</div>
         </div>
+        {char.inspiration && <span style={{ fontFamily: 'Cinzel,serif', fontSize: '10px', color: 'var(--gold)', title: 'Con inspiración' }}>✦</span>}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-around' }}>
         <MiniStat label="PG" value={`${char.hp ?? '—'}/${char.hpMax ?? '—'}`} />
@@ -147,4 +195,6 @@ const s = {
   muted: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '13px', color: 'var(--gold-dim)', padding: '10px 0' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px' },
   card: { background: 'var(--panel)', border: '1px solid var(--line)', borderTop: '3px solid var(--gold)', cursor: 'pointer', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px', transition: 'transform 0.2s' },
+  inspirationList: { display: 'flex', flexDirection: 'column', gap: '6px' },
+  inspRow: { display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--panel)', border: '1px solid var(--line)', padding: '10px 14px', flexWrap: 'wrap' },
 };

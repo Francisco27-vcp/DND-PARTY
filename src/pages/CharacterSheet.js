@@ -40,27 +40,24 @@ const SKILLS = [
 const profBonus = (level) => Math.ceil((level || 1) / 4) + 1;
 
 const SLOT_INFO = {
-  head:      { label: 'Cabeza',     icon: '⛑️' },
-  neck:      { label: 'Cuello',     icon: '📿' },
-  shoulders: { label: 'Hombros',    icon: '🪬' },
-  back:      { label: 'Capa',       icon: '🧣' },
-  chest:     { label: 'Pecho',      icon: '🦺' },
-  wrists:    { label: 'Muñequeras', icon: '⌚' },
-  hands:     { label: 'Manos',      icon: '🧤' },
-  waist:     { label: 'Cintura',    icon: '🎗️' },
-  legs:      { label: 'Piernas',    icon: '👖' },
-  feet:      { label: 'Pies',       icon: '👢' },
-  ring1:     { label: 'Anillo 1',   icon: '💍' },
-  ring2:     { label: 'Anillo 2',   icon: '💍' },
-  mainhand:  { label: 'Mano Ppal.', icon: '🗡️' },
-  offhand:   { label: 'Mano Sec.',  icon: '🛡️' },
+  mainhand: { label: 'Mano Principal', icon: '⚔️' },
+  offhand:  { label: 'Mano Secundaria', icon: '🛡️' },
+  chest:    { label: 'Armadura',        icon: '🦺' },
+  head:     { label: 'Casco',           icon: '⛑️' },
+  cloak:    { label: 'Capa',            icon: '🧣' },
+  hands:    { label: 'Guantes',         icon: '🧤' },
+  feet:     { label: 'Botas',           icon: '👢' },
+  neck:     { label: 'Amuleto',         icon: '📿' },
+  ring1:    { label: 'Anillo 1',        icon: '💍' },
+  ring2:    { label: 'Anillo 2',        icon: '💍' },
 };
 
-function getTargetSlot(itemId, currentInventory) {
-  const item = ITEMS_MAP[itemId];
+function getTargetSlot(itemId, currentInventory, extraMap = {}) {
+  const item = ITEMS_MAP[itemId] || extraMap[itemId];
   if (!item?.slot) return null;
   const taken = new Set(currentInventory.filter(i => i.equipped && i.equippedSlot).map(i => i.equippedSlot));
   if (item.slot === 'mainhand') return !taken.has('mainhand') ? 'mainhand' : !taken.has('offhand') ? 'offhand' : 'mainhand';
+  if (item.slot === 'shield') return 'offhand';
   if (item.slot === 'ring') return !taken.has('ring1') ? 'ring1' : !taken.has('ring2') ? 'ring2' : 'ring1';
   return item.slot;
 }
@@ -78,18 +75,17 @@ export default function CharacterSheet({ user }) {
   const [activeTab, setActiveTab] = useState('ficha');
   const [itemSearch, setItemSearch] = useState('');
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
-  const [accentColors, setAccentColors] = useState([null, null]);
   const [initRoll, setInitRoll] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showCustomModal, setShowCustomModal] = useState(false);
   const portraitRef = useRef(null);
 
   const isAdmin = userRole === 'Dungeon Master' || userRole === 'Jugador / DM';
   const isOwner = char?.ownerEmail === user.email || isAdmin;
   const canToggleInspiration = userRole === 'Dungeon Master' || userRole === 'Jugador / DM';
 
-  // Accent colors from portrait; fallback to character color → token
-  const accent1 = accentColors[0] || draft.color || 'var(--gold)';
-  const accent2 = accentColors[1] || 'var(--ember)';
+  const accent1 = draft.accentColor || draft.color || 'var(--gold)';
+  const accent2 = 'var(--ember)';
 
   // ── EFFECTS ──────────────────────────────────────────────────────────────────
 
@@ -129,38 +125,6 @@ export default function CharacterSheet({ user }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [showModal]);
-
-  // Extract 2 dominant mid-tone colors from portrait for accent theming.
-  // Uses try/catch because cross-origin canvas access throws SecurityError when
-  // Firebase Storage CORS is not configured — silently falls back to tokens.
-  const extractDominantColors = useCallback((imgEl) => {
-    try {
-      const W = 60, H = 60;
-      const canvas = document.createElement('canvas');
-      canvas.width = W; canvas.height = H;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(imgEl, 0, 0, W, H);
-      const { data } = ctx.getImageData(0, 0, W, H);
-      const buckets = {};
-      for (let i = 0; i < data.length; i += 4) {
-        if (data[i + 3] < 128) continue;
-        const r = Math.round(data[i]     / 32) * 32;
-        const g = Math.round(data[i + 1] / 32) * 32;
-        const b = Math.round(data[i + 2] / 32) * 32;
-        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-        if (lum < 30 || lum > 220) continue; // skip near-black and near-white
-        const key = `${r}|${g}|${b}`;
-        buckets[key] = (buckets[key] || 0) + 1;
-      }
-      const top = Object.entries(buckets)
-        .sort(([, a], [, b]) => b - a)
-        .slice(0, 2)
-        .map(([k]) => { const [r, g, b] = k.split('|'); return `rgb(${r},${g},${b})`; });
-      if (top.length === 2) setAccentColors(top);
-    } catch {
-      // SecurityError from tainted canvas — keep token defaults
-    }
-  }, []);
 
   // ── HANDLERS ─────────────────────────────────────────────────────────────────
 
@@ -220,13 +184,16 @@ export default function CharacterSheet({ user }) {
     update('savingThrows', { ...draft.savingThrows, [stat]: !(draft.savingThrows?.[stat]) });
   };
 
-  // ── INVENTORY (unchanged) ─────────────────────────────────────────────────
+  // ── INVENTORY ─────────────────────────────────────────────────────────────
 
-  const inventoryItems = draft.inventoryItems || [];
+  const inventoryItems  = draft.inventoryItems  || [];
+  const customItemsData = draft.customItems     || [];
+  const customItemsMap  = Object.fromEntries(customItemsData.map(i => [i.id, i]));
+  const itemLookup      = (itemId) => ITEMS_MAP[itemId] || customItemsMap[itemId] || null;
 
   const recomputeAC = (items, stats) => {
     const desMod = Math.floor(((stats?.des || 10) - 10) / 2);
-    const equippedItems = items.filter(i => i.equipped).map(i => ITEMS_MAP[i.itemId]).filter(Boolean);
+    const equippedItems = items.filter(i => i.equipped).map(i => itemLookup(i.itemId)).filter(Boolean);
     const armor = equippedItems.find(i => i.tipo === 'armor');
     let base = 10 + desMod;
     if (armor) {
@@ -236,6 +203,12 @@ export default function CharacterSheet({ user }) {
     }
     const magicBonus = equippedItems.reduce((sum, i) => sum + (i.stats?.caBonus || 0), 0);
     return base + magicBonus;
+  };
+
+  const createCustomItem = (itemData) => {
+    const newCustomItems = [...customItemsData, itemData];
+    setDraft(d => ({ ...d, customItems: newCustomItems }));
+    updateDoc(doc(db, 'characters', id), { customItems: newCustomItems });
   };
 
   const applyInventoryUpdate = (newItems) => {
@@ -251,7 +224,7 @@ export default function CharacterSheet({ user }) {
   const removeFromInventory = (itemId) => applyInventoryUpdate(inventoryItems.filter(i => i.itemId !== itemId));
 
   const toggleEquipped = (itemId) => {
-    const item = ITEMS_MAP[itemId];
+    const item = itemLookup(itemId);
     const currentlyEquipped = inventoryItems.find(i => i.itemId === itemId)?.equipped;
     let newItems;
     if (currentlyEquipped) {
@@ -259,11 +232,11 @@ export default function CharacterSheet({ user }) {
         i.itemId === itemId ? { ...i, equipped: false, equippedSlot: null } : i
       );
     } else {
-      const targetSlot = getTargetSlot(itemId, inventoryItems);
+      const targetSlot = getTargetSlot(itemId, inventoryItems, customItemsMap);
       newItems = inventoryItems.map(i => {
         if (i.itemId === itemId) return { ...i, equipped: true, equippedSlot: targetSlot };
         if (targetSlot && i.equippedSlot === targetSlot) return { ...i, equipped: false, equippedSlot: null };
-        if (!targetSlot && item?.tipo === 'armor' && ITEMS_MAP[i.itemId]?.tipo === 'armor') return { ...i, equipped: false, equippedSlot: null };
+        if (!targetSlot && item?.tipo === 'armor' && itemLookup(i.itemId)?.tipo === 'armor') return { ...i, equipped: false, equippedSlot: null };
         return i;
       });
     }
@@ -313,11 +286,11 @@ export default function CharacterSheet({ user }) {
 
       {/* ── HERO SECTION ── */}
       <div
-        style={{ position: 'relative', height: isMobile ? '420px' : '520px', background: 'var(--void)', margin: '0 -16px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: draft.portrait ? 'zoom-in' : 'default' }}
+        style={{ position: 'relative', height: isMobile ? '420px' : '520px', background: 'var(--void)', margin: '0 -16px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: draft.portrait ? 'zoom-in' : 'default', borderBottom: `1px solid ${accent1}99` }}
         onClick={() => draft.portrait && setShowModal(true)}
       >
         {draft.portrait
-          ? <img src={draft.portrait} alt={draft.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} onLoad={e => extractDominantColors(e.target)} />
+          ? <img src={draft.portrait} alt={draft.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           : <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', opacity: 0.18, pointerEvents: 'none' }}>
               <span style={{ fontSize: '80px' }}>⚔️</span>
               <span style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '3px', color: 'var(--gold-dim)' }}>SIN ILUSTRACIÓN</span>
@@ -326,13 +299,14 @@ export default function CharacterSheet({ user }) {
         {draft.portrait && (
           <span style={{ position: 'absolute', top: '14px', right: '70px', zIndex: 3, fontSize: '16px', opacity: 0.55, pointerEvents: 'none' }}>🔍</span>
         )}
-        <div style={{ position: 'absolute', top: '14px', right: '14px', zIndex: 3, width: '46px', height: '46px', borderRadius: '50%', background: `${accent1}18`, border: `2px solid ${accent1}66`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-          <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', letterSpacing: '1px', color: accent1, textTransform: 'uppercase', lineHeight: 1 }}>Nv</span>
-          <span style={{ fontFamily: 'Cinzel,serif', fontSize: '20px', fontWeight: '900', color: accent1, lineHeight: 1 }}>{draft.level}</span>
+        <div style={{ position: 'absolute', top: '14px', right: '14px', zIndex: 3, width: '46px', height: '46px', borderRadius: '50%', background: accent1, border: `2px solid ${accent1}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', boxShadow: `0 0 16px ${accent1}88` }}>
+          <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', letterSpacing: '1px', color: 'var(--void)', textTransform: 'uppercase', lineHeight: 1 }}>Nv</span>
+          <span style={{ fontFamily: 'Cinzel,serif', fontSize: '20px', fontWeight: '900', color: 'var(--void)', lineHeight: 1 }}>{draft.level}</span>
         </div>
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: isMobile ? '16px' : '24px', zIndex: 3, pointerEvents: 'none' }}>
-          <h1 style={{ fontFamily: 'Cinzel,serif', fontSize: isMobile ? '28px' : '36px', fontWeight: '900', color: accent1, letterSpacing: '2px', textShadow: '0 2px 20px rgba(0,0,0,0.95)', margin: 0, lineHeight: 1.1 }}>{draft.name}</h1>
-          <div style={{ fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '15px', color: 'var(--parchment-dim)', marginTop: '6px', textShadow: '0 1px 8px rgba(0,0,0,0.9)' }}>{draft.race} {draft.class} · Lv{draft.level} · {draft.alignment}</div>
+          <h1 style={{ fontFamily: 'Cinzel,serif', fontSize: isMobile ? '28px' : '36px', fontWeight: '900', color: accent1, letterSpacing: '2px', textShadow: '0 2px 20px rgba(0,0,0,0.95)', margin: '0 0 6px 0', lineHeight: 1.1 }}>{draft.name}</h1>
+          <div style={{ width: '60px', height: '2px', background: accent1, marginBottom: '8px', opacity: 0.8 }} />
+          <div style={{ fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '15px', color: 'var(--parchment-dim)', textShadow: '0 1px 8px rgba(0,0,0,0.9)' }}>{draft.race} {draft.class} · Lv{draft.level} · {draft.alignment}</div>
           {draft.subclass && <div style={{ fontFamily: 'Cinzel,serif', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '3px', color: 'var(--gold-dim)', marginTop: '8px', textShadow: '0 1px 8px rgba(0,0,0,0.9)' }}>{draft.subclass}</div>}
         </div>
       </div>
@@ -369,6 +343,15 @@ export default function CharacterSheet({ user }) {
               : <h1 style={{ ...s.charName, color: accent1 }}>{draft.name}</h1>}
             <div style={s.charSub}>{draft.race} {draft.class} · Lv{draft.level} · {draft.alignment}</div>
             <div style={s.charSubclass}>{draft.subclass}</div>
+            {editing && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                <span style={s.formLabel}>Color del personaje</span>
+                <input type="color" value={draft.accentColor || '#C9A84C'}
+                  onChange={e => { update('accentColor', e.target.value); updateDoc(doc(db, 'characters', id), { accentColor: e.target.value }); }}
+                  style={{ width: '36px', height: '24px', border: '1px solid var(--line)', background: 'transparent', cursor: 'pointer', padding: '1px 2px' }} />
+                <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '11px', color: 'var(--gold-dim)', fontStyle: 'italic' }}>Se aplica en toda la ficha</span>
+              </div>
+            )}
           </div>
         </div>
         <div style={s.levelCircle}>
@@ -625,6 +608,9 @@ export default function CharacterSheet({ user }) {
           unequipSlot={unequipSlot}
           portrait={draft.portrait}
           isMobile={isMobile}
+          accent={accent1}
+          customItems={customItemsData}
+          createCustomItem={createCustomItem}
         />
       )}
 
@@ -732,24 +718,32 @@ function LoreTab({ lore, editing, isOwner, updateLore, accent }) {
 }
 
 // ── Inventory tab (unchanged) ─────────────────────────────────────────────────
-function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventory, removeFromInventory, toggleEquipped, changeQuantity, isOwner, unequipSlot, portrait, isMobile }) {
+function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventory, removeFromInventory, toggleEquipped, changeQuantity, isOwner, unequipSlot, portrait, isMobile, accent, customItems, createCustomItem }) {
+  const [showCustomModal, setShowCustomModal] = useState(false);
+  const customMap = Object.fromEntries((customItems || []).map(i => [i.id, i]));
+  const getItem = (itemId) => ITEMS_MAP[itemId] || customMap[itemId] || null;
+
+  const allSearchable = [
+    ...ALL_ITEMS,
+    ...(customItems || []).map(i => ({ ...i, isCustom: true })),
+  ];
   const searchResults = itemSearch.length > 1
-    ? ALL_ITEMS.filter(item =>
+    ? allSearchable.filter(item =>
         !inventoryItems.find(i => i.itemId === item.id) &&
         (item.nombre.toLowerCase().includes(itemSearch.toLowerCase()) ||
-         TYPE_LABEL[item.tipo].toLowerCase().includes(itemSearch.toLowerCase()))
+         (TYPE_LABEL[item.tipo] || 'Personalizado').toLowerCase().includes(itemSearch.toLowerCase()))
       ).slice(0, 6)
     : [];
 
   const equippedItems   = inventoryItems.filter(i => i.equipped);
   const unequippedItems = inventoryItems.filter(i => !i.equipped);
   const equippedWeapons = equippedItems
-    .map(i => ({ inv: i, item: ITEMS_MAP[i.itemId] }))
+    .map(i => ({ inv: i, item: getItem(i.itemId) }))
     .filter(({ item }) => item?.tipo === 'weapon');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
-      <EquipmentSlots inventoryItems={inventoryItems} unequipSlot={unequipSlot} portrait={portrait} isMobile={isMobile} />
+      <EquipmentSlots inventoryItems={inventoryItems} unequipSlot={unequipSlot} portrait={portrait} isMobile={isMobile} accent={accent} customItems={customItems} />
       {isOwner && (
         <div style={iv.searchWrap}>
           <div style={iv.sectionLabel}>Agregar objeto al inventario</div>
@@ -759,11 +753,12 @@ function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventor
             <div style={iv.searchResults}>
               {searchResults.map(item => (
                 <div key={item.id} style={iv.searchResult}>
-                  <span style={{ fontSize: '18px', minWidth: '24px' }}>{TYPE_ICON[item.tipo]}</span>
+                  <span style={{ fontSize: '18px', minWidth: '24px' }}>{item.emoji || TYPE_ICON[item.tipo] || '✦'}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <span style={iv.resultName}>{item.nombre}</span>
-                      <span style={{ ...iv.typeBadge, borderColor: TYPE_COLOR[item.tipo], color: TYPE_COLOR[item.tipo] }}>{TYPE_LABEL[item.tipo]}</span>
+                      <span style={{ ...iv.typeBadge, borderColor: TYPE_COLOR[item.tipo] || '#a07ad0', color: TYPE_COLOR[item.tipo] || '#a07ad0' }}>{TYPE_LABEL[item.tipo] || 'Personalizado'}</span>
+                      {item.isCustom && <span style={{ ...iv.typeBadge, borderColor: 'var(--gold-dim)', color: 'var(--gold-dim)' }}>✦ Custom</span>}
                     </div>
                     <div style={iv.resultDesc}>{item.descripcion}</div>
                   </div>
@@ -772,6 +767,10 @@ function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventor
               ))}
             </div>
           )}
+          <button style={{ ...iv.addBtn, marginTop: '8px', color: 'var(--gold-dim)', borderColor: 'var(--line)', fontSize: '8px' }}
+            onClick={() => setShowCustomModal(true)}>
+            ✦ Crear item personalizado
+          </button>
         </div>
       )}
 
@@ -783,9 +782,9 @@ function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventor
             {equippedWeapons.map(({ inv, item }) => (
               <div key={inv.itemId} style={iv.attackRow}>
                 <span style={{ fontFamily: 'Cinzel,serif', fontSize: '12px', color: 'var(--parchment)' }}>{item.nombre}</span>
-                <span style={{ fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '700', color: 'var(--ember)' }}>{item.stats.daño}</span>
-                <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '13px', color: 'var(--parchment-dim)' }}>{item.stats.tipoDaño}</span>
-                <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--gold-dim)' }}>{item.stats.propiedades?.join(', ') || '—'}</span>
+                <span style={{ fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '700', color: 'var(--ember)' }}>{item.stats?.daño || '—'}</span>
+                <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '13px', color: 'var(--parchment-dim)' }}>{item.stats?.tipoDaño || '—'}</span>
+                <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--gold-dim)' }}>{item.stats?.propiedades?.join(', ') || '—'}</span>
               </div>
             ))}
           </div>
@@ -796,7 +795,7 @@ function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventor
         <div style={iv.section}>
           <div style={iv.sectionHeader}><span style={iv.sectionTitle}>Equipado</span><div style={iv.sectionLine} /></div>
           {equippedItems.map(inv => (
-            <ItemRow key={inv.itemId} inv={inv} isOwner={isOwner}
+            <ItemRow key={inv.itemId} inv={inv} isOwner={isOwner} getItem={getItem}
               toggleEquipped={toggleEquipped} removeFromInventory={removeFromInventory} changeQuantity={changeQuantity} />
           ))}
         </div>
@@ -806,7 +805,7 @@ function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventor
         <div style={iv.section}>
           <div style={iv.sectionHeader}><span style={iv.sectionTitle}>Mochila</span><div style={iv.sectionLine} /></div>
           {unequippedItems.map(inv => (
-            <ItemRow key={inv.itemId} inv={inv} isOwner={isOwner}
+            <ItemRow key={inv.itemId} inv={inv} isOwner={isOwner} getItem={getItem}
               toggleEquipped={toggleEquipped} removeFromInventory={removeFromInventory} changeQuantity={changeQuantity} />
           ))}
         </div>
@@ -817,25 +816,33 @@ function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventor
           Inventario vacío · Usá el buscador para agregar objetos
         </div>
       )}
+
+      {showCustomModal && (
+        <CustomItemModal onClose={() => setShowCustomModal(false)} onSave={item => { createCustomItem(item); addToInventory(item.id); setShowCustomModal(false); }} />
+      )}
     </div>
   );
 }
 
-function ItemRow({ inv, isOwner, toggleEquipped, removeFromInventory, changeQuantity }) {
-  const item = ITEMS_MAP[inv.itemId];
+function ItemRow({ inv, isOwner, toggleEquipped, removeFromInventory, changeQuantity, getItem }) {
+  const item = getItem ? getItem(inv.itemId) : ITEMS_MAP[inv.itemId];
   if (!item) return null;
   const statsText = item.tipo === 'weapon'
-    ? `${item.stats.daño} ${item.stats.tipoDaño}`
+    ? `${item.stats?.daño || '—'} ${item.stats?.tipoDaño || ''}`
     : item.tipo === 'armor'
-    ? `CA ${item.stats.caBase}${item.stats.armorType !== 'heavy' ? ' + DES' : ''}`
-    : item.stats.efecto;
+    ? `CA ${item.stats?.caBase}${item.stats?.armorType !== 'heavy' ? ' + DES' : ''}`
+    : item.stats?.efecto || '';
+  const icon = item.emoji || TYPE_ICON[item.tipo] || '✦';
+  const typeColor = TYPE_COLOR[item.tipo] || '#a07ad0';
+  const typeLabel = TYPE_LABEL[item.tipo] || 'Personalizado';
   return (
     <div style={{ ...iv.itemRow, background: inv.equipped ? 'rgba(201,168,76,0.06)' : 'rgba(11,9,6,0.4)' }}>
-      <span style={{ fontSize: '20px', minWidth: '28px', paddingTop: '2px' }}>{TYPE_ICON[item.tipo]}</span>
+      <span style={{ fontSize: '20px', minWidth: '28px', paddingTop: '2px' }}>{icon}</span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <span style={iv.itemName}>{item.nombre}</span>
-          <span style={{ ...iv.typeBadge, borderColor: TYPE_COLOR[item.tipo], color: TYPE_COLOR[item.tipo] }}>{TYPE_LABEL[item.tipo]}</span>
+          <span style={{ ...iv.typeBadge, borderColor: typeColor, color: typeColor }}>{typeLabel}</span>
+          {item.isCustom && <span style={{ ...iv.typeBadge, borderColor: 'var(--gold-dim)', color: 'var(--gold-dim)' }}>✦ Custom</span>}
           {inv.equipped && <span style={iv.equippedBadge}>✓ Equipado</span>}
           {item.tipo === 'potion' && (inv.quantity || 1) > 1 && <span style={iv.equippedBadge}>×{inv.quantity}</span>}
         </div>
@@ -865,41 +872,43 @@ function ItemRow({ inv, isOwner, toggleEquipped, removeFromInventory, changeQuan
 }
 
 // ── Equipment slot box ────────────────────────────────────────────────────────
-function SlotBox({ slotId, item, side, isMobile, showTooltip, onSlotAction, onMobileUnequip }) {
+function SlotBox({ slotId, item, side, isMobile, showTooltip, onSlotAction, onMobileUnequip, accent }) {
   const [hovered, setHovered] = useState(false);
   const info = SLOT_INFO[slotId];
   const showTip = isMobile ? showTooltip : (hovered && !!item);
+  const accentColor = accent || 'var(--gold)';
 
   const statsText = !item?.itemData ? ''
-    : item.itemData.tipo === 'weapon' ? `${item.itemData.stats.daño} ${item.itemData.stats.tipoDaño}`
-    : item.itemData.tipo === 'armor'  ? `CA ${item.itemData.stats.caBase}`
-    : item.itemData.stats?.efecto     ? item.itemData.stats.efecto.substring(0, 60) + '…'
+    : item.itemData.tipo === 'weapon' ? `${item.itemData.stats?.daño || '—'} ${item.itemData.stats?.tipoDaño || ''}`
+    : item.itemData.tipo === 'armor'  ? `CA ${item.itemData.stats?.caBase}`
+    : item.itemData.stats?.efecto     ? item.itemData.stats.efecto.substring(0, 70) + '…'
     : '';
 
   const tipPos = {
-    right:  { left: '58px', top: '-2px' },
-    left:   { right: '58px', top: '-2px' },
-    up:     { bottom: '58px', left: '50%', transform: 'translateX(-50%)' },
+    right: { left: '58px', top: '-2px' },
+    left:  { right: '58px', top: '-2px' },
+    up:    { bottom: '58px', left: '50%', transform: 'translateX(-50%)' },
   }[side] || { left: '58px', top: '-2px' };
+
+  const icon = item ? (item.itemData?.emoji || TYPE_ICON[item.itemData?.tipo] || info.icon) : info.icon;
 
   return (
     <div
-      style={{ width: '52px', height: '52px', position: 'relative', border: `1px solid ${item ? 'var(--gold-dim)' : 'var(--line)'}`, background: item ? 'rgba(201,168,76,0.08)' : 'var(--panel)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: item ? 'pointer' : 'default', transition: 'border-color 0.15s, background 0.15s', ...(hovered && item && !isMobile ? { borderColor: 'var(--gold)', background: 'rgba(201,168,76,0.15)' } : {}) }}
+      style={{ width: '52px', height: '52px', position: 'relative', border: `1px solid ${item ? accentColor + '80' : 'var(--line)'}`, background: item ? `${accentColor}12` : 'var(--panel)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: item ? 'pointer' : 'default', transition: 'border-color 0.15s, background 0.15s', ...(hovered && item && !isMobile ? { borderColor: accentColor, background: `${accentColor}22` } : {}) }}
       onClick={onSlotAction}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <span style={{ fontSize: item ? '22px' : '16px', opacity: item ? 1 : 0.22, lineHeight: 1 }}>
-        {item ? (TYPE_ICON[item.itemData?.tipo] || info.icon) : info.icon}
-      </span>
-      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '6px', color: item ? 'var(--gold-dim)' : 'rgba(255,255,255,0.15)', letterSpacing: '0.3px', maxWidth: '48px', textAlign: 'center', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', marginTop: '2px' }}>
+      <span style={{ fontSize: item ? '22px' : '16px', opacity: item ? 1 : 0.22, lineHeight: 1 }}>{icon}</span>
+      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '6px', color: item ? accentColor : 'rgba(255,255,255,0.15)', letterSpacing: '0.3px', maxWidth: '48px', textAlign: 'center', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', marginTop: '2px' }}>
         {item ? item.itemData?.nombre : info.label}
       </span>
 
       {showTip && item && (
-        <div style={{ position: 'absolute', ...tipPos, zIndex: 200, width: '180px', background: '#0e0b08', border: '1px solid var(--gold-dim)', padding: '10px 12px', pointerEvents: isMobile ? 'auto' : 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>
-          <div style={{ fontFamily: 'Cinzel,serif', fontSize: '11px', color: 'var(--gold-bright)', marginBottom: '3px' }}>{item.itemData?.nombre}</div>
-          <div style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: TYPE_COLOR[item.itemData?.tipo], textTransform: 'uppercase', marginBottom: '6px' }}>{TYPE_LABEL[item.itemData?.tipo]}</div>
+        <div style={{ position: 'absolute', ...tipPos, zIndex: 200, width: '190px', background: '#0e0b08', border: `1px solid ${accentColor}66`, padding: '10px 12px', pointerEvents: isMobile ? 'auto' : 'none', boxShadow: '0 4px 24px rgba(0,0,0,0.85)' }}>
+          <div style={{ fontFamily: 'Cinzel,serif', fontSize: '11px', color: accentColor, marginBottom: '3px' }}>{item.itemData?.nombre}</div>
+          {item.itemData?.isCustom && <div style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', letterSpacing: '1px', color: accentColor, marginBottom: '4px' }}>✦ CUSTOM</div>}
+          <div style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: TYPE_COLOR[item.itemData?.tipo] || '#a07ad0', textTransform: 'uppercase', marginBottom: '6px' }}>{TYPE_LABEL[item.itemData?.tipo] || 'Personalizado'}</div>
           {statsText && <div style={{ fontFamily: 'Cinzel,serif', fontSize: '11px', color: 'var(--ember)', marginBottom: '4px' }}>{statsText}</div>}
           {item.itemData?.descripcion && <div style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--parchment-dim)', lineHeight: 1.4 }}>{item.itemData.descripcion}</div>}
           {isMobile && (
@@ -914,17 +923,19 @@ function SlotBox({ slotId, item, side, isMobile, showTooltip, onSlotAction, onMo
   );
 }
 
-// ── Equipment slots panel (WoW-style) ─────────────────────────────────────────
-function EquipmentSlots({ inventoryItems, unequipSlot, portrait, isMobile }) {
+// ── Equipment slots panel (D&D 5e — 10 slots) ─────────────────────────────────
+function EquipmentSlots({ inventoryItems, unequipSlot, portrait, isMobile, accent, customItems }) {
   const [activeTooltip, setActiveTooltip] = useState(null);
+  const customMap = Object.fromEntries((customItems || []).map(i => [i.id, i]));
+  const getItemData = (itemId) => ITEMS_MAP[itemId] || customMap[itemId] || null;
 
   const slotMap = {};
   inventoryItems.filter(i => i.equipped && i.equippedSlot).forEach(i => {
-    slotMap[i.equippedSlot] = { ...i, itemData: ITEMS_MAP[i.itemId] };
+    slotMap[i.equippedSlot] = { ...i, itemData: getItemData(i.itemId) };
   });
 
-  const LEFT  = ['head', 'neck', 'shoulders', 'back', 'chest', 'wrists'];
-  const RIGHT = ['hands', 'waist', 'legs', 'feet', 'ring1', 'ring2'];
+  const LEFT  = ['mainhand', 'offhand', 'chest', 'head', 'neck'];
+  const RIGHT = ['cloak', 'hands', 'feet', 'ring1', 'ring2'];
 
   const mkSlot = (slotId, side) => (
     <SlotBox
@@ -933,6 +944,7 @@ function EquipmentSlots({ inventoryItems, unequipSlot, portrait, isMobile }) {
       item={slotMap[slotId]}
       side={side}
       isMobile={isMobile}
+      accent={accent}
       showTooltip={activeTooltip === slotId}
       onSlotAction={() => {
         if (!slotMap[slotId]) return;
@@ -944,7 +956,6 @@ function EquipmentSlots({ inventoryItems, unequipSlot, portrait, isMobile }) {
   );
 
   if (isMobile) {
-    const allSlots = [...LEFT, 'mainhand', 'offhand', ...RIGHT];
     return (
       <div style={eq.wrap}>
         <div style={eq.label}>Equipo</div>
@@ -953,8 +964,8 @@ function EquipmentSlots({ inventoryItems, unequipSlot, portrait, isMobile }) {
             <img src={portrait} alt="" style={{ maxWidth: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
         )}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', justifyItems: 'center' }}>
-          {allSlots.map(s => mkSlot(s, 'up'))}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', justifyItems: 'center' }}>
+          {LEFT.map((s, i) => <React.Fragment key={s}>{mkSlot(s, 'right')}{mkSlot(RIGHT[i], 'left')}</React.Fragment>)}
         </div>
       </div>
     );
@@ -962,25 +973,148 @@ function EquipmentSlots({ inventoryItems, unequipSlot, portrait, isMobile }) {
 
   return (
     <div style={eq.wrap}>
-      <div style={eq.label}>Equipo</div>
+      <div style={eq.label}>Equipo — D&amp;D 5e</div>
       <div style={{ display: 'grid', gridTemplateColumns: '52px 1fr 52px', gap: '10px', alignItems: 'center' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
           {LEFT.map(s => mkSlot(s, 'right'))}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {portrait
-            ? <img src={portrait} alt="" style={{ maxHeight: '330px', maxWidth: '200px', width: '100%', objectFit: 'contain', background: 'var(--void)', display: 'block' }} />
-            : <div style={{ width: '120px', height: '312px', background: '#060504', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.18 }}>
+            ? <img src={portrait} alt="" style={{ maxHeight: '280px', maxWidth: '200px', width: '100%', objectFit: 'contain', background: 'var(--void)', display: 'block' }} />
+            : <div style={{ width: '120px', height: '264px', background: '#060504', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.18 }}>
                 <span style={{ fontSize: '48px' }}>⚔️</span>
               </div>}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
           {RIGHT.map(s => mkSlot(s, 'left'))}
         </div>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '8px' }}>
-        {mkSlot('mainhand', 'up')}
-        {mkSlot('offhand', 'up')}
+    </div>
+  );
+}
+
+// ── Custom item creation modal ────────────────────────────────────────────────
+const CUSTOM_TIPOS = [
+  { id: 'weapon', label: 'Arma' }, { id: 'armor', label: 'Armadura' },
+  { id: 'potion', label: 'Poción' }, { id: 'magic', label: 'Objeto Mágico' },
+  { id: 'custom', label: 'Personalizado' },
+];
+const CUSTOM_SLOTS = [
+  { id: '', label: 'Mochila (sin slot)' }, { id: 'mainhand', label: 'Mano Principal' },
+  { id: 'offhand', label: 'Mano Secundaria' }, { id: 'chest', label: 'Armadura' },
+  { id: 'head', label: 'Casco' }, { id: 'cloak', label: 'Capa' },
+  { id: 'hands', label: 'Guantes' }, { id: 'feet', label: 'Botas' },
+  { id: 'neck', label: 'Amuleto' }, { id: 'ring', label: 'Anillo' },
+];
+
+function CustomItemModal({ onSave, onClose }) {
+  const [nombre, setNombre] = useState('');
+  const [tipo, setTipo]     = useState('custom');
+  const [emoji, setEmoji]   = useState('');
+  const [desc, setDesc]     = useState('');
+  const [basedOn, setBasedOn] = useState('');
+  const [slot, setSlot]     = useState('');
+  const [daño, setDaño]     = useState('1d6');
+  const [tipoDaño, setTipoDaño] = useState('contundente');
+  const [bonoAtaque, setBonoAtaque] = useState(0);
+  const [propiedades, setPropiedades] = useState('');
+  const [caBase, setCaBase] = useState(12);
+  const [armorType, setArmorType] = useState('light');
+  const [efecto, setEfecto] = useState('');
+  const [caBonus, setCaBonus] = useState(0);
+
+  useEffect(() => {
+    if (!basedOn) return;
+    const base = ITEMS_MAP[basedOn];
+    if (!base) return;
+    setTipo(base.tipo);
+    setDesc(base.descripcion || '');
+    setSlot(base.slot || '');
+    if (base.tipo === 'weapon') { setDaño(base.stats.daño || '1d6'); setTipoDaño(base.stats.tipoDaño || ''); setPropiedades(base.stats.propiedades?.join(', ') || ''); }
+    else if (base.tipo === 'armor') { setCaBase(base.stats.caBase || 10); setArmorType(base.stats.armorType || 'light'); }
+    else { setEfecto(base.stats.efecto || ''); setCaBonus(base.stats.caBonus || 0); }
+  }, [basedOn]);
+
+  const buildStats = () => {
+    if (tipo === 'weapon') return { daño, tipoDaño, propiedades: propiedades.split(',').map(s => s.trim()).filter(Boolean), atributo: 'fue', bonoAtaque: parseInt(bonoAtaque) || 0 };
+    if (tipo === 'armor') return { caBase: parseInt(caBase) || 10, armorType, desventajaFurtividad: false };
+    return { efecto, caBonus: parseInt(caBonus) || 0 };
+  };
+
+  const handleSave = () => {
+    if (!nombre.trim()) return;
+    onSave({ id: `custom_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, nombre: nombre.trim(), tipo, emoji: (emoji || '').slice(0, 2), descripcion: desc, slot: slot || null, stats: buildStats(), isCustom: true });
+  };
+
+  const inp = { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '7px 10px', width: '100%', boxSizing: 'border-box' };
+  const lbl = { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1.5px', color: 'var(--gold-dim)', textTransform: 'uppercase', display: 'block', marginBottom: '4px', marginTop: '10px' };
+  const sel = { ...inp, cursor: 'pointer' };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', zIndex: 9998, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }} onClick={onClose}>
+      <div style={{ background: 'var(--panel)', border: '1px solid var(--line)', borderTop: '2px solid var(--gold)', padding: '24px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+        <div style={{ fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '2.5px', color: 'var(--gold)', textTransform: 'uppercase', marginBottom: '16px' }}>✦ Crear Item Personalizado</div>
+
+        <label style={lbl}>Nombre *</label>
+        <input value={nombre} onChange={e => setNombre(e.target.value)} style={inp} placeholder="Ej: Nube Sagrada" />
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          <div>
+            <label style={lbl}>Tipo</label>
+            <select value={tipo} onChange={e => setTipo(e.target.value)} style={sel}>
+              {CUSTOM_TIPOS.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={lbl}>Emoji / Ícono</label>
+            <input value={emoji} onChange={e => setEmoji(e.target.value.slice(0, 2))} style={{ ...inp, fontSize: '20px', textAlign: 'center' }} placeholder="⚔️" />
+          </div>
+        </div>
+
+        <label style={lbl}>Basado en (opcional)</label>
+        <select value={basedOn} onChange={e => setBasedOn(e.target.value)} style={sel}>
+          <option value="">— Ninguno —</option>
+          {ALL_ITEMS.map(i => <option key={i.id} value={i.id}>{i.nombre}</option>)}
+        </select>
+
+        <label style={lbl}>Descripción</label>
+        <textarea value={desc} onChange={e => setDesc(e.target.value)} style={{ ...inp, resize: 'vertical', lineHeight: 1.5 }} rows={2} placeholder="Descripción del objeto..." />
+
+        {tipo === 'weapon' && <>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div><label style={lbl}>Daño</label><input value={daño} onChange={e => setDaño(e.target.value)} style={inp} placeholder="1d6" /></div>
+            <div><label style={lbl}>Tipo de daño</label><input value={tipoDaño} onChange={e => setTipoDaño(e.target.value)} style={inp} placeholder="cortante" /></div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '8px' }}>
+            <div><label style={lbl}>Bono ataque</label><input type="number" value={bonoAtaque} onChange={e => setBonoAtaque(e.target.value)} style={inp} /></div>
+            <div><label style={lbl}>Propiedades (coma separadas)</label><input value={propiedades} onChange={e => setPropiedades(e.target.value)} style={inp} placeholder="versátil, arrojadiza..." /></div>
+          </div>
+        </>}
+        {tipo === 'armor' && <>
+          <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '8px' }}>
+            <div><label style={lbl}>CA Base</label><input type="number" value={caBase} onChange={e => setCaBase(e.target.value)} style={inp} /></div>
+            <div><label style={lbl}>Tipo</label>
+              <select value={armorType} onChange={e => setArmorType(e.target.value)} style={sel}>
+                <option value="light">Ligera</option><option value="medium">Media</option><option value="heavy">Pesada</option>
+              </select>
+            </div>
+          </div>
+        </>}
+        {(tipo === 'potion' || tipo === 'magic' || tipo === 'custom') && <>
+          <label style={lbl}>Efecto</label>
+          <textarea value={efecto} onChange={e => setEfecto(e.target.value)} style={{ ...inp, resize: 'vertical', lineHeight: 1.5 }} rows={2} placeholder="Describe el efecto..." />
+          {tipo !== 'potion' && <><label style={lbl}>Bono CA</label><input type="number" value={caBonus} onChange={e => setCaBonus(e.target.value)} style={{ ...inp, width: '80px' }} /></>}
+        </>}
+
+        <label style={lbl}>Slot de equipo</label>
+        <select value={slot} onChange={e => setSlot(e.target.value)} style={sel}>
+          {CUSTOM_SLOTS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+        </select>
+
+        <div style={{ display: 'flex', gap: '8px', marginTop: '20px', justifyContent: 'flex-end' }}>
+          <button onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', padding: '8px 16px', cursor: 'pointer', textTransform: 'uppercase' }}>Cancelar</button>
+          <button onClick={handleSave} disabled={!nombre.trim()} style={{ background: 'rgba(201,168,76,0.12)', border: '1px solid var(--gold-dim)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', padding: '8px 16px', cursor: nombre.trim() ? 'pointer' : 'not-allowed', textTransform: 'uppercase', opacity: nombre.trim() ? 1 : 0.5 }}>✦ Crear Item</button>
+        </div>
       </div>
     </div>
   );
