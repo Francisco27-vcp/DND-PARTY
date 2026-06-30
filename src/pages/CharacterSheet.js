@@ -179,6 +179,90 @@ function getTargetSlot(itemId, currentInventory, extraMap = {}) {
   return item.slot;
 }
 
+// ── LEVEL UP CONSTANTS ────────────────────────────────────────────────────────
+
+const XP_THRESHOLDS = { 1:0, 2:300, 3:900, 4:2700, 5:6500, 6:14000, 7:23000, 8:34000, 9:48000, 10:64000, 11:85000, 12:100000, 13:120000, 14:140000, 15:165000, 16:195000, 17:225000, 18:265000, 19:305000, 20:355000 };
+
+const CLASS_HIT_DIE = { paladin:10, mago:6, hechicero:6, bardo:8, clerigo:8, druida:8, explorador:10, guerrero:10, barbaro:12, monje:8, picaro:8, brujo:8 };
+
+const CLASS_PRIMARY_STAT = { paladin:'car', mago:'int', hechicero:'car', bardo:'car', clerigo:'sab', druida:'sab', explorador:'des', guerrero:'fue', barbaro:'fue', monje:'sab', picaro:'des', brujo:'car' };
+
+const CLASS_QUOTES = {
+  paladin:'La luz no me eleva. Es mi deber sostenerla.',
+  mago:'El conocimiento es poder. El poder es responsabilidad.',
+  clerigo:'La fe no es certeza. Es elegir confiar en la oscuridad.',
+  druida:'La naturaleza no perdona, pero tampoco olvida.',
+  explorador:'El horizonte no es el final. Es el comienzo.',
+  hechicero:'El poder corre por mis venas. Yo elijo cómo fluye.',
+  bardo:'Una historia bien contada vale más que mil espadas.',
+  brujo:'El pacto me dio poder. Lo que haga con él es mío.',
+  generico:'Cada nivel alcanzado es una cicatriz ganada con honor.',
+};
+
+const LEVEL_FEATURES = {
+  generico: {
+    4:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+    8:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+    12:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+    16:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+    19:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+  },
+  paladin: {
+    2:[{icon:'spell',label:'Smite Divino',desc:'Al golpear podés gastar espacios de conjuro para añadir 2d8 de daño radiante por espacio.'},{icon:'potion',label:'Imposición de Manos',desc:'Pool de curación = 5 × nivel de Paladín. Usalo para restaurar PG o curar enfermedades.'}],
+    3:[{icon:'lore',label:'Juramento Sagrado',desc:'Elegiste tu camino divino. Obtenés conjuros de juramento y habilidades especiales.'},{icon:'spell',label:'Canal Divino (1/desc. corto)',desc:'Podés usar el poder de tu deidad para efectos únicos de tu juramento.'}],
+    4:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+    5:[{icon:'sword',label:'Ataque Adicional',desc:'Atacás dos veces cuando usás la acción de Atacar.'},{icon:'spell',label:'Espacios de conjuro Nv.2',desc:'Acceso a conjuros de 2do nivel y smite mejorado.'}],
+    6:[{icon:'shield',label:'Aura de Protección',desc:'Aliados a 3m añaden tu modificador de CAR a todas sus tiradas de salvación.'}],
+    7:[{icon:'shield',label:'Aura Sagrada',desc:'Aliados en tu aura son inmunes al efecto asustado.'}],
+    8:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+    9:[{icon:'spell',label:'Espacios de conjuro Nv.3',desc:'Acceso a conjuros de 3er nivel.'}],
+    10:[{icon:'shield',label:'Aura de Coraje',desc:'Aliados en tu aura son inmunes al efecto asustado (siempre que estés consciente).'}],
+  },
+  mago: {
+    2:[{icon:'lore',label:'Tradición Arcana',desc:'Elegiste tu especialización arcana. Obtenés beneficios únicos de tu escuela.'}],
+    4:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+    5:[{icon:'spell',label:'Conjuros de nivel 3',desc:'Acceso a conjuros de 3er nivel.'},{icon:'lore',label:'Recuperación Arcana',desc:'Una vez por descanso largo podés recuperar espacios de conjuro gastados.'}],
+    8:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+    10:[{icon:'spell',label:'Conjuros de nivel 5',desc:'Acceso a conjuros de 5to nivel — el pináculo de la magia arcana de combate.'}],
+  },
+  clerigo: {
+    2:[{icon:'spell',label:'Canal Divino (1/desc. corto)',desc:'Usá el poder de tu deidad para Expulsar Muertos Vivientes u otro efecto de dominio.'},{icon:'lore',label:'Conjuros de Dominio Nv.1',desc:'Siempre tenés preparados conjuros adicionales de tu dominio divino.'}],
+    4:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+    5:[{icon:'spell',label:'Destruir Muertos Vivientes',desc:'Los muertos vivientes que fallen su tirada contra Expulsar son destruidos directamente.'}],
+    8:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'},{icon:'spell',label:'Intervención Divina (1/semana)',desc:'Invocá directamente la ayuda de tu deidad. Éxito con un d100 ≤ tu nivel.'}],
+  },
+  druida: {
+    2:[{icon:'lore',label:'Círculo Druídico',desc:'Elegiste tu círculo de la naturaleza — obtenés conjuros de círculo y habilidades especiales.'}],
+    4:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+    6:[{icon:'spell',label:'Forma Salvaje mejorada',desc:'Podés usar Forma Salvaje como acción adicional y te transformás en bestias con mayores desafíos.'}],
+    8:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+  },
+  explorador: {
+    3:[{icon:'lore',label:'Arquetipo de Explorador',desc:'Elegiste tu especialización. Obtenés habilidades únicas de tu camino.'},{icon:'spell',label:'Magia de Explorador',desc:'Acceso a conjuros de explorador — sin necesidad de prepararlos.'}],
+    4:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+    5:[{icon:'sword',label:'Ataque Adicional',desc:'Atacás dos veces cuando usás la acción de Atacar.'}],
+    8:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'},{icon:'speed',label:'Desplazamiento en Terreno',desc:'Moverse a través de terreno difícil natural no te cuesta movimiento extra.'}],
+  },
+  hechicero: {
+    3:[{icon:'spell',label:'Metamagia',desc:'Podés torcer tus conjuros: extender alcance, aplicar en área, lanzar sin materiales o silenciosamente.'},{icon:'lore',label:'Puntos de Hechicería (3)',desc:'Recursos para alimentar la Metamagia. Recuperás todos en un descanso largo.'}],
+    4:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+    5:[{icon:'spell',label:'Conjuros de nivel 3',desc:'Acceso a conjuros de 3er nivel.'},{icon:'lore',label:'Puntos de Hechicería (5)',desc:'Tus puntos de hechicería aumentan.'}],
+    8:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+  },
+  bardo: {
+    3:[{icon:'lore',label:'Colegio de Bardos',desc:'Elegiste tu colegio artístico. Obtenés Pericia adicional y habilidades especiales.'},{icon:'spell',label:'Conjuros Extra',desc:'Aprendés dos conjuros de cualquier clase (podés usarlos como bardo).'}],
+    4:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+    5:[{icon:'inspiration',label:'Inspiración de Bardo d8',desc:'Tu dado de inspiración de bardo sube de d6 a d8.'},{icon:'spell',label:'Fuente de Inspiración',desc:'Recuperás usos de Inspiración en descansos cortos además de largos.'}],
+    8:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+  },
+  brujo: {
+    3:[{icon:'lore',label:'Favor del Patrono',desc:'Tu patrono te concede un favor único según el pacto elegido.'},{icon:'spell',label:'Conjuros de Pacto Nv.2',desc:'Tus ranuras de conjuro suben a nivel 2 y siempre se recuperan en descanso corto.'}],
+    4:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+    5:[{icon:'spell',label:'Conjuros de Pacto Nv.3',desc:'Tus ranuras de conjuro suben a nivel 3.'}],
+    8:[{icon:'levelup',label:'Mejora de Característica',desc:'Subí un atributo en +2 o dos en +1 cada uno.'}],
+  },
+};
+
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
 
 export default function CharacterSheet({ user }) {
@@ -196,6 +280,7 @@ export default function CharacterSheet({ user }) {
   const [initRoll, setInitRoll] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showCustomModal, setShowCustomModal] = useState(false);
+  const [showLevelUp, setShowLevelUp] = useState(false);
   const portraitRef = useRef(null);
 
   const isAdmin = userRole === 'Dungeon Master' || userRole === 'Jugador / DM';
@@ -249,6 +334,19 @@ export default function CharacterSheet({ user }) {
     setChar(draft);
     setEditing(false);
     setSaving(false);
+  };
+
+  const handleLevelUpConfirm = async (changes) => {
+    setSaving(true);
+    const newXpNext = XP_THRESHOLDS[(changes.level || 1) + 1] ?? null;
+    const update_data = { ...changes };
+    if (newXpNext != null) update_data.xpNext = newXpNext;
+    await updateDoc(doc(db, 'characters', id), { ...update_data, updatedAt: serverTimestamp() });
+    const merged = { ...draft, ...update_data };
+    setChar(merged);
+    setDraft(merged);
+    setSaving(false);
+    setShowLevelUp(false);
   };
 
   const update     = (field, value) => setDraft(d => ({ ...d, [field]: value }));
@@ -429,6 +527,7 @@ export default function CharacterSheet({ user }) {
 
   const statMod    = (val) => { const m = Math.floor((val - 10) / 2); return m >= 0 ? `+${m}` : `${m}`; };
   const prof       = profBonus(draft.level);
+  const canLevelUp = isOwner && !editing && (draft.level || 1) < 20 && (draft.xp || 0) >= (XP_THRESHOLDS[(draft.level || 1) + 1] ?? Infinity);
   const hpPct      = Math.min(100, Math.round(((draft.hp || 0) / (draft.hpMax || 1)) * 100));
   const xpPct      = Math.min(100, Math.round(((draft.xp || 0) / (draft.xpNext || 2700)) * 100));
   const passivePerc = 10 + Math.floor(((draft.stats?.sab || 10) - 10) / 2) + (draft.skills?.percepcion ? prof : 0);
@@ -461,6 +560,16 @@ export default function CharacterSheet({ user }) {
 
   return (
     <div style={{ ...s.page, background: 'linear-gradient(180deg, #0d1a0d 0%, #050504 300px) var(--bg-main)', fontFamily: 'var(--font-ui)' }} className="fade-in">
+
+      {/* ── LEVEL UP MODAL ── */}
+      {showLevelUp && (
+        <LevelUpModal
+          draft={draft}
+          accent={accent1}
+          onClose={() => setShowLevelUp(false)}
+          onConfirm={handleLevelUpConfirm}
+        />
+      )}
 
       {/* ── FULLSCREEN MODAL ── */}
       {showModal && draft.portrait && (
@@ -539,6 +648,11 @@ export default function CharacterSheet({ user }) {
                 <div className="cs-xp-bar">
                   <div className="cs-xp-fill" style={{ width: `${xpPct}%` }} />
                 </div>
+                {canLevelUp && (
+                  <button className="cs-levelup-btn" onClick={() => setShowLevelUp(true)}>
+                    ⚔ Subir de Nivel
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -2435,3 +2549,422 @@ const iv = {
 // Play mode shared micro-styles (used inside PlayMode component)
 const pInp = { background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(234,199,94,0.25)', color: 'var(--text-main)', fontFamily: 'var(--font-ui)', fontSize: '12px', padding: '5px 8px', borderRadius: '6px', outline: 'none' };
 const pBtn = { background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(234,199,94,0.22)', color: 'var(--text-muted)', fontFamily: 'var(--font-ui)', fontSize: '10px', padding: '5px 10px', cursor: 'pointer', borderRadius: '6px', whiteSpace: 'nowrap' };
+
+// ── LEVEL UP MODAL ────────────────────────────────────────────────────────────
+
+function LevelUpModal({ draft, accent, onClose, onConfirm }) {
+  const newLevel     = (draft.level || 1) + 1;
+  const charClass    = normalizeClass(draft.class);
+  const hitDie       = CLASS_HIT_DIE[charClass] || 8;
+  const primaryStat  = CLASS_PRIMARY_STAT[charClass] || 'fue';
+  const conMod       = Math.floor(((draft.stats?.con || 10) - 10) / 2);
+  const fmtMod       = n => n >= 0 ? `+${n}` : `${n}`;
+
+  const [step, setStep]           = useState(1);
+  const [asiMode, setAsiMode]     = useState('+2');
+  const [asiStats, setAsiStats]   = useState([primaryStat]);
+  const [hpRoll, setHpRoll]       = useState(null);
+  const [hpType, setHpType]       = useState(null);
+  const [diceDisplay, setDiceDisplay] = useState(null);
+  const [rolling, setRolling]     = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+
+  const newStats = (() => {
+    const s = { ...draft.stats };
+    if (asiMode === 'feat') return s;
+    const delta = asiMode === '+2' ? 2 : 1;
+    asiStats.forEach(st => { s[st] = Math.min(20, (s[st] || 10) + delta); });
+    return s;
+  })();
+
+  const hpGain   = Math.max(1, (hpRoll || 0) + conMod);
+  const newHpMax = (draft.hpMax || 0) + hpGain;
+  const newSlots = computeDefaultSlots(newLevel, draft.class);
+
+  const features  = (LEVEL_FEATURES[charClass] || {})[newLevel] || (LEVEL_FEATURES.generico || {})[newLevel] || [];
+  const quote     = CLASS_QUOTES[charClass] || CLASS_QUOTES.generico;
+  const newProf   = Math.ceil(newLevel / 4) + 1;
+
+  const canProceed = () => {
+    if (step === 1) {
+      if (asiMode === 'feat') return true;
+      if (asiMode === '+2')   return asiStats.length === 1;
+      if (asiMode === '+1+1') return asiStats.length === 2;
+    }
+    if (step === 2) return hpRoll !== null;
+    return true;
+  };
+
+  const toggleStat = (stat) => {
+    if (asiMode === '+2') { setAsiStats([stat]); return; }
+    setAsiStats(prev => {
+      if (prev.includes(stat)) return prev.filter(s => s !== stat);
+      if (prev.length < 2)     return [...prev, stat];
+      return [prev[0], stat];
+    });
+  };
+
+  const doRoll = () => {
+    if (rolling) return;
+    setRolling(true);
+    setHpRoll(null);
+    let ticks = 0;
+    const iv = setInterval(() => {
+      setDiceDisplay(Math.ceil(Math.random() * hitDie));
+      ticks++;
+      if (ticks >= 10) {
+        clearInterval(iv);
+        const final = Math.ceil(Math.random() * hitDie);
+        setDiceDisplay(final);
+        setHpRoll(final);
+        setHpType('roll');
+        setRolling(false);
+      }
+    }, 75);
+  };
+
+  const takeAvg = () => {
+    const avg = Math.floor(hitDie / 2) + 1;
+    setDiceDisplay(avg);
+    setHpRoll(avg);
+    setHpType('average');
+  };
+
+  const handleConfirm = () => {
+    if (confirmed) return;
+    setConfirmed(true);
+    const changes = {
+      level: newLevel,
+      hpMax: newHpMax,
+      stats: asiMode !== 'feat' ? newStats : draft.stats,
+      spellSlots: newSlots,
+    };
+    setTimeout(() => onConfirm(changes), 1400);
+  };
+
+  const STEPS = ['Características', 'Puntos de Golpe', 'Nuevos Recursos', 'Resumen'];
+  const changedStats = asiMode !== 'feat' ? asiStats : [];
+
+  return (
+    <div className="lu-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="lu-container">
+
+        {/* Header */}
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
+          <div style={{ fontFamily:'var(--font-title)', fontSize:'10px', letterSpacing:'3px', color:'var(--gold-1)', textTransform:'uppercase' }}>
+            ✦ Evolución de Personaje
+          </div>
+          <button onClick={onClose} style={{ background:'transparent', border:'none', color:'var(--text-dim)', cursor:'pointer', fontSize:'20px', lineHeight:1, padding:'0 4px' }}>✕</button>
+        </div>
+
+        {/* Stepper */}
+        <div className="lu-stepper">
+          {STEPS.map((label, i) => {
+            const n = i + 1;
+            const isActive = step === n;
+            const isDone   = step > n;
+            return (
+              <React.Fragment key={i}>
+                <div className="lu-step">
+                  <div className="lu-step-num" style={{ borderColor: isActive||isDone ? accent : 'rgba(234,199,94,0.25)', background: isDone ? accent : isActive ? `${accent}22` : 'transparent', color: isDone ? '#000' : isActive ? accent : 'var(--text-dim)' }}>
+                    {isDone ? '✓' : n}
+                  </div>
+                  <span className="lu-step-label" style={{ color: isActive ? accent : 'var(--text-dim)' }}>{label}</span>
+                </div>
+                {i < 3 && <div className="lu-step-line" style={{ background: step > n ? accent : 'rgba(234,199,94,0.18)' }} />}
+              </React.Fragment>
+            );
+          })}
+        </div>
+
+        {/* Content grid */}
+        <div className="lu-grid">
+
+          {/* LEFT: Character portrait card */}
+          <div className="cs-fantasy-card lu-portrait-card">
+            <div className="lu-portrait-img">
+              {draft.portrait
+                ? <img src={draft.portrait} alt={draft.name} />
+                : <span style={{ fontSize:'52px', opacity:0.15 }}>⚔️</span>}
+            </div>
+            <div style={{ padding:'12px 14px' }}>
+              <div style={{ fontFamily:'var(--font-ui)', fontSize:'9px', color:'var(--text-dim)', letterSpacing:'1px', textTransform:'uppercase', marginBottom:'3px' }}>
+                {draft.race} · {draft.class}
+              </div>
+              <div style={{ fontFamily:'var(--font-title)', fontSize:'1.25rem', color:accent, marginBottom:'10px' }}>{draft.name}</div>
+              <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'12px', justifyContent:'center' }}>
+                <div className="lu-lvl-badge">
+                  <strong style={{ fontFamily:'var(--font-title)', fontSize:'1.8rem', color:'var(--text-main)', lineHeight:1 }}>{draft.level}</strong>
+                  <span style={{ fontFamily:'var(--font-ui)', fontSize:'8px', color:'var(--gold-2)', letterSpacing:'1px', textTransform:'uppercase', marginTop:'2px' }}>Actual</span>
+                </div>
+                <div style={{ fontFamily:'var(--font-title)', fontSize:'1.3rem', color:accent }}>»»</div>
+                <div className="lu-lvl-badge">
+                  <strong style={{ fontFamily:'var(--font-title)', fontSize:'1.8rem', color:'var(--green-1)', lineHeight:1 }}>{newLevel}</strong>
+                  <span style={{ fontFamily:'var(--font-ui)', fontSize:'8px', color:'var(--gold-2)', letterSpacing:'1px', textTransform:'uppercase', marginTop:'2px' }}>Nuevo</span>
+                </div>
+              </div>
+              <div style={{ fontFamily:'var(--font-ui)', fontSize:'11px', color:'var(--text-dim)', fontStyle:'italic', lineHeight:'1.5', textAlign:'center', borderTop:'1px solid rgba(234,199,94,0.12)', paddingTop:'10px' }}>
+                "{quote}"
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: Step content */}
+          <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
+
+            {/* ─ STEP 1: ASI ─ */}
+            {step === 1 && (
+              <div className="cs-fantasy-card">
+                <div className="cs-card-header">
+                  <GameIcon author={ICONS.levelup.author} name={ICONS.levelup.name} size={16} color="c7a242" />
+                  <h2 className="cs-card-title">1. Aumento de Características / Dote</h2>
+                  <div className="cs-card-divider" />
+                </div>
+                <p style={{ fontFamily:'var(--font-ui)', fontSize:'12px', color:'var(--text-dim)', marginBottom:'12px' }}>
+                  Al alcanzar el nivel {newLevel} podés mejorar tus habilidades o elegir una dote.
+                </p>
+
+                {/* Mode selector */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'8px', marginBottom:'14px' }}>
+                  {[
+                    { mode:'+2',   label:'+2',  sub:'Un atributo' },
+                    { mode:'+1+1', label:'+1+1',sub:'Dos atributos' },
+                    { mode:'feat', label:'✦',   sub:'Elegir Dote' },
+                  ].map(({ mode, label, sub }) => (
+                    <button key={mode}
+                      onClick={() => { setAsiMode(mode); setAsiStats(mode==='feat'?[]:[asiStats[0]||primaryStat]); }}
+                      style={{ padding:'12px 8px', background:asiMode===mode?`${accent}22`:'rgba(0,0,0,0.3)', border:`1px solid ${asiMode===mode?accent:'rgba(234,199,94,0.2)'}`, borderRadius:'10px', cursor:'pointer', textAlign:'center', transition:'all 0.2s' }}>
+                      <div style={{ fontFamily:'var(--font-title)', fontSize:'1.4rem', color:asiMode===mode?accent:'var(--text-main)', marginBottom:'4px' }}>{label}</div>
+                      <div style={{ fontFamily:'var(--font-ui)', fontSize:'10px', color:'var(--text-dim)' }}>{sub}</div>
+                    </button>
+                  ))}
+                </div>
+
+                {asiMode === 'feat' && (
+                  <div style={{ padding:'12px', background:'rgba(0,0,0,0.3)', borderRadius:'8px', fontFamily:'var(--font-ui)', fontSize:'12px', color:'var(--text-dim)', fontStyle:'italic' }}>
+                    Sistema de Dotes — próximamente. Elegí +2 o +1+1 por ahora.
+                  </div>
+                )}
+
+                {(asiMode === '+2' || asiMode === '+1+1') && (
+                  <div>
+                    <div style={{ fontFamily:'var(--font-ui)', fontSize:'9px', letterSpacing:'1.5px', color:'var(--text-dim)', textTransform:'uppercase', marginBottom:'8px' }}>
+                      {asiMode === '+2' ? 'Elegí el atributo a subir +2' : 'Elegí los dos atributos a subir +1'}
+                      {asiMode === '+1+1' && <span style={{ color:accent }}> ({asiStats.length}/2)</span>}
+                    </div>
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:'6px', marginBottom:'12px' }}>
+                      {STAT_KEYS.map(stat => {
+                        const val = draft.stats?.[stat] || 10;
+                        const sel = asiStats.includes(stat);
+                        const maxed = val >= 20;
+                        return (
+                          <button key={stat} disabled={maxed}
+                            onClick={() => toggleStat(stat)}
+                            style={{ padding:'8px 4px', background:sel?`${accent}25`:'rgba(0,0,0,0.3)', border:`1px solid ${sel?accent:'rgba(234,199,94,0.2)'}`, borderRadius:'8px', cursor:maxed?'not-allowed':'pointer', textAlign:'center', opacity:maxed?0.4:1, transition:'all 0.15s' }}>
+                            <div style={{ fontFamily:'var(--font-title)', fontSize:'8px', letterSpacing:'1px', color:sel?accent:'var(--text-dim)', textTransform:'uppercase' }}>{STAT_ABBR[stat]}</div>
+                            <div style={{ fontFamily:'var(--font-title)', fontSize:'1.2rem', color:sel?accent:'var(--text-main)' }}>{val}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {changedStats.length > 0 && (
+                      <div style={{ background:'rgba(0,0,0,0.3)', border:'1px solid rgba(234,199,94,0.15)', borderRadius:'8px', padding:'10px 12px' }}>
+                        <div style={{ fontFamily:'var(--font-ui)', fontSize:'9px', letterSpacing:'1.5px', color:'var(--text-dim)', textTransform:'uppercase', marginBottom:'8px' }}>Vista previa de cambios</div>
+                        {changedStats.map(stat => {
+                          const delta = asiMode === '+2' ? 2 : 1;
+                          const oldV = draft.stats?.[stat] || 10;
+                          const newV = Math.min(20, oldV + delta);
+                          const oldM = Math.floor((oldV - 10) / 2);
+                          const newM = Math.floor((newV - 10) / 2);
+                          return (
+                            <div key={stat} style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'4px', fontFamily:'var(--font-ui)', fontSize:'12px' }}>
+                              <span style={{ fontFamily:'var(--font-title)', fontSize:'9px', color:'var(--text-dim)', width:'28px' }}>{STAT_ABBR[stat]}</span>
+                              <span style={{ color:'var(--text-main)' }}>{oldV} ({fmtMod(oldM)})</span>
+                              <span style={{ color:'var(--text-dim)' }}>→</span>
+                              <span style={{ color:'var(--green-1)', fontWeight:'700' }}>{newV} ({fmtMod(newM)})</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ─ STEP 2: HP ─ */}
+            {step === 2 && (
+              <div className="cs-fantasy-card">
+                <div className="cs-card-header">
+                  <GameIcon author={ICONS.heart.author} name={ICONS.heart.name} size={16} color="a6ee81" />
+                  <h2 className="cs-card-title">2. Puntos de Golpe</h2>
+                  <div className="cs-card-divider" />
+                </div>
+
+                <div style={{ textAlign:'center', marginBottom:'16px' }}>
+                  <div style={{ fontFamily:'var(--font-title)', fontSize:'10px', letterSpacing:'2px', color:'var(--text-dim)', textTransform:'uppercase', marginBottom:'10px' }}>
+                    Dado de golpe: d{hitDie}
+                  </div>
+                  <div className={`lu-dice${rolling?' lu-dice-rolling':''}`} style={{ borderColor:accent, color:diceDisplay?(hpRoll?'var(--green-1)':accent):'var(--text-dim)' }}>
+                    {diceDisplay ?? `d${hitDie}`}
+                  </div>
+                  {hpRoll !== null && (
+                    <div style={{ fontFamily:'var(--font-ui)', fontSize:'12px', color:'var(--text-dim)', marginTop:'8px' }}>
+                      {fmtMod(conMod)} CON → <strong style={{ color:'var(--green-1)' }}>+{hpGain} PG ganados</strong>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'14px' }}>
+                  <button onClick={doRoll} disabled={rolling}
+                    style={{ padding:'12px', background:hpType==='roll'?`${accent}22`:'rgba(0,0,0,0.3)', border:`1px solid ${hpType==='roll'?accent:'rgba(234,199,94,0.2)'}`, borderRadius:'10px', cursor:rolling?'wait':'pointer', fontFamily:'var(--font-title)', fontSize:'0.85rem', letterSpacing:'1px', color:hpType==='roll'?accent:'var(--gold-2)', textTransform:'uppercase', transition:'all 0.2s' }}>
+                    {rolling ? 'Tirando...' : '🎲 Tirar el dado'}
+                  </button>
+                  <button onClick={takeAvg}
+                    style={{ padding:'12px', background:hpType==='average'?`${accent}22`:'rgba(0,0,0,0.3)', border:`1px solid ${hpType==='average'?accent:'rgba(234,199,94,0.2)'}`, borderRadius:'10px', cursor:'pointer', fontFamily:'var(--font-title)', fontSize:'0.85rem', letterSpacing:'1px', color:hpType==='average'?accent:'var(--text-muted)', textTransform:'uppercase', transition:'all 0.2s' }}>
+                    Promedio ({Math.floor(hitDie/2)+1})
+                  </button>
+                </div>
+
+                {hpRoll !== null && (
+                  <div style={{ display:'flex', alignItems:'center', gap:'16px', padding:'12px', background:'rgba(0,0,0,0.3)', border:'1px solid rgba(166,238,129,0.2)', borderRadius:'8px' }}>
+                    <div style={{ textAlign:'center' }}>
+                      <div style={{ fontFamily:'var(--font-ui)', fontSize:'9px', color:'var(--text-dim)', textTransform:'uppercase', letterSpacing:'1px' }}>PG Actuales</div>
+                      <div style={{ fontFamily:'var(--font-title)', fontSize:'1.6rem', color:'var(--text-main)' }}>{draft.hpMax}</div>
+                    </div>
+                    <div style={{ fontFamily:'var(--font-title)', fontSize:'1.4rem', color:accent }}>→</div>
+                    <div style={{ textAlign:'center' }}>
+                      <div style={{ fontFamily:'var(--font-ui)', fontSize:'9px', color:'var(--text-dim)', textTransform:'uppercase', letterSpacing:'1px' }}>PG Nuevos</div>
+                      <div style={{ fontFamily:'var(--font-title)', fontSize:'1.6rem', color:'var(--green-1)', fontWeight:'700' }}>{newHpMax}</div>
+                    </div>
+                    <div style={{ fontFamily:'var(--font-ui)', fontSize:'11px', color:'var(--text-dim)', flex:1 }}>
+                      d{hitDie}={hpRoll} {fmtMod(conMod)} CON = +{hpGain}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ─ STEP 3: New features ─ */}
+            {step === 3 && (
+              <div className="cs-fantasy-card">
+                <div className="cs-card-header">
+                  <GameIcon author={ICONS.levelup.author} name={ICONS.levelup.name} size={16} color="c7a242" />
+                  <h2 className="cs-card-title">3. Nuevos Recursos — Nivel {newLevel}</h2>
+                  <div className="cs-card-divider" />
+                </div>
+
+                {features.length === 0 && (
+                  <p style={{ fontFamily:'var(--font-ui)', fontSize:'12px', color:'var(--text-dim)', fontStyle:'italic' }}>
+                    Sin nuevas habilidades de clase en este nivel. Consultá el Manual del Jugador para los detalles de tu clase.
+                  </p>
+                )}
+
+                <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+                  {features.map((feat, i) => {
+                    const ico = ICONS[feat.icon] || ICONS.levelup;
+                    return (
+                      <div key={i} style={{ display:'flex', gap:'12px', padding:'12px', background:'rgba(0,0,0,0.3)', border:`1px solid ${accent}33`, borderRadius:'10px' }}>
+                        <div style={{ flexShrink:0, paddingTop:'2px' }}>
+                          <GameIcon author={ico.author} name={ico.name} size={22} color="c7a242" />
+                        </div>
+                        <div>
+                          <div style={{ fontFamily:'var(--font-title)', fontSize:'13px', color:accent, marginBottom:'3px' }}>{feat.label}</div>
+                          <div style={{ fontFamily:'var(--font-ui)', fontSize:'12px', color:'var(--text-soft)', lineHeight:'1.4' }}>{feat.desc}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Spell slots preview */}
+                {Object.keys(newSlots).length > 0 && (
+                  <div style={{ marginTop:'14px', paddingTop:'12px', borderTop:'1px solid rgba(234,199,94,0.12)' }}>
+                    <div style={{ fontFamily:'var(--font-ui)', fontSize:'9px', letterSpacing:'1.5px', color:'var(--text-dim)', textTransform:'uppercase', marginBottom:'8px' }}>Espacios de Conjuro Nv.{newLevel}</div>
+                    <div style={{ display:'flex', gap:'8px', flexWrap:'wrap' }}>
+                      {Object.entries(newSlots).map(([lvl, data]) => {
+                        const oldSlots = computeDefaultSlots(draft.level||1, draft.class);
+                        const oldTotal = oldSlots[lvl]?.total || 0;
+                        const isNew = data.total > oldTotal;
+                        return (
+                          <div key={lvl} style={{ padding:'6px 10px', background:isNew?`${accent}18`:'rgba(0,0,0,0.25)', border:`1px solid ${isNew?accent+'55':'rgba(234,199,94,0.15)'}`, borderRadius:'8px', textAlign:'center', minWidth:'44px' }}>
+                            <div style={{ fontFamily:'var(--font-title)', fontSize:'8px', color:'var(--text-dim)', letterSpacing:'1px', textTransform:'uppercase' }}>Nv.{lvl}</div>
+                            <div style={{ fontFamily:'var(--font-title)', fontSize:'1.2rem', color:isNew?accent:'var(--text-main)' }}>
+                              {oldTotal > 0 && oldTotal !== data.total ? `${oldTotal}→` : ''}<strong>{data.total}</strong>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ─ STEP 4: Summary + Confirm ─ */}
+            {step === 4 && (
+              <div className="cs-fantasy-card" style={{ position:'relative', overflow:'hidden' }}>
+                {confirmed && <div className="lu-particles" />}
+                <div className="cs-card-header">
+                  <GameIcon author={ICONS.levelup.author} name={ICONS.levelup.name} size={16} color="c7a242" />
+                  <h2 className="cs-card-title">4. Resumen Final</h2>
+                  <div className="cs-card-divider" />
+                </div>
+
+                <div style={{ textAlign:'center', marginBottom:'16px' }}>
+                  <div className={`lu-lvl-badge-big${confirmed?' lu-glow':''}`} style={{ borderColor:accent, background:`${accent}18`, color:accent }}>
+                    <div style={{ fontFamily:'var(--font-title)', fontSize:'2.8rem', lineHeight:1 }}>{newLevel}</div>
+                    <div style={{ fontFamily:'var(--font-ui)', fontSize:'10px', letterSpacing:'2px', textTransform:'uppercase', marginTop:'4px' }}>¡Nivel Alcanzado!</div>
+                  </div>
+                </div>
+
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px', marginBottom:'16px' }}>
+                  {[
+                    { label:'PG Máx', oldV:draft.hpMax, newV:newHpMax },
+                    { label:'Profi.', oldV:`+${Math.ceil((draft.level||1)/4)+1}`, newV:`+${newProf}` },
+                    ...changedStats.map(stat => {
+                      const delta = asiMode === '+2' ? 2 : 1;
+                      const ov = draft.stats?.[stat] || 10;
+                      const nv = Math.min(20, ov + delta);
+                      return { label:STAT_ABBR[stat], oldV:ov, newV:nv };
+                    }),
+                  ].map(({ label, oldV, newV }) => (
+                    <div key={label} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'8px 12px', background:'rgba(0,0,0,0.3)', borderRadius:'8px', border:'1px solid rgba(234,199,94,0.15)' }}>
+                      <span style={{ fontFamily:'var(--font-title)', fontSize:'9px', letterSpacing:'1px', color:'var(--text-dim)', textTransform:'uppercase' }}>{label}</span>
+                      <span style={{ fontFamily:'var(--font-title)', fontSize:'13px' }}>
+                        <span style={{ color:'var(--text-muted)' }}>{oldV}</span>
+                        <span style={{ color:'var(--text-dim)', margin:'0 6px' }}>→</span>
+                        <span style={{ color:'var(--green-1)', fontWeight:'700' }}>{newV}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <button onClick={handleConfirm} disabled={confirmed} className="lu-confirm-btn"
+                  style={{ borderColor:confirmed?'rgba(234,199,94,0.3)':accent, color:confirmed?'var(--text-dim)':accent, background:confirmed?'rgba(0,0,0,0.2)':`${accent}20` }}>
+                  {confirmed ? '✓ Guardando...' : '✦ Confirmar Evolución'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div style={{ display:'flex', justifyContent:'space-between', marginTop:'12px', gap:'8px' }}>
+          <button onClick={step > 1 ? () => setStep(s => s - 1) : onClose}
+            style={{ background:'transparent', border:'1px solid rgba(234,199,94,0.2)', color:'var(--text-muted)', fontFamily:'var(--font-ui)', fontSize:'11px', padding:'9px 20px', cursor:'pointer', borderRadius:'8px' }}>
+            {step > 1 ? '← Anterior' : 'Cancelar'}
+          </button>
+          {step < 4 && (
+            <button onClick={() => setStep(s => s + 1)} disabled={!canProceed()}
+              style={{ background:canProceed()?`${accent}22`:'rgba(0,0,0,0.2)', border:`1px solid ${canProceed()?accent+'88':'rgba(234,199,94,0.15)'}`, color:canProceed()?accent:'var(--text-dim)', fontFamily:'var(--font-title)', fontSize:'0.8rem', letterSpacing:'0.12em', textTransform:'uppercase', padding:'9px 24px', cursor:canProceed()?'pointer':'not-allowed', borderRadius:'8px', transition:'all 0.2s' }}>
+              Siguiente →
+            </button>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+}
