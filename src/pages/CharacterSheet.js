@@ -338,7 +338,7 @@ export default function CharacterSheet({ user }) {
 
   const handleLevelUpConfirm = async (changes) => {
     setSaving(true);
-    const newXpNext = XP_THRESHOLDS[(changes.level || 1) + 1] ?? null;
+    const newXpNext = XP_THRESHOLDS[(parseInt(changes.level) || 1) + 1] ?? null;
     const update_data = { ...changes };
     if (newXpNext != null) update_data.xpNext = newXpNext;
     await updateDoc(doc(db, 'characters', id), { ...update_data, updatedAt: serverTimestamp() });
@@ -527,7 +527,9 @@ export default function CharacterSheet({ user }) {
 
   const statMod    = (val) => { const m = Math.floor((val - 10) / 2); return m >= 0 ? `+${m}` : `${m}`; };
   const prof       = profBonus(draft.level);
-  const canLevelUp = isOwner && !editing && (draft.level || 1) < 20 && (draft.xp || 0) >= (XP_THRESHOLDS[(draft.level || 1) + 1] ?? Infinity);
+  const _lvl = parseInt(draft.level) || 1;
+  const _xpThreshold = draft.xpNext || XP_THRESHOLDS[_lvl + 1] || 2700;
+  const canLevelUp = isOwner && !editing && _lvl < 20 && (parseInt(draft.xp) || 0) >= _xpThreshold;
   const hpPct      = Math.min(100, Math.round(((draft.hp || 0) / (draft.hpMax || 1)) * 100));
   const xpPct      = Math.min(100, Math.round(((draft.xp || 0) / (draft.xpNext || 2700)) * 100));
   const passivePerc = 10 + Math.floor(((draft.stats?.sab || 10) - 10) / 2) + (draft.skills?.percepcion ? prof : 0);
@@ -2553,7 +2555,7 @@ const pBtn = { background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(234,199,94
 // ── LEVEL UP MODAL ────────────────────────────────────────────────────────────
 
 function LevelUpModal({ draft, accent, onClose, onConfirm }) {
-  const newLevel     = (draft.level || 1) + 1;
+  const newLevel     = (parseInt(draft.level) || 1) + 1;
   const charClass    = normalizeClass(draft.class);
   const hitDie       = CLASS_HIT_DIE[charClass] || 8;
   const primaryStat  = CLASS_PRIMARY_STAT[charClass] || 'fue';
