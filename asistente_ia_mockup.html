@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Asistente IA — Maqueta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cinzel+Decorative:wght@700&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0b0906;
+    --panel:#15110a;
+    --panel-raised:#1c1610;
+    --gold:#c9a449;
+    --gold-bright:#e3c878;
+    --gold-dim:#6e5a2c;
+    --ember:#b8643f;
+    --ember-dim:#7a4530;
+    --parchment:#e9ddc2;
+    --parchment-dim:#a99d80;
+    --line:#332a1c;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at top, rgba(201,164,73,0.06), transparent 60%),
+      var(--void);
+    font-family:'Crimson Pro', serif;
+    color:var(--parchment);
+    padding:32px 16px;
+    min-height:100vh;
+  }
+  .app{
+    max-width:760px;
+    margin:0 auto;
+    border:1px solid var(--line);
+    background:var(--panel);
+    border-radius:6px;
+    overflow:hidden;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,0.7);
+  }
+
+  /* ---- TABS ---- */
+  .tabs{
+    display:flex;
+    gap:2px;
+    background:var(--void);
+    padding:0 8px;
+    overflow-x:auto;
+  }
+  .tab{
+    font-family:'Cinzel', serif;
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--parchment-dim);
+    padding:16px 14px 13px;
+    white-space:nowrap;
+    border-bottom:2px solid transparent;
+    position:relative;
+  }
+  .tab.active{
+    color:var(--gold-bright);
+    border-bottom-color:var(--gold);
+  }
+  .tab.active::after{
+    content:'';
+    position:absolute;
+    left:50%; top:8px;
+    width:3px;height:3px;border-radius:50%;
+    background:var(--gold-bright);
+    box-shadow:0 0 6px var(--gold-bright);
+  }
+
+  /* ---- HEADER / HINT ---- */
+  .hint{
+    padding:18px 22px 14px;
+    font-style:italic;
+    font-size:13.5px;
+    color:var(--parchment-dim);
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .hint svg{flex:none;opacity:.7}
+
+  /* ---- THREAD ---- */
+  .thread{
+    padding:22px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    max-height:560px;
+    overflow-y:auto;
+  }
+
+  /* divider marking a new exchange */
+  .turn-mark{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:var(--gold-dim);
+    margin:4px 0;
+  }
+  .turn-mark::before,.turn-mark::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:linear-gradient(to var(--dir,right), var(--line), transparent);
+  }
+  .turn-mark .sigil{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-family:'Cinzel',serif;opacity:.65}
+
+  /* DM message: spoken aloud, right-leaning, ember wax-seal */
+  .msg-dm{
+    align-self:flex-end;
+    max-width:78%;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+  .seal{
+    flex:none;
+    width:30px;height:30px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--ember) 0%, var(--ember-dim) 70%);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Cinzel Decorative',serif;
+    font-size:13px;color:#1a0d06;
+    box-shadow:0 0 0 1px var(--ember-dim), 0 2px 8px rgba(184,100,63,0.35);
+  }
+  .bubble-dm{
+    background:linear-gradient(160deg, #241712, #1a110d);
+    border:1px solid var(--ember-dim);
+    border-radius:4px 12px 12px 12px;
+    padding:11px 15px;
+    font-size:15px;
+    line-height:1.5;
+    color:#f1e3d4;
+  }
+  .bubble-dm .who{
+    display:block;
+    font-family:'Cinzel',serif;
+    font-size:10px;
+    letter-spacing:.14em;
+    color:var(--ember);
+    margin-bottom:4px;
+  }
+
+  /* Assistant message: illuminated scroll */
+  .msg-ai{
+    align-self:flex-start;
+    max-width:88%;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .rune{
+    flex:none;
+    width:34px;height:34px;
+    border-radius:50%;
+    background:var(--panel-raised);
+    border:1px solid var(--gold-dim);
+    display:flex;align-items:center;justify-content:center;
+    position:relative;
+  }
+  .rune::after{
+    content:'';
+    position:absolute;
+    width:8px;height:8px;border-radius:50%;
+    background:var(--gold-bright);
+    box-shadow:0 0 10px 2px var(--gold-bright);
+    animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{opacity:.45;transform:scale(0.85);}
+    50%{opacity:1;transform:scale(1.1);}
+  }
+  .scroll{
+    background:
+      linear-gradient(160deg, rgba(201,164,73,0.05), transparent 40%),
+      var(--panel-raised);
+    border:1px solid var(--line);
+    border-left:2px solid var(--gold);
+    border-radius:2px 10px 10px 10px;
+    padding:14px 18px;
+    font-size:15.5px;
+    line-height:1.62;
+  }
+  .scroll .who{
+    display:flex;align-items:center;gap:6px;
+    font-family:'Cinzel',serif;
+    font-size:10px;
+    letter-spacing:.14em;
+    color:var(--gold-bright);
+    margin-bottom:8px;
+  }
+  .scroll h3{
+    font-family:'Cinzel',serif;
+    font-size:14px;
+    letter-spacing:.04em;
+    color:var(--gold-bright);
+    margin:0 0 8px;
+    font-weight:600;
+  }
+  .scroll p{margin:0 0 10px;color:var(--parchment);}
+  .scroll p:last-child{margin-bottom:0;}
+  .scroll strong{color:var(--gold-bright);font-weight:600;}
+  .scroll ul{margin:0 0 10px;padding-left:0;list-style:none;}
+  .scroll li{
+    padding-left:18px;
+    position:relative;
+    margin-bottom:6px;
+    color:var(--parchment);
+  }
+  .scroll li::before{
+    content:'❖';
+    position:absolute;left:0;top:0;
+    color:var(--gold);
+    font-size:11px;
+  }
+  .scroll .cat{
+    font-family:'Cinzel',serif;
+    font-size:11.5px;
+    letter-spacing:.06em;
+    color:var(--ember);
+    text-transform:uppercase;
+  }
+
+  /* thinking state */
+  .thinking .scroll{
+    display:flex; align-items:center; gap:8px;
+    font-style:italic; color:var(--parchment-dim);
+  }
+  .dot{width:5px;height:5px;border-radius:50%;background:var(--gold-dim);animation:bounce 1.2s infinite ease-in-out;}
+  .dot:nth-child(2){animation-delay:.15s;}
+  .dot:nth-child(3){animation-delay:.3s;}
+  @keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.4;}40%{transform:translateY(-4px);opacity:1;}}
+
+  /* ---- INPUT ---- */
+  .input-row{
+    border-top:1px solid var(--line);
+    padding:16px 20px;
+    display:flex;
+    gap:10px;
+    background:var(--void);
+  }
+  .input-row input{
+    flex:1;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:13px 16px;
+    color:var(--parchment);
+    font-family:'Crimson Pro',serif;
+    font-size:14.5px;
+    outline:none;
+  }
+  .input-row input::placeholder{color:var(--parchment-dim);font-style:italic;}
+  .input-row input:focus{border-color:var(--gold-dim);}
+  .send{
+    flex:none;
+    background:linear-gradient(160deg,var(--gold-bright),var(--gold));
+    color:#1a1206;
+    border:none;
+    border-radius:4px;
+    padding:0 20px;
+    font-family:'Cinzel',serif;
+    font-size:11.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    font-weight:600;
+    cursor:pointer;
+    display:flex;align-items:center;gap:6px;
+  }
+  .send:hover{filter:brightness(1.08);}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="tabs">
+    <div class="tab">Resumen</div>
+    <div class="tab">Combate</div>
+    <div class="tab">NPCs</div>
+    <div class="tab">Facciones</div>
+    <div class="tab">Ubicaciones</div>
+    <div class="tab active">Asistente IA</div>
+  </div>
+
+  <div class="hint">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c9a449" stroke-width="2"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/></svg>
+    Preguntá sobre reglas de D&D 2024, los personajes o la campaña. El contexto de la party y las últimas sesiones ya está incluido.
+  </div>
+
+  <div class="thread">
+
+    <div class="msg-dm">
+      <div class="bubble-dm">
+        <span class="who">DM</span>
+        Quiero que la party se cague a chirlo on los caballeros de solamnia. Me ayudas a armar la proxima sesion?
+      </div>
+      <div class="seal">DM</div>
+    </div>
+
+    <div class="turn-mark"><span class="sigil">⟡ respuesta del oráculo ⟡</span></div>
+
+    <div class="msg-ai">
+      <div class="rune"></div>
+      <div class="scroll">
+        <span class="who">✦ Asistente</span>
+        <h3>¡Vamos a armar un enfrentamiento épico con los Caballeros de Solamnia!</h3>
+        <p>Antes de armar la sesión, necesito hacerte algunas preguntas para que sea lo más personalizada posible:</p>
+        <p class="cat">Del contexto</p>
+        <ul>
+          <li>¿En qué mundo o escenario están jugando? <em>(¿Dragonlance, mundo propio, otro?)</em></li>
+          <li>¿Qué pasó hasta ahora con los Caballeros? ¿Ya tuvieron algún roce o es el primer encuentro?</li>
+          <li>¿Cuál es el nivel de tensión que buscás? ¿Conflicto narrativo, combate directo, o ambas?</li>
+        </ul>
+        <p class="cat">Del tono</p>
+        <p>Contame también si querés que sea una victoria clara para la party, algo más ambiguo, o que dependa de sus decisiones en la mesa.</p>
+      </div>
+    </div>
+
+    <div class="msg-ai thinking">
+      <div class="rune"></div>
+      <div class="scroll">
+        consultando el manual <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="input-row">
+    <input type="text" placeholder="Preguntá sobre reglas, estrategias, la campaña...">
+    <button class="send">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+      Consultar
+    </button>
+  </div>
+</div>
+
+</body>
+</html>
