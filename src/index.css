@@ -47,6 +47,47 @@ select:focus {
 }
 .fade-in { animation: fadeIn 0.4s ease-out; }
 
+/* Party Hub — responsive */
+@media (max-width: 960px) {
+  /* Stack aside below main */
+  .party-layout-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .party-aside-sticky {
+    position: static !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .campaign-header-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .campaign-actions-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .dashboard-grid-2col {
+    grid-template-columns: 1fr !important;
+  }
+  .dashboard-grid-2col [data-span2] {
+    grid-column: span 1 !important;
+  }
+  .roster-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .roster-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Quick action hover */
+button.quick-action-btn:hover {
+  border-color: rgba(201,168,76,0.4) !important;
+  background: rgba(201,168,76,0.07) !important;
+}
+
 /* Combat active-row pulse */
 @keyframes combat-glow {
   0%, 100% { box-shadow: 0 0 8px rgba(201,164,73,0.15); }
