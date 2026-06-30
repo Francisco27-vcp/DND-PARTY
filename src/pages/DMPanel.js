@@ -1,22 +1,23 @@
-// src/pages/DMPanel.js
+// src/pages/DMPanel.js — DM Command Center
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import TabResumen from './dm/TabResumen';
-import TabCombate from './dm/TabCombate';
-import TabNPCs from './dm/TabNPCs';
-import TabFacciones from './dm/TabFacciones';
-import TabUbicaciones from './dm/TabUbicaciones';
+
+import TabResumen   from './dm/TabResumen';
+import TabSesiones  from './dm/TabSesiones';
+import TabMundo     from './dm/TabMundo';
+import TabNotasDM   from './dm/TabNotasDM';
+import TabCombate   from './dm/TabCombate';
 import TabAsistente from './dm/TabAsistente';
 
 const TABS = [
-  { id: 'resumen', label: 'Resumen' },
-  { id: 'combate', label: 'Combate' },
-  { id: 'npcs', label: 'NPCs' },
-  { id: 'facciones', label: 'Facciones' },
-  { id: 'ubicaciones', label: 'Ubicaciones' },
-  { id: 'asistente', label: 'Asistente IA' },
+  { id: 'resumen',   label: 'Resumen',      icon: '👁' },
+  { id: 'sesiones',  label: 'Sesiones',     icon: '📜' },
+  { id: 'mundo',     label: 'Mundo',        icon: '🌍' },
+  { id: 'notas',     label: 'Notas DM',     icon: '🔒' },
+  { id: 'combate',   label: 'Combate',      icon: '⚔' },
+  { id: 'asistente', label: 'Asistente IA', icon: '✦' },
 ];
 
 export default function DMPanel({ user }) {
@@ -48,7 +49,7 @@ export default function DMPanel({ user }) {
       <div style={s.deniedWrap} className="fade-in">
         <div style={s.deniedGem}>🔒</div>
         <div style={s.deniedTitle}>Acceso restringido</div>
-        <p style={s.deniedText}>Esta sección es solo para Dungeon Masters. Si creés que esto es un error, actualizá tu rol en tu perfil.</p>
+        <p style={s.deniedText}>Esta sección es solo para Dungeon Masters.</p>
         <button style={s.deniedBtn} onClick={() => navigate('/perfil')}>Ir a tu perfil</button>
       </div>
     );
@@ -56,30 +57,41 @@ export default function DMPanel({ user }) {
 
   return (
     <div style={s.page} className="fade-in">
-      <div style={s.hero}>
-        <div style={s.heroLabel}>Solo para el ojo que todo ve</div>
-        <h1 style={s.heroTitle}>PANEL DEL DM</h1>
-      </div>
+      {/* ── HEADER ── */}
+      <header style={s.header}>
+        <div style={s.headerLeft}>
+          <div style={s.eyebrow}>Solo para el ojo que todo ve</div>
+          <h1 style={s.title}>PANEL DEL DM</h1>
+        </div>
+        <div style={s.headerRight}>
+          <button style={s.partyViewBtn} onClick={() => navigate('/')}>
+            Ver vista de party →
+          </button>
+        </div>
+      </header>
 
-      <div style={s.tabBar}>
+      {/* ── TABS ── */}
+      <nav style={s.tabBar}>
         {TABS.map(tab => (
           <button
             key={tab.id}
             style={{ ...s.tabBtn, ...(activeTab === tab.id ? s.tabActive : {}) }}
             onClick={() => setActiveTab(tab.id)}
           >
-            {tab.label}
+            <span style={s.tabIcon}>{tab.icon}</span>
+            <span>{tab.label}</span>
           </button>
         ))}
-      </div>
+      </nav>
 
-      <div style={s.tabContent}>
-        {activeTab === 'resumen'     && <TabResumen navigate={navigate} />}
-        {activeTab === 'combate'     && <TabCombate />}
-        {activeTab === 'npcs'        && <TabNPCs />}
-        {activeTab === 'facciones'   && <TabFacciones />}
-        {activeTab === 'ubicaciones' && <TabUbicaciones />}
-        {activeTab === 'asistente'   && <TabAsistente />}
+      {/* ── CONTENT ── */}
+      <div style={s.content}>
+        {activeTab === 'resumen'   && <TabResumen   navigate={navigate} user={user} />}
+        {activeTab === 'sesiones'  && <TabSesiones  user={user} />}
+        {activeTab === 'mundo'     && <TabMundo />}
+        {activeTab === 'notas'     && <TabNotasDM   user={user} />}
+        {activeTab === 'combate'   && <TabCombate />}
+        {activeTab === 'asistente' && <TabAsistente />}
       </div>
 
       <div style={{ height: '80px' }} />
@@ -88,18 +100,29 @@ export default function DMPanel({ user }) {
 }
 
 const s = {
-  page: { maxWidth: '900px', margin: '0 auto', padding: '0 16px' },
+  page: { maxWidth: '1300px', margin: '0 auto', padding: '0 20px' },
   loading: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', fontFamily: 'Cinzel,serif', color: 'var(--gold-dim)', letterSpacing: '3px', fontSize: '11px' },
-  hero: { textAlign: 'center', padding: '40px 20px 20px' },
-  heroLabel: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '4px', color: 'var(--gold-dim)', textTransform: 'uppercase', marginBottom: '8px' },
-  heroTitle: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(26px,6vw,42px)', fontWeight: '900', letterSpacing: '6px', color: 'var(--gold-bright)', textShadow: '0 0 30px rgba(227,200,120,0.3)', margin: 0 },
+
+  // Header
+  header: { display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '32px 0 20px', borderBottom: '1px solid rgba(201,168,76,0.15)' },
+  headerLeft: { display: 'flex', flexDirection: 'column', gap: '4px' },
+  headerRight: {},
+  eyebrow: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '4px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
+  title: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(22px,4vw,36px)', fontWeight: '900', letterSpacing: '6px', color: 'var(--gold-bright)', textShadow: '0 0 30px rgba(227,200,120,0.25)', margin: 0 },
+  partyViewBtn: { background: 'transparent', border: '1px solid rgba(201,168,76,0.25)', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', padding: '8px 16px', cursor: 'pointer', textTransform: 'uppercase', borderRadius: '4px' },
+
+  // Tabs
+  tabBar: { display: 'flex', gap: '0', borderBottom: '1px solid rgba(201,168,76,0.12)', marginTop: '20px', overflowX: 'auto' },
+  tabBtn: { display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', textTransform: 'uppercase', padding: '12px 20px', cursor: 'pointer', background: 'transparent', border: 'none', borderBottom: '2px solid transparent', color: 'var(--gold-dim)', whiteSpace: 'nowrap', transition: 'color 0.2s', marginBottom: '-1px' },
+  tabActive: { color: 'var(--gold-bright)', borderBottomColor: 'var(--gold-2, #c7a242)' },
+  tabIcon: { fontSize: '14px' },
+
+  content: { paddingTop: '28px', minHeight: '500px' },
+
+  // Access denied
   deniedWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: '20px', gap: '6px' },
   deniedGem: { fontSize: '32px', marginBottom: '8px', opacity: 0.6 },
-  deniedTitle: { fontFamily: 'Cinzel,serif', fontSize: '18px', fontWeight: '700', color: 'var(--ember)', letterSpacing: '2px', textTransform: 'uppercase' },
-  deniedText: { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--parchment-dim)', maxWidth: '380px', lineHeight: '1.6', margin: '8px 0 16px' },
-  deniedBtn: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--parchment-dim)', fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '2px', padding: '12px 20px', cursor: 'pointer', textTransform: 'uppercase' },
-  tabBar: { display: 'flex', borderBottom: '1px solid var(--line)', marginBottom: '28px', overflowX: 'auto', marginTop: '28px' },
-  tabBtn: { fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', padding: '12px 18px', cursor: 'pointer', background: 'transparent', border: 'none', borderBottom: '2px solid transparent', color: 'var(--gold-dim)', whiteSpace: 'nowrap', transition: 'color 0.2s' },
-  tabActive: { color: 'var(--gold-bright)', borderBottomColor: 'var(--gold)' },
-  tabContent: { minHeight: '400px' },
+  deniedTitle: { fontFamily: 'Cinzel,serif', fontSize: '18px', fontWeight: '700', color: 'var(--red-1, #ef7368)', letterSpacing: '2px', textTransform: 'uppercase' },
+  deniedText: { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--text-soft)', maxWidth: '380px', lineHeight: '1.6', margin: '8px 0 16px' },
+  deniedBtn: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--text-soft)', fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '2px', padding: '12px 20px', cursor: 'pointer', textTransform: 'uppercase', borderRadius: '4px' },
 };
