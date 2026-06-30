@@ -1,0 +1,35 @@
+// src/data/gameicons.js — Game Icons local asset map
+// author+name are the real CDN identifiers; local SVGs in src/assets/icons/
+const ICONS = {
+  heart:         { author: 'lorc',        name: 'heart-inside' },
+  shield:        { author: 'lorc',        name: 'shield-reflect' },
+  sword:         { author: 'lorc',        name: 'crossed-swords' },
+  broadsword:    { author: 'lorc',        name: 'broadsword' },
+  initiative:    { author: 'lorc',        name: 'sprint' },
+  speed:         { author: 'lorc',        name: 'run' },
+  proficiency:   { author: 'lorc',        name: 'star-prominences' },
+  inspiration:   { author: 'lorc',        name: 'bright-explosion' },
+  perception:    { author: 'lorc',        name: 'magnifying-glass' },
+  dice:          { author: 'delapouite', name: 'dice-six-faces-six' },
+  spell:         { author: 'lorc',        name: 'magic-swirl' },
+  inventory:     { author: 'lorc',        name: 'knapsack' },
+  lore:          { author: 'lorc',        name: 'scroll-unfurled' },
+  potion:        { author: 'lorc',        name: 'potion-ball' },
+  magic:         { author: 'lorc',        name: 'crystal-wand' },
+  armor:         { author: 'lorc',        name: 'breastplate' },
+  conditions:    { author: 'lorc',        name: 'skull-crossed-bones' },
+  concentration: { author: 'lorc',        name: 'magic-swirl' },
+  strength:      { author: 'lorc',        name: 'strong' },
+  dexterity:     { author: 'lorc',        name: 'juggler' },
+  constitution:  { author: 'lorc',        name: 'aura' },
+  intelligence:  { author: 'lorc',        name: 'brain' },
+  wisdom:        { author: 'lorc',        name: 'meditation' },
+  charisma:      { author: 'lorc',        name: 'angel-outfit' },
+  ring:          { author: 'delapouite', name: 'ring' },
+  boots:         { author: 'delapouite', name: 'sabatons' },
+  helmet:        { author: 'lorc',        name: 'barbute' },
+  cloak:         { author: 'lorc',        name: 'cloak-dagger' },
+  levelup:       { author: 'delapouite', name: 'upgrade' },
+};
+
+export default ICONS;
