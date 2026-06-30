@@ -39,6 +39,32 @@ const SKILLS = [
 
 const profBonus = (level) => Math.ceil((level || 1) / 4) + 1;
 
+const SLOT_INFO = {
+  head:      { label: 'Cabeza',     icon: '⛑️' },
+  neck:      { label: 'Cuello',     icon: '📿' },
+  shoulders: { label: 'Hombros',    icon: '🪬' },
+  back:      { label: 'Capa',       icon: '🧣' },
+  chest:     { label: 'Pecho',      icon: '🦺' },
+  wrists:    { label: 'Muñequeras', icon: '⌚' },
+  hands:     { label: 'Manos',      icon: '🧤' },
+  waist:     { label: 'Cintura',    icon: '🎗️' },
+  legs:      { label: 'Piernas',    icon: '👖' },
+  feet:      { label: 'Pies',       icon: '👢' },
+  ring1:     { label: 'Anillo 1',   icon: '💍' },
+  ring2:     { label: 'Anillo 2',   icon: '💍' },
+  mainhand:  { label: 'Mano Ppal.', icon: '🗡️' },
+  offhand:   { label: 'Mano Sec.',  icon: '🛡️' },
+};
+
+function getTargetSlot(itemId, currentInventory) {
+  const item = ITEMS_MAP[itemId];
+  if (!item?.slot) return null;
+  const taken = new Set(currentInventory.filter(i => i.equipped && i.equippedSlot).map(i => i.equippedSlot));
+  if (item.slot === 'mainhand') return !taken.has('mainhand') ? 'mainhand' : !taken.has('offhand') ? 'offhand' : 'mainhand';
+  if (item.slot === 'ring') return !taken.has('ring1') ? 'ring1' : !taken.has('ring2') ? 'ring2' : 'ring1';
+  return item.slot;
+}
+
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
 
 export default function CharacterSheet({ user }) {
@@ -54,6 +80,7 @@ export default function CharacterSheet({ user }) {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
   const [accentColors, setAccentColors] = useState([null, null]);
   const [initRoll, setInitRoll] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const portraitRef = useRef(null);
 
   const isAdmin = userRole === 'Dungeon Master' || userRole === 'Jugador / DM';
@@ -95,6 +122,13 @@ export default function CharacterSheet({ user }) {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
+
+  useEffect(() => {
+    if (!showModal) return;
+    const onKey = (e) => { if (e.key === 'Escape') setShowModal(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showModal]);
 
   // Extract 2 dominant mid-tone colors from portrait for accent theming.
   // Uses try/catch because cross-origin canvas access throws SecurityError when
@@ -219,11 +253,20 @@ export default function CharacterSheet({ user }) {
   const toggleEquipped = (itemId) => {
     const item = ITEMS_MAP[itemId];
     const currentlyEquipped = inventoryItems.find(i => i.itemId === itemId)?.equipped;
-    const newItems = inventoryItems.map(i => {
-      if (i.itemId === itemId) return { ...i, equipped: !i.equipped };
-      if (!currentlyEquipped && item?.tipo === 'armor' && ITEMS_MAP[i.itemId]?.tipo === 'armor') return { ...i, equipped: false };
-      return i;
-    });
+    let newItems;
+    if (currentlyEquipped) {
+      newItems = inventoryItems.map(i =>
+        i.itemId === itemId ? { ...i, equipped: false, equippedSlot: null } : i
+      );
+    } else {
+      const targetSlot = getTargetSlot(itemId, inventoryItems);
+      newItems = inventoryItems.map(i => {
+        if (i.itemId === itemId) return { ...i, equipped: true, equippedSlot: targetSlot };
+        if (targetSlot && i.equippedSlot === targetSlot) return { ...i, equipped: false, equippedSlot: null };
+        if (!targetSlot && item?.tipo === 'armor' && ITEMS_MAP[i.itemId]?.tipo === 'armor') return { ...i, equipped: false, equippedSlot: null };
+        return i;
+      });
+    }
     applyInventoryUpdate(newItems);
   };
 
@@ -233,6 +276,13 @@ export default function CharacterSheet({ user }) {
     );
     setDraft(d => ({ ...d, inventoryItems: newItems }));
     updateDoc(doc(db, 'characters', id), { inventoryItems: newItems });
+  };
+
+  const unequipSlot = (slotId) => {
+    const newItems = inventoryItems.map(i =>
+      i.equippedSlot === slotId ? { ...i, equipped: false, equippedSlot: null } : i
+    );
+    applyInventoryUpdate(newItems);
   };
 
   // ── DERIVED VALUES ────────────────────────────────────────────────────────
@@ -261,21 +311,39 @@ export default function CharacterSheet({ user }) {
   return (
     <div style={s.page} className="fade-in">
 
-      {/* ── PORTRAIT ── */}
-      {draft.portrait && (
-        <div style={s.portraitWrap}>
-          <img
-            ref={portraitRef}
-            src={draft.portrait}
-            alt={draft.name}
-            style={s.portraitImg}
-            onLoad={e => extractDominantColors(e.target)}
-          />
-          <div style={s.coverOverlay} />
-          <div style={s.coverText}>
-            <div style={{ ...s.coverName, color: accent1 }}>{draft.name}</div>
-            <div style={s.coverSub}>{draft.race} {draft.class} · Lv{draft.level}</div>
-          </div>
+      {/* ── HERO SECTION ── */}
+      <div
+        style={{ position: 'relative', height: isMobile ? '420px' : '520px', background: 'var(--void)', margin: '0 -16px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: draft.portrait ? 'zoom-in' : 'default' }}
+        onClick={() => draft.portrait && setShowModal(true)}
+      >
+        {draft.portrait
+          ? <img src={draft.portrait} alt={draft.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} onLoad={e => extractDominantColors(e.target)} />
+          : <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', opacity: 0.18, pointerEvents: 'none' }}>
+              <span style={{ fontSize: '80px' }}>⚔️</span>
+              <span style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '3px', color: 'var(--gold-dim)' }}>SIN ILUSTRACIÓN</span>
+            </div>}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 0%, transparent 40%, var(--void) 100%)', pointerEvents: 'none' }} />
+        {draft.portrait && (
+          <span style={{ position: 'absolute', top: '14px', right: '70px', zIndex: 3, fontSize: '16px', opacity: 0.55, pointerEvents: 'none' }}>🔍</span>
+        )}
+        <div style={{ position: 'absolute', top: '14px', right: '14px', zIndex: 3, width: '46px', height: '46px', borderRadius: '50%', background: `${accent1}18`, border: `2px solid ${accent1}66`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+          <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', letterSpacing: '1px', color: accent1, textTransform: 'uppercase', lineHeight: 1 }}>Nv</span>
+          <span style={{ fontFamily: 'Cinzel,serif', fontSize: '20px', fontWeight: '900', color: accent1, lineHeight: 1 }}>{draft.level}</span>
+        </div>
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: isMobile ? '16px' : '24px', zIndex: 3, pointerEvents: 'none' }}>
+          <h1 style={{ fontFamily: 'Cinzel,serif', fontSize: isMobile ? '28px' : '36px', fontWeight: '900', color: accent1, letterSpacing: '2px', textShadow: '0 2px 20px rgba(0,0,0,0.95)', margin: 0, lineHeight: 1.1 }}>{draft.name}</h1>
+          <div style={{ fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '15px', color: 'var(--parchment-dim)', marginTop: '6px', textShadow: '0 1px 8px rgba(0,0,0,0.9)' }}>{draft.race} {draft.class} · Lv{draft.level} · {draft.alignment}</div>
+          {draft.subclass && <div style={{ fontFamily: 'Cinzel,serif', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '3px', color: 'var(--gold-dim)', marginTop: '8px', textShadow: '0 1px 8px rgba(0,0,0,0.9)' }}>{draft.subclass}</div>}
+        </div>
+      </div>
+
+      {/* ── FULLSCREEN MODAL ── */}
+      {showModal && draft.portrait && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}
+          onClick={() => setShowModal(false)}
+        >
+          <img src={draft.portrait} alt={draft.name} style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', cursor: 'auto' }} onClick={e => e.stopPropagation()} />
         </div>
       )}
 
@@ -554,6 +622,9 @@ export default function CharacterSheet({ user }) {
           toggleEquipped={toggleEquipped}
           changeQuantity={changeQuantity}
           isOwner={isOwner}
+          unequipSlot={unequipSlot}
+          portrait={draft.portrait}
+          isMobile={isMobile}
         />
       )}
 
@@ -661,7 +732,7 @@ function LoreTab({ lore, editing, isOwner, updateLore, accent }) {
 }
 
 // ── Inventory tab (unchanged) ─────────────────────────────────────────────────
-function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventory, removeFromInventory, toggleEquipped, changeQuantity, isOwner }) {
+function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventory, removeFromInventory, toggleEquipped, changeQuantity, isOwner, unequipSlot, portrait, isMobile }) {
   const searchResults = itemSearch.length > 1
     ? ALL_ITEMS.filter(item =>
         !inventoryItems.find(i => i.itemId === item.id) &&
@@ -678,6 +749,7 @@ function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventor
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+      <EquipmentSlots inventoryItems={inventoryItems} unequipSlot={unequipSlot} portrait={portrait} isMobile={isMobile} />
       {isOwner && (
         <div style={iv.searchWrap}>
           <div style={iv.sectionLabel}>Agregar objeto al inventario</div>
@@ -792,6 +864,128 @@ function ItemRow({ inv, isOwner, toggleEquipped, removeFromInventory, changeQuan
   );
 }
 
+// ── Equipment slot box ────────────────────────────────────────────────────────
+function SlotBox({ slotId, item, side, isMobile, showTooltip, onSlotAction, onMobileUnequip }) {
+  const [hovered, setHovered] = useState(false);
+  const info = SLOT_INFO[slotId];
+  const showTip = isMobile ? showTooltip : (hovered && !!item);
+
+  const statsText = !item?.itemData ? ''
+    : item.itemData.tipo === 'weapon' ? `${item.itemData.stats.daño} ${item.itemData.stats.tipoDaño}`
+    : item.itemData.tipo === 'armor'  ? `CA ${item.itemData.stats.caBase}`
+    : item.itemData.stats?.efecto     ? item.itemData.stats.efecto.substring(0, 60) + '…'
+    : '';
+
+  const tipPos = {
+    right:  { left: '58px', top: '-2px' },
+    left:   { right: '58px', top: '-2px' },
+    up:     { bottom: '58px', left: '50%', transform: 'translateX(-50%)' },
+  }[side] || { left: '58px', top: '-2px' };
+
+  return (
+    <div
+      style={{ width: '52px', height: '52px', position: 'relative', border: `1px solid ${item ? 'var(--gold-dim)' : 'var(--line)'}`, background: item ? 'rgba(201,168,76,0.08)' : 'var(--panel)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: item ? 'pointer' : 'default', transition: 'border-color 0.15s, background 0.15s', ...(hovered && item && !isMobile ? { borderColor: 'var(--gold)', background: 'rgba(201,168,76,0.15)' } : {}) }}
+      onClick={onSlotAction}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <span style={{ fontSize: item ? '22px' : '16px', opacity: item ? 1 : 0.22, lineHeight: 1 }}>
+        {item ? (TYPE_ICON[item.itemData?.tipo] || info.icon) : info.icon}
+      </span>
+      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '6px', color: item ? 'var(--gold-dim)' : 'rgba(255,255,255,0.15)', letterSpacing: '0.3px', maxWidth: '48px', textAlign: 'center', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', marginTop: '2px' }}>
+        {item ? item.itemData?.nombre : info.label}
+      </span>
+
+      {showTip && item && (
+        <div style={{ position: 'absolute', ...tipPos, zIndex: 200, width: '180px', background: '#0e0b08', border: '1px solid var(--gold-dim)', padding: '10px 12px', pointerEvents: isMobile ? 'auto' : 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>
+          <div style={{ fontFamily: 'Cinzel,serif', fontSize: '11px', color: 'var(--gold-bright)', marginBottom: '3px' }}>{item.itemData?.nombre}</div>
+          <div style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: TYPE_COLOR[item.itemData?.tipo], textTransform: 'uppercase', marginBottom: '6px' }}>{TYPE_LABEL[item.itemData?.tipo]}</div>
+          {statsText && <div style={{ fontFamily: 'Cinzel,serif', fontSize: '11px', color: 'var(--ember)', marginBottom: '4px' }}>{statsText}</div>}
+          {item.itemData?.descripcion && <div style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--parchment-dim)', lineHeight: 1.4 }}>{item.itemData.descripcion}</div>}
+          {isMobile && (
+            <button onClick={e => { e.stopPropagation(); onMobileUnequip(); }}
+              style={{ marginTop: '8px', background: 'rgba(139,26,26,0.2)', border: '1px solid rgba(139,26,26,0.5)', color: 'var(--ember)', fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', padding: '5px 8px', cursor: 'pointer', width: '100%', textTransform: 'uppercase' }}>
+              ✕ Desequipar
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Equipment slots panel (WoW-style) ─────────────────────────────────────────
+function EquipmentSlots({ inventoryItems, unequipSlot, portrait, isMobile }) {
+  const [activeTooltip, setActiveTooltip] = useState(null);
+
+  const slotMap = {};
+  inventoryItems.filter(i => i.equipped && i.equippedSlot).forEach(i => {
+    slotMap[i.equippedSlot] = { ...i, itemData: ITEMS_MAP[i.itemId] };
+  });
+
+  const LEFT  = ['head', 'neck', 'shoulders', 'back', 'chest', 'wrists'];
+  const RIGHT = ['hands', 'waist', 'legs', 'feet', 'ring1', 'ring2'];
+
+  const mkSlot = (slotId, side) => (
+    <SlotBox
+      key={slotId}
+      slotId={slotId}
+      item={slotMap[slotId]}
+      side={side}
+      isMobile={isMobile}
+      showTooltip={activeTooltip === slotId}
+      onSlotAction={() => {
+        if (!slotMap[slotId]) return;
+        if (isMobile) setActiveTooltip(activeTooltip === slotId ? null : slotId);
+        else unequipSlot(slotId);
+      }}
+      onMobileUnequip={() => { unequipSlot(slotId); setActiveTooltip(null); }}
+    />
+  );
+
+  if (isMobile) {
+    const allSlots = [...LEFT, 'mainhand', 'offhand', ...RIGHT];
+    return (
+      <div style={eq.wrap}>
+        <div style={eq.label}>Equipo</div>
+        {portrait && (
+          <div style={{ width: '100%', height: '150px', background: 'var(--void)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+            <img src={portrait} alt="" style={{ maxWidth: '100%', height: '100%', objectFit: 'contain' }} />
+          </div>
+        )}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', justifyItems: 'center' }}>
+          {allSlots.map(s => mkSlot(s, 'up'))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={eq.wrap}>
+      <div style={eq.label}>Equipo</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '52px 1fr 52px', gap: '10px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {LEFT.map(s => mkSlot(s, 'right'))}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
+          {portrait
+            ? <img src={portrait} alt="" style={{ maxHeight: '330px', maxWidth: '200px', width: '100%', objectFit: 'contain', background: 'var(--void)', display: 'block' }} />
+            : <div style={{ width: '120px', height: '312px', background: '#060504', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.18 }}>
+                <span style={{ fontSize: '48px' }}>⚔️</span>
+              </div>}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {RIGHT.map(s => mkSlot(s, 'left'))}
+        </div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '8px' }}>
+        {mkSlot('mainhand', 'up')}
+        {mkSlot('offhand', 'up')}
+      </div>
+    </div>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // STYLES
 // ══════════════════════════════════════════════════════════════════════════════
@@ -867,6 +1061,12 @@ const sl = {
   textarea: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '10px', width: '100%', resize: 'vertical', lineHeight: '1.7' },
   input:    { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '8px 10px', width: '100%' },
   loreTxt:  { fontFamily: 'Crimson Pro,serif', fontSize: '14px', lineHeight: '1.7', whiteSpace: 'pre-wrap', margin: 0 },
+};
+
+// Equipment slots styles
+const eq = {
+  wrap:  { background: 'var(--panel)', border: '1px solid var(--line)', padding: '14px' },
+  label: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2.5px', color: 'var(--gold-dim)', textTransform: 'uppercase', marginBottom: '12px' },
 };
 
 // Inventory styles (unchanged)

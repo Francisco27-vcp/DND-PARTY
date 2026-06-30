@@ -3,217 +3,388 @@
     "id": "espada-larga",
     "nombre": "Espada Larga",
     "tipo": "weapon",
+    "slot": "mainhand",
     "descripcion": "Hoja de una o dos manos, versátil y confiable.",
-    "stats": { "daño": "1d8", "tipoDaño": "cortante", "propiedades": ["versátil (1d10)"], "atributo": "fue" }
+    "stats": {
+      "daño": "1d8",
+      "tipoDaño": "cortante",
+      "propiedades": [
+        "versátil (1d10)"
+      ],
+      "atributo": "fue"
+    }
   },
   {
     "id": "espada-corta",
     "nombre": "Espada Corta",
     "tipo": "weapon",
+    "slot": "mainhand",
     "descripcion": "Hoja ligera ideal para combate en espacios reducidos.",
-    "stats": { "daño": "1d6", "tipoDaño": "perforante", "propiedades": ["ligera", "finura"], "atributo": "fue/des" }
+    "stats": {
+      "daño": "1d6",
+      "tipoDaño": "perforante",
+      "propiedades": [
+        "ligera",
+        "finura"
+      ],
+      "atributo": "fue/des"
+    }
   },
   {
     "id": "daga",
     "nombre": "Daga",
     "tipo": "weapon",
+    "slot": "mainhand",
     "descripcion": "Pequeña hoja arrojadiza, favorita de pícaros y bardos.",
-    "stats": { "daño": "1d4", "tipoDaño": "perforante", "propiedades": ["ligera", "finura", "arrojadiza (6m/18m)"], "atributo": "fue/des" }
+    "stats": {
+      "daño": "1d4",
+      "tipoDaño": "perforante",
+      "propiedades": [
+        "ligera",
+        "finura",
+        "arrojadiza (6m/18m)"
+      ],
+      "atributo": "fue/des"
+    }
   },
   {
     "id": "hacha-de-mano",
     "nombre": "Hacha de Mano",
     "tipo": "weapon",
+    "slot": "mainhand",
     "descripcion": "Hacha ligera que puede lanzarse al enemigo.",
-    "stats": { "daño": "1d6", "tipoDaño": "cortante", "propiedades": ["ligera", "arrojadiza (6m/18m)"], "atributo": "fue" }
+    "stats": {
+      "daño": "1d6",
+      "tipoDaño": "cortante",
+      "propiedades": [
+        "ligera",
+        "arrojadiza (6m/18m)"
+      ],
+      "atributo": "fue"
+    }
   },
   {
     "id": "hacha-de-batalla",
     "nombre": "Hacha de Batalla",
     "tipo": "weapon",
+    "slot": "mainhand",
     "descripcion": "Hacha marcial de filo pesado, uso versátil.",
-    "stats": { "daño": "1d8", "tipoDaño": "cortante", "propiedades": ["versátil (1d10)"], "atributo": "fue" }
+    "stats": {
+      "daño": "1d8",
+      "tipoDaño": "cortante",
+      "propiedades": [
+        "versátil (1d10)"
+      ],
+      "atributo": "fue"
+    }
   },
   {
     "id": "maza",
     "nombre": "Maza",
     "tipo": "weapon",
+    "slot": "mainhand",
     "descripcion": "Arma contundente de cabeza metálica, efectiva contra armaduras.",
-    "stats": { "daño": "1d6", "tipoDaño": "contundente", "propiedades": [], "atributo": "fue" }
+    "stats": {
+      "daño": "1d6",
+      "tipoDaño": "contundente",
+      "propiedades": [],
+      "atributo": "fue"
+    }
   },
   {
     "id": "lanza",
     "nombre": "Lanza",
     "tipo": "weapon",
+    "slot": "mainhand",
     "descripcion": "Arma de asta versátil que puede arrojarse.",
-    "stats": { "daño": "1d6", "tipoDaño": "perforante", "propiedades": ["versátil (1d8)", "arrojadiza (6m/18m)"], "atributo": "fue" }
+    "stats": {
+      "daño": "1d6",
+      "tipoDaño": "perforante",
+      "propiedades": [
+        "versátil (1d8)",
+        "arrojadiza (6m/18m)"
+      ],
+      "atributo": "fue"
+    }
   },
   {
     "id": "bastón",
     "nombre": "Bastón",
     "tipo": "weapon",
+    "slot": "mainhand",
     "descripcion": "Palo largo versátil usado por magos y druidas.",
-    "stats": { "daño": "1d6", "tipoDaño": "contundente", "propiedades": ["versátil (1d8)"], "atributo": "fue" }
+    "stats": {
+      "daño": "1d6",
+      "tipoDaño": "contundente",
+      "propiedades": [
+        "versátil (1d8)"
+      ],
+      "atributo": "fue"
+    }
   },
   {
     "id": "arco-corto",
     "nombre": "Arco Corto",
     "tipo": "weapon",
+    "slot": "mainhand",
     "descripcion": "Arco de guerra compacto, efectivo a media distancia.",
-    "stats": { "daño": "1d6", "tipoDaño": "perforante", "propiedades": ["munición (24m/96m)", "dos manos"], "atributo": "des" }
+    "stats": {
+      "daño": "1d6",
+      "tipoDaño": "perforante",
+      "propiedades": [
+        "munición (24m/96m)",
+        "dos manos"
+      ],
+      "atributo": "des"
+    }
   },
   {
     "id": "arco-largo",
     "nombre": "Arco Largo",
     "tipo": "weapon",
+    "slot": "mainhand",
     "descripcion": "Arco de guerra de largo alcance, requiere entrenamiento.",
-    "stats": { "daño": "1d8", "tipoDaño": "perforante", "propiedades": ["munición (37m/150m)", "dos manos"], "atributo": "des" }
+    "stats": {
+      "daño": "1d8",
+      "tipoDaño": "perforante",
+      "propiedades": [
+        "munición (37m/150m)",
+        "dos manos"
+      ],
+      "atributo": "des"
+    }
   },
   {
     "id": "ballesta-ligera",
     "nombre": "Ballesta Ligera",
     "tipo": "weapon",
+    "slot": "mainhand",
     "descripcion": "Ballesta de carga única con gran alcance.",
-    "stats": { "daño": "1d8", "tipoDaño": "perforante", "propiedades": ["munición (24m/96m)", "carga", "dos manos"], "atributo": "des" }
+    "stats": {
+      "daño": "1d8",
+      "tipoDaño": "perforante",
+      "propiedades": [
+        "munición (24m/96m)",
+        "carga",
+        "dos manos"
+      ],
+      "atributo": "des"
+    }
   },
   {
     "id": "armadura-de-cuero",
     "nombre": "Armadura de Cuero",
     "tipo": "armor",
+    "slot": "chest",
     "descripcion": "Armadura ligera de cuero endurecido. Favorita de exploradores.",
-    "stats": { "caBase": 11, "armorType": "light", "desventajaFurtividad": false }
+    "stats": {
+      "caBase": 11,
+      "armorType": "light",
+      "desventajaFurtividad": false
+    }
   },
   {
     "id": "armadura-de-cuero-tachonado",
     "nombre": "Armadura de Cuero Tachonado",
     "tipo": "armor",
+    "slot": "chest",
     "descripcion": "Cuero reforzado con tachuelas de metal. Mejor protección ligera.",
-    "stats": { "caBase": 12, "armorType": "light", "desventajaFurtividad": false }
+    "stats": {
+      "caBase": 12,
+      "armorType": "light",
+      "desventajaFurtividad": false
+    }
   },
   {
     "id": "camisote-de-malla",
     "nombre": "Camisote de Malla",
     "tipo": "armor",
+    "slot": "chest",
     "descripcion": "Camisa de anillos metálicos. Armadura media accesible.",
-    "stats": { "caBase": 13, "armorType": "medium", "desventajaFurtividad": false }
+    "stats": {
+      "caBase": 13,
+      "armorType": "medium",
+      "desventajaFurtividad": false
+    }
   },
   {
     "id": "cota-de-escamas",
     "nombre": "Cota de Escamas",
     "tipo": "armor",
+    "slot": "chest",
     "descripcion": "Escamas metálicas superpuestas. Media protección con penalización de sigilo.",
-    "stats": { "caBase": 14, "armorType": "medium", "desventajaFurtividad": true }
+    "stats": {
+      "caBase": 14,
+      "armorType": "medium",
+      "desventajaFurtividad": true
+    }
   },
   {
     "id": "media-armadura",
     "nombre": "Media Armadura",
     "tipo": "armor",
+    "slot": "chest",
     "descripcion": "Placas metálicas sobre puntos vitales. Buena protección media.",
-    "stats": { "caBase": 15, "armorType": "medium", "desventajaFurtividad": true }
+    "stats": {
+      "caBase": 15,
+      "armorType": "medium",
+      "desventajaFurtividad": true
+    }
   },
   {
     "id": "cota-de-malla",
     "nombre": "Cota de Malla",
     "tipo": "armor",
+    "slot": "chest",
     "descripcion": "Malla de anillos de acero entrelazados. Armadura pesada estándar.",
-    "stats": { "caBase": 16, "armorType": "heavy", "desventajaFurtividad": true }
+    "stats": {
+      "caBase": 16,
+      "armorType": "heavy",
+      "desventajaFurtividad": true
+    }
   },
   {
     "id": "armadura-de-placas",
     "nombre": "Armadura de Placas",
     "tipo": "armor",
+    "slot": "chest",
     "descripcion": "La mejor protección disponible para mortales. CA 18 completa.",
-    "stats": { "caBase": 18, "armorType": "heavy", "desventajaFurtividad": true }
+    "stats": {
+      "caBase": 18,
+      "armorType": "heavy",
+      "desventajaFurtividad": true
+    }
   },
   {
     "id": "pocion-curacion",
     "nombre": "Poción de Curación",
     "tipo": "potion",
+    "slot": null,
     "descripcion": "Líquido rojo brillante de sabor dulzón.",
-    "stats": { "efecto": "Recuperás 2d4+2 PG al beberla." }
+    "stats": {
+      "efecto": "Recuperás 2d4+2 PG al beberla."
+    }
   },
   {
     "id": "pocion-curacion-mayor",
     "nombre": "Poción de Curación Mayor",
     "tipo": "potion",
+    "slot": null,
     "descripcion": "Versión potenciada de la poción estándar.",
-    "stats": { "efecto": "Recuperás 4d4+4 PG al beberla." }
+    "stats": {
+      "efecto": "Recuperás 4d4+4 PG al beberla."
+    }
   },
   {
     "id": "pocion-curacion-superior",
     "nombre": "Poción de Curación Superior",
     "tipo": "potion",
+    "slot": null,
     "descripcion": "Preparado alquímico de gran poder restaurador.",
-    "stats": { "efecto": "Recuperás 8d4+8 PG al beberla." }
+    "stats": {
+      "efecto": "Recuperás 8d4+8 PG al beberla."
+    }
   },
   {
     "id": "pocion-velocidad",
     "nombre": "Poción de Velocidad",
     "tipo": "potion",
+    "slot": null,
     "descripcion": "Acelera al bebedor de forma sobrenatural durante 1 minuto.",
-    "stats": { "efecto": "Durante 1 minuto: +1 acción adicional por turno, velocidad x2, +2 CA, ventaja en TS de DES." }
+    "stats": {
+      "efecto": "Durante 1 minuto: +1 acción adicional por turno, velocidad x2, +2 CA, ventaja en TS de DES."
+    }
   },
   {
     "id": "pocion-fuerza-de-gigante",
     "nombre": "Poción de Fuerza de Gigante",
     "tipo": "potion",
+    "slot": null,
     "descripcion": "Huele a tierra húmeda y humo de colina.",
-    "stats": { "efecto": "Tu puntuación de FUE se vuelve 21 durante 1 hora." }
+    "stats": {
+      "efecto": "Tu puntuación de FUE se vuelve 21 durante 1 hora."
+    }
   },
   {
     "id": "pocion-resistencia",
     "nombre": "Poción de Resistencia",
     "tipo": "potion",
+    "slot": null,
     "descripcion": "Existen variantes para cada tipo de daño.",
-    "stats": { "efecto": "Ganás resistencia a un tipo de daño (elegido al crearse) durante 1 hora." }
+    "stats": {
+      "efecto": "Ganás resistencia a un tipo de daño (elegido al crearse) durante 1 hora."
+    }
   },
   {
     "id": "pocion-vuelo",
     "nombre": "Poción de Vuelo",
     "tipo": "potion",
+    "slot": null,
     "descripcion": "Azul intenso con partículas flotantes en su interior.",
-    "stats": { "efecto": "Obtenés velocidad de vuelo de 18m durante 1 hora." }
+    "stats": {
+      "efecto": "Obtenés velocidad de vuelo de 18m durante 1 hora."
+    }
   },
   {
     "id": "pocion-invisibilidad",
     "nombre": "Poción de Invisibilidad",
     "tipo": "potion",
+    "slot": null,
     "descripcion": "Incoloro una vez agitado. Difícil de encontrar en el frasco.",
-    "stats": { "efecto": "Te volvés invisible hasta que atacás o lanzás un conjuro, o pasan 1 hora." }
+    "stats": {
+      "efecto": "Te volvés invisible hasta que atacás o lanzás un conjuro, o pasan 1 hora."
+    }
   },
   {
     "id": "capa-de-proteccion",
     "nombre": "Capa de Protección",
     "tipo": "magic",
+    "slot": "back",
     "descripcion": "Capa encantada que forma un escudo invisible alrededor del portador. Requiere sintonización.",
-    "stats": { "efecto": "+1 a la CA y a todas las tiradas de salvación mientras la llevés puesta.", "caBonus": 1 }
+    "stats": {
+      "efecto": "+1 a la CA y a todas las tiradas de salvación mientras la llevés puesta.",
+      "caBonus": 1
+    }
   },
   {
     "id": "anillo-de-proteccion",
     "nombre": "Anillo de Protección",
     "tipo": "magic",
+    "slot": "ring",
     "descripcion": "Anillo de oro con una gema translúcida. Requiere sintonización.",
-    "stats": { "efecto": "+1 a la CA y a todas las tiradas de salvación mientras lo llevés puesto.", "caBonus": 1 }
+    "stats": {
+      "efecto": "+1 a la CA y a todas las tiradas de salvación mientras lo llevés puesto.",
+      "caBonus": 1
+    }
   },
   {
     "id": "botas-de-velocidad",
     "nombre": "Botas de Velocidad",
     "tipo": "magic",
+    "slot": "feet",
     "descripcion": "Botas de cuero con runas de movimiento grabadas. Requiere sintonización.",
-    "stats": { "efecto": "Duplica tu velocidad de movimiento. Podés usar una acción adicional para correr, desengancharte o desenvainar." }
+    "stats": {
+      "efecto": "Duplica tu velocidad de movimiento. Podés usar una acción adicional para correr, desengancharte o desenvainar."
+    }
   },
   {
     "id": "amuleto-de-salud",
     "nombre": "Amuleto de Salud",
     "tipo": "magic",
+    "slot": "neck",
     "descripcion": "Amuleo de rubí que pulsa con calor vital. Requiere sintonización.",
-    "stats": { "efecto": "Tu puntuación de CON se vuelve 19 mientras lo llevés puesto (si ya tenés 19+, no tiene efecto)." }
+    "stats": {
+      "efecto": "Tu puntuación de CON se vuelve 19 mientras lo llevés puesto (si ya tenés 19+, no tiene efecto)."
+    }
   },
   {
     "id": "bolsa-de-contener",
     "nombre": "Bolsa de Contener",
     "tipo": "magic",
+    "slot": null,
     "descripcion": "Bolsa de cuero con un espacio extradimensional en su interior.",
-    "stats": { "efecto": "Puede contener hasta 500 lb / 64 pies³ de objetos. Pesa siempre 15 lb independientemente del contenido." }
+    "stats": {
+      "efecto": "Puede contener hasta 500 lb / 64 pies³ de objetos. Pesa siempre 15 lb independientemente del contenido."
+    }
   }
 ]
