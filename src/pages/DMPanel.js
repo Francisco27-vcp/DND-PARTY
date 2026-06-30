@@ -6,6 +6,7 @@ import { db } from '../lib/firebase';
 
 import TabResumen   from './dm/TabResumen';
 import TabSesiones  from './dm/TabSesiones';
+import TabHistoria  from './dm/TabHistoria';
 import TabMundo     from './dm/TabMundo';
 import TabNotasDM   from './dm/TabNotasDM';
 import TabCombate   from './dm/TabCombate';
@@ -14,6 +15,7 @@ import TabAsistente from './dm/TabAsistente';
 const TABS = [
   { id: 'resumen',   label: 'Resumen',      icon: '👁' },
   { id: 'sesiones',  label: 'Sesiones',     icon: '📜' },
+  { id: 'historia',  label: 'Historia',     icon: '🗺' },
   { id: 'mundo',     label: 'Mundo',        icon: '🌍' },
   { id: 'notas',     label: 'Notas DM',     icon: '🔒' },
   { id: 'combate',   label: 'Combate',      icon: '⚔' },
@@ -88,6 +90,7 @@ export default function DMPanel({ user }) {
       <div style={s.content}>
         {activeTab === 'resumen'   && <TabResumen   navigate={navigate} user={user} />}
         {activeTab === 'sesiones'  && <TabSesiones  user={user} />}
+        {activeTab === 'historia'  && <TabHistoria  user={user} />}
         {activeTab === 'mundo'     && <TabMundo />}
         {activeTab === 'notas'     && <TabNotasDM   user={user} />}
         {activeTab === 'combate'   && <TabCombate />}
