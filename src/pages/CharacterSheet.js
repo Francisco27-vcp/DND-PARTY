@@ -638,10 +638,20 @@ export default function CharacterSheet({ user }) {
         />
       )}
 
+      {/* ── JUGAR MODE ── */}
+      {viewMode === 'jugar' && (
+        <PlayMode
+          draft={draft} prof={prof} accent={accent1} accentGlow={accentGlow}
+          spellSlots={spellSlots} preparedSpells={preparedSpells}
+          inventoryItems={inventoryItems} customItemsData={customItemsData}
+          isMobile={isMobile} charId={id}
+        />
+      )}
+
       {/* ══════════════════════════════════════════════════
           FICHA TAB
       ══════════════════════════════════════════════════ */}
-      {viewMode !== 'aprender' && activeTab === 'ficha' && (
+      {viewMode === 'ficha' && activeTab === 'ficha' && (
         <div className="cs-ficha-grid">
 
           {/* COL 1: Características */}
@@ -833,7 +843,7 @@ export default function CharacterSheet({ user }) {
       {/* ══════════════════════════════════════════════════
           INVENTARIO TAB (sin cambios)
       ══════════════════════════════════════════════════ */}
-      {viewMode !== 'aprender' && activeTab === 'inventario' && (
+      {viewMode === 'ficha' && activeTab === 'inventario' && (
         <InventoryTab
           inventoryItems={inventoryItems}
           itemSearch={itemSearch}
@@ -855,7 +865,7 @@ export default function CharacterSheet({ user }) {
       {/* ══════════════════════════════════════════════════
           CONJUROS TAB
       ══════════════════════════════════════════════════ */}
-      {viewMode !== 'aprender' && activeTab === 'conjuros' && (
+      {viewMode === 'ficha' && activeTab === 'conjuros' && (
         <SpellsTab
           spellSlots={spellSlots}
           preparedSpells={preparedSpells}
@@ -877,7 +887,7 @@ export default function CharacterSheet({ user }) {
       {/* ══════════════════════════════════════════════════
           LORE TAB
       ══════════════════════════════════════════════════ */}
-      {viewMode !== 'aprender' && activeTab === 'lore' && (
+      {viewMode === 'ficha' && activeTab === 'lore' && (
         <LoreTab lore={draft.lore} editing={editing} isOwner={isOwner} updateLore={updateLore} accent={accent1} />
       )}
 
@@ -1214,6 +1224,438 @@ function LearnMode({ draft, prof, accent, skillVal, saveVal, fmtMod, isMobile })
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Play mode (Modo Jugar) ────────────────────────────────────────────────────
+function PlayMode({ draft, prof, accent, accentGlow, spellSlots, preparedSpells, inventoryItems, customItemsData, isMobile, charId }) {
+  const charClass = normalizeClass(draft.class);
+  const desMod    = Math.floor(((draft.stats?.des || 10) - 10) / 2);
+  const fueMod    = Math.floor(((draft.stats?.fue || 10) - 10) / 2);
+  const carMod    = Math.floor(((draft.stats?.car || 10) - 10) / 2);
+  const fmtMod    = n => n >= 0 ? `+${n}` : `${n}`;
+
+  const TURN_KEY = `cs_turn_${charId}`;
+  const LOG_KEY  = `cs_log_${charId}`;
+  const INIT_KEY = `cs_init_${charId}`;
+  const defaultRes = { adicional: true, movimiento: true, reaccion: true, interaccion: true };
+
+  const [turnRes, setTurnRes]     = useState(() => { try { return JSON.parse(localStorage.getItem(TURN_KEY)) || defaultRes; } catch { return defaultRes; } });
+  const [combatLog, setCombatLog] = useState(() => { try { return JSON.parse(localStorage.getItem(LOG_KEY)) || []; } catch { return []; } });
+  const [initiative, setInitiative] = useState(() => { try { return JSON.parse(localStorage.getItem(INIT_KEY)) || []; } catch { return []; } });
+  const [activeAction, setActiveAction] = useState(null);
+  const [lastRoll, setLastRoll]   = useState(null);
+  const [addingCombatant, setAddingCombatant] = useState(false);
+  const [newCbt, setNewCbt]       = useState({ name: '', init: '', isEnemy: false });
+  const [expandLog, setExpandLog] = useState(false);
+
+  const customMap = Object.fromEntries((customItemsData || []).map(i => [i.id, i]));
+  const getItem   = id => ITEMS_MAP[id] || customMap[id] || null;
+
+  const equippedWeapons = inventoryItems
+    .filter(i => i.equipped && (i.equippedSlot === 'mainhand' || i.equippedSlot === 'offhand'))
+    .map(i => ({ inv: i, item: getItem(i.itemId) }))
+    .filter(({ item }) => item?.tipo === 'weapon');
+
+  const availableSpells = preparedSpells
+    .map(sid => SPELLS_MAP[sid]).filter(Boolean)
+    .filter(spell => {
+      if (spell.nivel === 0 || spell.esHabilidad) return true;
+      return Object.entries(spellSlots || {}).some(([lvl, d]) => parseInt(lvl) >= spell.nivel && d.total - d.used > 0);
+    });
+
+  const hp     = draft.hp ?? 0;
+  const hpMax  = draft.hpMax ?? 1;
+  const hpPct  = Math.min(100, Math.round((hp / hpMax) * 100));
+  const hpColor = hpPct > 50 ? 'var(--green-1)' : hpPct > 25 ? 'var(--gold-1)' : 'var(--red-1)';
+  const conditions       = draft.conditions ? draft.conditions.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const hasConcentration = !!draft.activeConcentration;
+  const concentrationName = draft.activeConcentration ? (SPELLS_MAP[draft.activeConcentration]?.nombre || 'Conjuro') : null;
+
+  const addLog = (text, color = 'var(--text-soft)') => {
+    const entry = { id: Date.now(), text, color, time: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) };
+    setCombatLog(prev => { const next = [entry, ...prev].slice(0, 40); localStorage.setItem(LOG_KEY, JSON.stringify(next)); return next; });
+  };
+
+  const updateRes = (key) => {
+    const next = { ...turnRes, [key]: !turnRes[key] };
+    setTurnRes(next);
+    localStorage.setItem(TURN_KEY, JSON.stringify(next));
+  };
+
+  const finalizeTurn = () => {
+    const reset = { ...defaultRes };
+    setTurnRes(reset);
+    localStorage.setItem(TURN_KEY, JSON.stringify(reset));
+    addLog(`— Fin del turno de ${draft.name} —`, 'var(--text-dim)');
+    setActiveAction(null);
+    setLastRoll(null);
+  };
+
+  const clearLog = () => { setCombatLog([]); localStorage.removeItem(LOG_KEY); };
+
+  const rollD20 = () => Math.ceil(Math.random() * 20);
+
+  const doAttack = (weaponItem) => {
+    const nat      = rollD20();
+    const atkBonus = fueMod + prof + (weaponItem.stats?.bonoAtaque || 0);
+    const atkTotal = nat + atkBonus;
+    const [dc, ds] = (weaponItem.stats?.daño || '1d6').split('d').map(Number);
+    const dmgRolls = Array.from({ length: dc || 1 }, () => Math.ceil(Math.random() * (ds || 6)));
+    const dmgTotal = Math.max(1, dmgRolls.reduce((a, b) => a + b, 0) + fueMod);
+    const isCrit   = nat === 20;
+    const isPifia  = nat === 1;
+    setLastRoll({ nat, atkBonus, atkTotal, dmgTotal, weapon: weaponItem.nombre, isCrit, isPifia, type: 'attack' });
+    const txt = isCrit
+      ? `¡Crítico! ${draft.name} · ${weaponItem.nombre} · Impacto ${atkTotal} · Daño ${dmgTotal * 2}`
+      : isPifia
+      ? `¡Pifia! ${draft.name} falló con ${weaponItem.nombre}`
+      : `${draft.name} · ${weaponItem.nombre} · Impacto ${atkTotal} · Daño ${dmgTotal}`;
+    addLog(txt, isCrit ? 'var(--green-1)' : isPifia ? 'var(--red-1)' : 'var(--text-soft)');
+  };
+
+  const doSpell = (spell) => {
+    const nat      = rollD20();
+    const atkBonus = carMod + prof;
+    const atkTotal = nat + atkBonus;
+    const isCrit   = nat === 20;
+    const isPifia  = nat === 1;
+    setLastRoll({ nat, atkBonus, atkTotal, spell: spell.nombre, isCrit, isPifia, type: 'spell' });
+    addLog(`${draft.name} lanzó ${spell.nombre} · Ataque ${atkTotal}`, isCrit ? 'var(--green-1)' : 'var(--gold-1)');
+  };
+
+  const doSimple = (label, logText, logColor = 'var(--text-soft)') => {
+    setActiveAction(null);
+    setLastRoll({ type: 'simple', label });
+    addLog(logText, logColor);
+  };
+
+  const saveInitiative = (list) => { setInitiative(list); localStorage.setItem(INIT_KEY, JSON.stringify(list)); };
+
+  const addCombatant = () => {
+    if (!newCbt.name.trim()) return;
+    const next = [...initiative, { ...newCbt, id: Date.now(), init: parseInt(newCbt.init) || 0 }].sort((a, b) => b.init - a.init);
+    saveInitiative(next);
+    setNewCbt({ name: '', init: '', isEnemy: false });
+    setAddingCombatant(false);
+  };
+
+  const ACTIONS = [
+    { id: 'ataque',   icon: ICONS.sword,     label: 'Ataque',          desc: 'Realiza un ataque con tu arma' },
+    { id: 'conjuro',  icon: ICONS.spell,      label: 'Lanzar Conjuro',  desc: 'Usa un conjuro preparado' },
+    { id: 'especial', icon: ICONS.heart,      label: charClass === 'paladin' ? 'Impos. de Manos' : 'Habilidad', desc: charClass === 'paladin' ? 'Usa tus habilidades de Paladín' : 'Usa una habilidad de clase' },
+    { id: 'esquivar', icon: ICONS.shield,     label: 'Esquivar',        desc: 'Ataques contra ti con desventaja' },
+    { id: 'ayudar',   icon: ICONS.charisma,   label: 'Ayudar',          desc: 'Concede ventaja a un aliado' },
+    { id: 'correr',   icon: ICONS.speed,      label: 'Correr',          desc: 'Duplica tu velocidad este turno' },
+  ];
+
+  return (
+    <div className="cs-play-wrapper">
+
+      {/* ── PLAY STRIP ─────────────────────────────────────────────────── */}
+      <div className="cs-play-strip">
+        <div className="cs-play-portrait">
+          {draft.portrait
+            ? <img src={draft.portrait} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : <span style={{ fontSize: '26px' }}>⚔️</span>}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
+          <span style={{ fontFamily: 'var(--font-title)', fontSize: '1rem', color: accent, fontWeight: '700', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{draft.name}</span>
+          <span style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', color: 'var(--text-dim)' }}>{draft.class}</span>
+        </div>
+        <div style={{ flex: 1 }} />
+        {[
+          { icon: ICONS.heart,      val: `${hp}/${hpMax}`,    color: hpColor,           label: 'PG' },
+          { icon: ICONS.shield,     val: draft.ac ?? '—',     color: 'var(--text-main)', label: 'CA' },
+          { icon: ICONS.initiative, val: fmtMod(desMod),      color: 'var(--text-main)', label: 'Inic.' },
+          { icon: ICONS.speed,      val: draft.speed || '9m', color: 'var(--text-main)', label: 'Vel.' },
+        ].map(({ icon, val, color, label }) => (
+          <div key={label} className="cs-play-strip-stat">
+            <GameIcon author={icon.author} name={icon.name} size={13} color={color === 'var(--green-1)' ? 'a6ee81' : 'c7a242'} />
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</span>
+            <span style={{ fontFamily: 'var(--font-title)', fontSize: '13px', fontWeight: '700', color }}>{val}</span>
+          </div>
+        ))}
+        <div className="cs-play-strip-stat" style={{ borderLeft: '1px solid rgba(234,199,94,0.15)', paddingLeft: '12px' }}>
+          <GameIcon author={ICONS.spell.author} name={ICONS.spell.name} size={13} color={hasConcentration ? 'a6ee81' : '4a4030'} />
+          <span style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Conc.</span>
+          <span style={{ fontFamily: 'var(--font-title)', fontSize: '12px', fontWeight: '700', color: hasConcentration ? 'var(--green-1)' : 'var(--text-dim)', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {concentrationName || '—'}
+          </span>
+        </div>
+        {Object.keys(spellSlots || {}).length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', maxWidth: '90px' }}>
+            {Object.entries(spellSlots).filter(([, d]) => d.total > 0).sort(([a], [b]) => parseInt(a) - parseInt(b)).slice(0, 3).flatMap(([lvl, data]) =>
+              Array.from({ length: data.total }, (_, i) => {
+                const avail = data.total - data.used;
+                return <div key={`${lvl}-${i}`} style={{ width: '8px', height: '8px', borderRadius: '50%', background: i < avail ? accent : 'rgba(255,255,255,0.1)', border: `1px solid ${i < avail ? accent : 'rgba(255,255,255,0.15)'}` }} />;
+              })
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ── MAIN PLAY GRID ─────────────────────────────────────────────── */}
+      <div className="cs-play-grid">
+
+        {/* LEFT: Initiative ───────────────────────────────────────────── */}
+        <div className="cs-fantasy-card">
+          <div className="cs-card-header">
+            <GameIcon author={ICONS.initiative.author} name={ICONS.initiative.name} size={16} color="c7a242" />
+            <h2 className="cs-card-title">Iniciativa</h2>
+            <div className="cs-card-divider" />
+            <button onClick={() => setAddingCombatant(v => !v)}
+              style={{ background: 'transparent', border: '1px solid rgba(234,199,94,0.25)', color: 'var(--gold-2)', fontFamily: 'var(--font-ui)', fontSize: '9px', padding: '3px 8px', cursor: 'pointer', borderRadius: '6px', whiteSpace: 'nowrap' }}>
+              + Add
+            </button>
+          </div>
+
+          {addingCombatant && (
+            <div style={{ marginBottom: '10px', padding: '8px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', border: '1px solid rgba(234,199,94,0.15)' }}>
+              <input placeholder="Nombre" value={newCbt.name} onChange={e => setNewCbt(v => ({ ...v, name: e.target.value }))}
+                style={{ ...pInp, marginBottom: '6px', width: '100%', boxSizing: 'border-box' }} />
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                <input placeholder="Init" type="number" value={newCbt.init} onChange={e => setNewCbt(v => ({ ...v, init: e.target.value }))}
+                  style={{ ...pInp, width: '56px' }} />
+                <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontFamily: 'var(--font-ui)', fontSize: '10px', color: 'var(--text-dim)', cursor: 'pointer', flex: 1 }}>
+                  <input type="checkbox" checked={newCbt.isEnemy} onChange={e => setNewCbt(v => ({ ...v, isEnemy: e.target.checked }))} />
+                  Enemigo
+                </label>
+                <button onClick={addCombatant} style={{ ...pBtn, background: `${accent}22`, borderColor: `${accent}88`, color: accent }}>OK</button>
+              </div>
+            </div>
+          )}
+
+          {/* Character's own row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 6px', background: `${accent}14`, border: `1px solid ${accent}44`, borderRadius: '8px', marginBottom: '4px' }}>
+            <span style={{ fontFamily: 'var(--font-title)', fontSize: '12px', color: accent, minWidth: '26px', textAlign: 'center', fontWeight: '700' }}>{fmtMod(desMod)}</span>
+            <div style={{ width: '26px', height: '26px', borderRadius: '6px', overflow: 'hidden', flexShrink: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {draft.portrait ? <img src={draft.portrait} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '14px' }}>⚔️</span>}
+            </div>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: accent, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: '600' }}>{draft.name}</span>
+            <div style={{ display: 'flex', gap: '3px' }}>
+              {[...Array(3)].map((_, i) => <div key={i} style={{ width: '7px', height: '7px', borderRadius: '50%', background: hpPct > (i + 1) * 25 ? 'var(--green-1)' : 'rgba(255,255,255,0.1)' }} />)}
+            </div>
+          </div>
+
+          {initiative.length === 0 && !addingCombatant && (
+            <div style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--text-dim)', fontStyle: 'italic', textAlign: 'center', padding: '16px 8px', lineHeight: '1.6' }}>
+              Sin combatientes.<br /><span style={{ fontSize: '9px' }}>Presioná + Add para agregar.</span>
+            </div>
+          )}
+
+          {initiative.filter(c => !c.isEnemy).length > 0 && (
+            <div style={{ fontFamily: 'var(--font-ui)', fontSize: '8px', letterSpacing: '1.5px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '4px', marginTop: '8px' }}>Aliados</div>
+          )}
+          {initiative.filter(c => !c.isEnemy).map(c => (
+            <CombatantRow key={c.id} c={c} isEnemy={false} onRemove={() => saveInitiative(initiative.filter(x => x.id !== c.id))} />
+          ))}
+          {initiative.filter(c => c.isEnemy).length > 0 && (
+            <div style={{ fontFamily: 'var(--font-ui)', fontSize: '8px', letterSpacing: '1.5px', color: 'var(--red-1)', textTransform: 'uppercase', marginBottom: '4px', marginTop: '8px', borderTop: '1px solid rgba(220,60,60,0.2)', paddingTop: '6px' }}>Enemigos</div>
+          )}
+          {initiative.filter(c => c.isEnemy).map(c => (
+            <CombatantRow key={c.id} c={c} isEnemy={true} onRemove={() => saveInitiative(initiative.filter(x => x.id !== c.id))} />
+          ))}
+        </div>
+
+        {/* CENTER: Action panel ──────────────────────────────────────── */}
+        <div className="cs-fantasy-card cs-play-center">
+          <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+            <div style={{ fontFamily: 'var(--font-title)', fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', fontWeight: '700', color: accent, letterSpacing: '0.14em', textTransform: 'uppercase', textShadow: `0 0 28px ${accent}55` }}>
+              TU TURNO
+            </div>
+            <div style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px' }}>
+              {activeAction ? 'Elegí una opción abajo.' : 'Elegí una acción para comenzar.'}
+            </div>
+          </div>
+
+          {/* Last roll result */}
+          {lastRoll && (
+            <div style={{ padding: '10px 14px', marginBottom: '12px', background: 'rgba(0,0,0,0.42)', borderRadius: '10px', border: `1px solid ${lastRoll.isCrit ? 'var(--green-1)' : lastRoll.isPifia ? 'var(--red-1)' : accent}44` }}>
+              {lastRoll.type === 'attack' && (
+                <>
+                  <div style={{ fontFamily: 'var(--font-title)', fontSize: '9px', color: 'var(--text-dim)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '4px' }}>{lastRoll.weapon}</div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap' }}>
+                    <span style={{ fontFamily: 'var(--font-title)', fontSize: '11px', color: 'var(--text-dim)' }}>Impacto</span>
+                    <span style={{ fontFamily: 'var(--font-title)', fontSize: '2.2rem', fontWeight: '700', color: lastRoll.isCrit ? 'var(--green-1)' : lastRoll.isPifia ? 'var(--red-1)' : accent, lineHeight: 1 }}>{lastRoll.atkTotal}</span>
+                    <span style={{ fontFamily: 'var(--font-title)', fontSize: '11px', color: 'var(--text-dim)' }}>· Daño</span>
+                    <span style={{ fontFamily: 'var(--font-title)', fontSize: '2.2rem', fontWeight: '700', color: 'var(--red-1)', lineHeight: 1 }}>{lastRoll.isCrit ? lastRoll.dmgTotal * 2 : lastRoll.dmgTotal}</span>
+                  </div>
+                  {lastRoll.isCrit && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--green-1)', fontWeight: '600', marginTop: '4px' }}>¡Crítico! · Daño duplicado</div>}
+                  {lastRoll.isPifia && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--red-1)', fontWeight: '600', marginTop: '4px' }}>¡Pifia!</div>}
+                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', color: 'var(--text-dim)', marginTop: '4px' }}>d20={lastRoll.nat} {fmtMod(lastRoll.atkBonus)} (mod+prof)</div>
+                </>
+              )}
+              {lastRoll.type === 'spell' && (
+                <>
+                  <div style={{ fontFamily: 'var(--font-title)', fontSize: '9px', color: 'var(--gold-2)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '4px' }}>{lastRoll.spell}</div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
+                    <span style={{ fontFamily: 'var(--font-title)', fontSize: '11px', color: 'var(--text-dim)' }}>Ataque</span>
+                    <span style={{ fontFamily: 'var(--font-title)', fontSize: '2.2rem', fontWeight: '700', color: lastRoll.isCrit ? 'var(--green-1)' : lastRoll.isPifia ? 'var(--red-1)' : accent, lineHeight: 1 }}>{lastRoll.atkTotal}</span>
+                  </div>
+                  {lastRoll.isCrit && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--green-1)', fontWeight: '600', marginTop: '4px' }}>¡Crítico!</div>}
+                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', color: 'var(--text-dim)', marginTop: '4px' }}>d20={lastRoll.nat} {fmtMod(lastRoll.atkBonus)} (CAR+prof)</div>
+                </>
+              )}
+              {lastRoll.type === 'simple' && (
+                <div style={{ fontFamily: 'var(--font-ui)', fontSize: '13px', color: 'var(--gold-1)', textAlign: 'center' }}>✓ {lastRoll.label} — registrado</div>
+              )}
+            </div>
+          )}
+
+          {/* Attack sub-panel */}
+          {activeAction === 'ataque' && (
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '8px' }}>Elegí tu arma</div>
+              {equippedWeapons.length === 0 && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--text-dim)', fontStyle: 'italic', marginBottom: '8px' }}>Sin armas equipadas. Equipá un arma en el tab Inventario.</div>}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' }}>
+                {equippedWeapons.map(({ inv, item }) => (
+                  <div key={inv.itemId} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(234,199,94,0.22)', borderRadius: '8px' }}>
+                    <GameIcon author={ICONS.broadsword.author} name={ICONS.broadsword.name} size={18} color="c7a242" />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: 'var(--font-title)', fontSize: '12px', color: accent }}>{item.nombre}</div>
+                      <div style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', color: 'var(--red-1)' }}>{item.stats?.daño || '1d6'} {item.stats?.tipoDaño || ''}</div>
+                    </div>
+                    <button onClick={() => doAttack(item)} style={{ ...pBtn, background: 'rgba(220,60,60,0.15)', borderColor: 'rgba(220,60,60,0.45)', color: 'var(--red-1)' }}>Tirar</button>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => setActiveAction(null)} style={{ ...pBtn, color: 'var(--text-dim)' }}>← Volver</button>
+            </div>
+          )}
+
+          {/* Spell sub-panel */}
+          {activeAction === 'conjuro' && (
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '8px' }}>Conjuros disponibles</div>
+              {availableSpells.length === 0 && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--text-dim)', fontStyle: 'italic', marginBottom: '8px' }}>Sin conjuros disponibles. Preparalos en el tab Conjuros.</div>}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '200px', overflowY: 'auto', marginBottom: '8px' }}>
+                {availableSpells.map(spell => (
+                  <div key={spell.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(234,199,94,0.15)', borderRadius: '8px' }}>
+                    <GameIcon author={ICONS.spell.author} name={ICONS.spell.name} size={16} color="c7a242" />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: 'var(--font-title)', fontSize: '12px', color: accent, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{spell.nombre}</div>
+                      <div style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', color: 'var(--text-dim)' }}>{spell.esHabilidad ? 'Habilidad' : `Nv.${spell.nivel}`} · {spell.tiempoCasteo}</div>
+                    </div>
+                    <button onClick={() => doSpell(spell)} style={{ ...pBtn, background: `${accent}22`, borderColor: `${accent}66`, color: accent }}>Castear</button>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => setActiveAction(null)} style={{ ...pBtn, color: 'var(--text-dim)' }}>← Volver</button>
+            </div>
+          )}
+
+          {/* Action grid */}
+          {!activeAction && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+              {ACTIONS.map(action => (
+                <button key={action.id} className="cs-play-action-btn"
+                  onClick={() => {
+                    if (action.id === 'ataque' || action.id === 'conjuro') { setActiveAction(action.id); }
+                    else if (action.id === 'esquivar') doSimple('Esquivar', `${draft.name} se pone en guardia — Ataques contra él con desventaja`, 'var(--gold-1)');
+                    else if (action.id === 'ayudar')   doSimple('Ayudar',   `${draft.name} ayudó a un aliado — ventaja en su próxima tirada`, 'var(--green-1)');
+                    else if (action.id === 'correr')   doSimple('Correr',   `${draft.name} corre — velocidad duplicada hasta fin de turno`);
+                    else if (action.id === 'especial') doSimple(
+                      charClass === 'paladin' ? 'Imposición de Manos' : 'Habilidad de Clase',
+                      charClass === 'paladin' ? `${draft.name} usó Imposición de Manos` : `${draft.name} usó una habilidad de clase`,
+                      'var(--gold-1)'
+                    );
+                  }}>
+                  <GameIcon author={action.icon.author} name={action.icon.name} size={22} color="c7a242" style={{ marginBottom: '4px' }} />
+                  <span className="cs-play-action-label">{action.label}</span>
+                  <span className="cs-play-action-desc">{action.desc}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT: Combat log + conditions ────────────────────────────── */}
+        <div className="cs-fantasy-card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div className="cs-card-header">
+            <GameIcon author={ICONS.lore.author} name={ICONS.lore.name} size={16} color="c7a242" />
+            <h2 className="cs-card-title">Registro de combate</h2>
+            <div className="cs-card-divider" />
+            <button onClick={clearLog} style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', fontFamily: 'var(--font-ui)', fontSize: '9px', cursor: 'pointer', whiteSpace: 'nowrap' }}>Limpiar</button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', maxHeight: expandLog ? '400px' : '220px', overflowY: 'auto' }}>
+            {combatLog.length === 0 && (
+              <div style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--text-dim)', fontStyle: 'italic', textAlign: 'center', padding: '12px 0' }}>Sin acciones registradas.</div>
+            )}
+            {combatLog.map((entry, i) => (
+              <div key={entry.id || i} style={{ display: 'flex', gap: '6px', padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', alignItems: 'flex-start' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: entry.color, flexShrink: 0, marginTop: '5px' }} />
+                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: entry.color || 'var(--text-soft)', flex: 1, lineHeight: '1.4' }}>{entry.text}</span>
+                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', color: 'var(--text-dim)', flexShrink: 0, marginTop: '1px' }}>{entry.time}</span>
+              </div>
+            ))}
+          </div>
+          {combatLog.length > 6 && (
+            <button onClick={() => setExpandLog(v => !v)} style={{ background: 'transparent', border: 'none', color: 'var(--gold-2)', fontFamily: 'var(--font-ui)', fontSize: '10px', cursor: 'pointer', padding: '2px 0', textAlign: 'left' }}>
+              {expandLog ? '▲ Colapsar' : `▼ Ver todo (${combatLog.length})`}
+            </button>
+          )}
+
+          {conditions.length > 0 && (
+            <div>
+              <div style={{ fontFamily: 'var(--font-title)', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-2)', textTransform: 'uppercase', marginBottom: '6px' }}>Condiciones activas</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                {conditions.map(c => (
+                  <span key={c} style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', padding: '3px 8px', background: 'rgba(220,60,60,0.1)', border: '1px solid rgba(220,60,60,0.3)', color: 'var(--red-1)', borderRadius: '99px' }}>{c}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {hasConcentration && (
+            <div style={{ padding: '8px 10px', background: 'rgba(247,221,120,0.05)', border: '1px solid rgba(247,221,120,0.25)', borderRadius: '8px' }}>
+              <div style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', color: accent, fontWeight: '600', marginBottom: '3px' }}>⚠ Concentración activa</div>
+              <div style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--text-dim)', lineHeight: '1.4' }}>
+                {concentrationName} — Al recibir daño hacé una tirada CON (CD 10 o mitad del daño).
+              </div>
+            </div>
+          )}
+
+          {hpPct <= 25 && hp > 0 && (
+            <div style={{ padding: '8px 10px', background: 'rgba(220,60,60,0.07)', border: '1px solid rgba(220,60,60,0.3)', borderRadius: '8px' }}>
+              <div style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', color: 'var(--red-1)', fontWeight: '600' }}>⚠ PG Críticos — {hp}/{hpMax}</div>
+              <div style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--text-dim)' }}>Considerá retirarte o usar una poción.</div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── BOTTOM RESOURCE BAR ─────────────────────────────────────────── */}
+      <div className="cs-play-bottom">
+        {[
+          { key: 'adicional',   label: 'Acción Adicional' },
+          { key: 'movimiento',  label: `Movimiento ${draft.speed || '9m'}` },
+          { key: 'reaccion',    label: 'Reacción' },
+          { key: 'interaccion', label: 'Interacción' },
+        ].map(({ key, label }) => {
+          const isAvail = turnRes[key] !== false;
+          return (
+            <button key={key} onClick={() => updateRes(key)} className={`cs-play-resource${isAvail ? ' available' : ''}`}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0, background: isAvail ? 'var(--green-1)' : 'rgba(255,255,255,0.15)' }} />
+              {label}
+            </button>
+          );
+        })}
+        <button onClick={finalizeTurn} className="cs-play-end-turn">⏳ Finalizar turno</button>
+      </div>
+    </div>
+  );
+}
+
+// ── Combatant row ─────────────────────────────────────────────────────────────
+function CombatantRow({ c, isEnemy, onRemove }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 6px', borderRadius: '6px', marginBottom: '2px', background: isEnemy ? 'rgba(220,60,60,0.06)' : 'rgba(0,0,0,0.18)' }}>
+      <span style={{ fontFamily: 'var(--font-title)', fontSize: '11px', color: isEnemy ? 'var(--red-1)' : 'var(--gold-2)', minWidth: '22px', textAlign: 'center', fontWeight: '700' }}>{c.init}</span>
+      <span style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: isEnemy ? 'var(--red-1)' : 'var(--text-soft)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
+      <button onClick={onRemove} style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: '11px', padding: '0 2px', lineHeight: 1 }}>✕</button>
     </div>
   );
 }
@@ -1989,3 +2431,7 @@ const iv = {
   qtyBtn:        { background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(234,199,94,0.2)', color: 'var(--gold-1)', fontFamily: 'var(--font-title)', fontSize: '14px', width: '26px', height: '26px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, borderRadius: '6px' },
   qtyVal:        { fontFamily: 'var(--font-title)', fontSize: '14px', color: 'var(--text-main)', minWidth: '22px', textAlign: 'center' },
 };
+
+// Play mode shared micro-styles (used inside PlayMode component)
+const pInp = { background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(234,199,94,0.25)', color: 'var(--text-main)', fontFamily: 'var(--font-ui)', fontSize: '12px', padding: '5px 8px', borderRadius: '6px', outline: 'none' };
+const pBtn = { background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(234,199,94,0.22)', color: 'var(--text-muted)', fontFamily: 'var(--font-ui)', fontSize: '10px', padding: '5px 10px', cursor: 'pointer', borderRadius: '6px', whiteSpace: 'nowrap' };
