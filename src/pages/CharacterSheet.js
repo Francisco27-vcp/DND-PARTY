@@ -57,7 +57,20 @@ const SLOT_INFO = {
 
 const SPELLS_MAP = Object.fromEntries(ALL_SPELLS.map(s => [s.id, s]));
 
-const PALADIN_SPELL_SLOTS = {
+// Normalize class name (Spanish, with or without accents) → canonical key or null
+function normalizeClass(raw) {
+  const cls = (raw || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  if (cls.includes('palad'))                                 return 'paladin';
+  if (cls.includes('mago') || cls.includes('wizard'))       return 'mago';
+  if (cls.includes('hechicero') || cls.includes('sorce'))   return 'hechicero';
+  if (cls.includes('bardo') || cls.includes('bard'))        return 'bardo';
+  if (cls.includes('clerigo') || cls.includes('cleric'))    return 'clerigo';
+  if (cls.includes('druida') || cls.includes('druid'))      return 'druida';
+  if (cls.includes('explorador') || cls.includes('ranger')) return 'explorador';
+  return null; // Guerrero, Bárbaro, Monje, Pícaro, Brujo, etc. — sin conjuros nativos
+}
+
+const HALF_CASTER_SLOTS = {
   1:  { 1: 2 },  2:  { 1: 2 },  3:  { 1: 3 },  4:  { 1: 3 },
   5:  { 1: 4, 2: 2 },  6:  { 1: 4, 2: 2 },  7:  { 1: 4, 2: 3 },  8:  { 1: 4, 2: 3 },
   9:  { 1: 4, 2: 3, 3: 2 },  10: { 1: 4, 2: 3, 3: 2 },
@@ -68,10 +81,43 @@ const PALADIN_SPELL_SLOTS = {
   19: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2 }, 20: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2 },
 };
 
+const FULL_CASTER_SLOTS = {
+  1:  { 1: 2 },
+  2:  { 1: 3 },
+  3:  { 1: 4, 2: 2 },
+  4:  { 1: 4, 2: 3 },
+  5:  { 1: 4, 2: 3, 3: 2 },
+  6:  { 1: 4, 2: 3, 3: 3 },
+  7:  { 1: 4, 2: 3, 3: 3, 4: 1 },
+  8:  { 1: 4, 2: 3, 3: 3, 4: 2 },
+  9:  { 1: 4, 2: 3, 3: 3, 4: 3, 5: 1 },
+  10: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2 },
+  11: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1 },
+  12: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1 },
+  13: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1 },
+  14: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1 },
+  15: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 1 },
+  16: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 1 },
+  17: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 1, 9: 1 },
+  18: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 1, 7: 1, 8: 1, 9: 1 },
+  19: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 1, 8: 1, 9: 1 },
+  20: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1 },
+};
+
+const CLASS_SLOT_TABLES = {
+  paladin:    HALF_CASTER_SLOTS,
+  explorador: HALF_CASTER_SLOTS,
+  mago:       FULL_CASTER_SLOTS,
+  hechicero:  FULL_CASTER_SLOTS,
+  bardo:      FULL_CASTER_SLOTS,
+  clerigo:    FULL_CASTER_SLOTS,
+  druida:     FULL_CASTER_SLOTS,
+};
+
 function computeDefaultSlots(level, charClass) {
-  const cls = (charClass || '').toLowerCase();
-  if (!cls.includes('palad')) return {};
-  const table = PALADIN_SPELL_SLOTS[Math.min(20, Math.max(1, level || 1))] || {};
+  const key = normalizeClass(charClass);
+  if (!key || !CLASS_SLOT_TABLES[key]) return {};
+  const table = CLASS_SLOT_TABLES[key][Math.min(20, Math.max(1, level || 1))] || {};
   const result = {};
   Object.entries(table).forEach(([lvl, total]) => { result[lvl] = { total, used: 0 }; });
   return result;
@@ -1326,8 +1372,14 @@ function SpellsTab({ spellSlots, preparedSpells, maxPrepared, isOwner, accent, c
   const [expanded, setExpanded]       = useState(null);
   const [spellSearch, setSpellSearch] = useState('');
 
-  const classSpells  = ALL_SPELLS.filter(s => s.clases?.includes('paladin') && !s.esHabilidad);
-  const abilities    = ALL_SPELLS.filter(s => s.clases?.includes('paladin') && s.esHabilidad);
+  const normalizedClass  = normalizeClass(charClass);
+  const hasSpellcasting  = normalizedClass !== null;
+  const classSpells      = normalizedClass
+    ? ALL_SPELLS.filter(s => s.clases?.includes(normalizedClass) && !s.esHabilidad)
+    : [];
+  const abilities        = normalizedClass
+    ? ALL_SPELLS.filter(s => s.clases?.includes(normalizedClass) && s.esHabilidad)
+    : [];
 
   const searchResults = spellSearch.length > 1
     ? classSpells.filter(s =>
@@ -1360,8 +1412,12 @@ function SpellsTab({ spellSlots, preparedSpells, maxPrepared, isOwner, accent, c
 
       {/* Sección A — Espacios */}
       <Section title="Espacios de Conjuro" accent={accent}>
-        {activeSlots.length === 0
-          ? <div style={sp.muted}>Este personaje no tiene espacios de conjuro aún.</div>
+        {!charClass
+          ? <div style={sp.muted}>Configurá la clase del personaje (tab Ficha → Editar) para ver sus espacios de conjuro.</div>
+          : !hasSpellcasting
+          ? <div style={sp.muted}>Esta clase no tiene conjuros de forma nativa. Si el personaje tiene una subclase mágica, los espacios se pueden gestionar manualmente desde el DM.</div>
+          : activeSlots.length === 0
+          ? <div style={sp.muted}>No hay espacios de conjuro guardados. Descanso largo para reinicializar.</div>
           : <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {activeSlots.map(([lvl, data]) => (
                 <SpellSlotRow key={lvl} level={parseInt(lvl)} total={data.total} used={data.used}
@@ -1387,50 +1443,56 @@ function SpellsTab({ spellSlots, preparedSpells, maxPrepared, isOwner, accent, c
       {/* Sección C — Agregar conjuros */}
       {isOwner && (
         <Section title="Agregar Conjuros" accent={accent}>
-          <div style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--gold-dim)', marginBottom: '8px' }}>
-            Máximo preparados: <span style={{ color: accent }}>{maxPrepared}</span>
-            <span style={{ color: 'var(--line)', margin: '0 6px' }}>·</span>
-            <span style={{ fontStyle: 'italic', fontFamily: 'Crimson Pro,serif', fontSize: '10px' }}>CAR mod + nivel de personaje</span>
-          </div>
-          <input value={spellSearch} onChange={e => setSpellSearch(e.target.value)}
-            style={sp.searchInput} placeholder="Buscar por nombre o escuela..." />
-          {searchResults.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
-              {searchResults.map(spell => (
-                <div key={spell.id} style={sp.searchRow}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '12px', color: 'var(--gold-bright)' }}>{spell.nombre}</span>
-                      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', border: `1px solid ${SCHOOL_COLORS[spell.escuela] || 'var(--line)'}55`, color: SCHOOL_COLORS[spell.escuela] || 'var(--gold-dim)', padding: '1px 5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{spell.escuela}</span>
-                      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', color: accent, border: `1px solid ${accent}55`, padding: '1px 5px' }}>Nv.{spell.nivel}</span>
-                      {spell.concentracion && <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', color: 'var(--ember)', letterSpacing: '0.5px' }}>● Conc.</span>}
-                    </div>
-                    <div style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--parchment-dim)', marginTop: '2px', lineHeight: 1.3 }}>{spell.descripcion?.substring(0, 90)}…</div>
-                  </div>
-                  <button style={{ ...sp.addBtn, opacity: preparedList.length >= maxPrepared ? 0.4 : 1 }}
-                    disabled={preparedList.length >= maxPrepared}
-                    onClick={() => { if (preparedList.length < maxPrepared) { togglePrepared(spell.id); setSpellSearch(''); } }}>
-                    + Preparar
-                  </button>
+          {!charClass
+            ? <div style={sp.muted}>Configurá la clase del personaje en la tab Ficha → Editar para ver los conjuros disponibles.</div>
+            : !hasSpellcasting
+            ? <div style={sp.muted}>Los {charClass}s no tienen lista de conjuros nativa. Clases sin magia propia: Guerrero, Bárbaro, Monje, Pícaro.</div>
+            : <>
+                <div style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--gold-dim)', marginBottom: '8px' }}>
+                  Máximo preparados: <span style={{ color: accent }}>{maxPrepared}</span>
+                  <span style={{ color: 'var(--line)', margin: '0 6px' }}>·</span>
+                  <span style={{ fontStyle: 'italic', fontFamily: 'Crimson Pro,serif', fontSize: '10px' }}>CAR mod + nivel de personaje</span>
                 </div>
-              ))}
-            </div>
-          )}
-          {spellSearch.length > 1 && searchResults.length === 0 && (
-            <div style={{ ...sp.muted, marginTop: '8px' }}>Sin resultados para "{spellSearch}".</div>
-          )}
+                <input value={spellSearch} onChange={e => setSpellSearch(e.target.value)}
+                  style={sp.searchInput} placeholder="Buscar por nombre o escuela..." />
+                {searchResults.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
+                    {searchResults.map(spell => (
+                      <div key={spell.id} style={sp.searchRow}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <span style={{ fontFamily: 'Cinzel,serif', fontSize: '12px', color: 'var(--gold-bright)' }}>{spell.nombre}</span>
+                            <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', border: `1px solid ${SCHOOL_COLORS[spell.escuela] || 'var(--line)'}55`, color: SCHOOL_COLORS[spell.escuela] || 'var(--gold-dim)', padding: '1px 5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{spell.escuela}</span>
+                            <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', color: accent, border: `1px solid ${accent}55`, padding: '1px 5px' }}>Nv.{spell.nivel}</span>
+                            {spell.concentracion && <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', color: 'var(--ember)', letterSpacing: '0.5px' }}>● Conc.</span>}
+                          </div>
+                          <div style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--parchment-dim)', marginTop: '2px', lineHeight: 1.3 }}>{spell.descripcion?.substring(0, 90)}…</div>
+                        </div>
+                        <button style={{ ...sp.addBtn, opacity: preparedList.length >= maxPrepared ? 0.4 : 1 }}
+                          disabled={preparedList.length >= maxPrepared}
+                          onClick={() => { if (preparedList.length < maxPrepared) { togglePrepared(spell.id); setSpellSearch(''); } }}>
+                          + Preparar
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {spellSearch.length > 1 && searchResults.length === 0 && (
+                  <div style={{ ...sp.muted, marginTop: '8px' }}>Sin resultados para "{spellSearch}".</div>
+                )}
 
-          {/* Habilidades de clase */}
-          {abilities.length > 0 && (
-            <div style={{ marginTop: '16px' }}>
-              <div style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase', marginBottom: '8px' }}>Habilidades de Clase</div>
-              {abilities.map(ab => (
-                <SpellCard key={ab.id} spell={ab} isOwner={false} accent={accent}
-                  expanded={expanded === ab.id} onToggle={() => toggle(ab.id)}
-                  onCast={null} onUnprepare={null} canCast={false} isConcentration={false} />
-              ))}
-            </div>
-          )}
+                {/* Habilidades de clase — solo las de la clase de este personaje */}
+                {abilities.length > 0 && (
+                  <div style={{ marginTop: '16px' }}>
+                    <div style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase', marginBottom: '8px' }}>Habilidades de Clase</div>
+                    {abilities.map(ab => (
+                      <SpellCard key={ab.id} spell={ab} isOwner={false} accent={accent}
+                        expanded={expanded === ab.id} onToggle={() => toggle(ab.id)}
+                        onCast={null} onUnprepare={null} canCast={false} isConcentration={false} />
+                    ))}
+                  </div>
+                )}
+              </>}
         </Section>
       )}
     </div>
