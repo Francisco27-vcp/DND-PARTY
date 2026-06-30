@@ -511,6 +511,15 @@
   padding-top: 12px;
 }
 
+/* ── Learn mode grid (3-col desktop, 1-col mobile) ──────────────────── */
+.cs-learn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr 1fr;
+  gap: 12px;
+  padding-top: 12px;
+  align-items: start;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .cs-hero {
@@ -524,4 +533,5 @@
   .cs-nav-row { flex-direction: column; align-items: stretch; }
   .cs-tab-bar, .cs-mode-bar { overflow-x: auto; width: 100%; justify-content: center; }
   .cs-ficha-grid { grid-template-columns: 1fr; }
+  .cs-learn-grid { grid-template-columns: 1fr; }
 }

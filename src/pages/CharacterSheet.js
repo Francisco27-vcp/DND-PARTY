@@ -56,6 +56,34 @@ const SKILLS = [
   { id: 'persuasion',      nombre: 'Persuasión',         stat: 'car' },
 ];
 
+// Educational data for Modo Aprender (descriptions per skill/save)
+const LEARN_DATA = {
+  atletismo:       { nombre: 'Atletismo',            stat: 'fue', tipo: 'skill', descripcion: 'Mide tu fuerza física, resistencia corporal y capacidad atlética en situaciones extremas.', cuandoUsarla: 'Trepar paredes o acantilados, nadar contra corrientes, saltar abismos, empujar obstáculos pesados o resistir una llave en un forcejeo.' },
+  acrobacias:      { nombre: 'Acrobacias',           stat: 'des', tipo: 'skill', descripcion: 'Controla tu cuerpo con precisión, equilibrio y agilidad para movimientos difíciles o peligrosos.', cuandoUsarla: 'Mantener el equilibrio en superficies inestables, realizar volteretas, caer sin daño o escapar de una inmovilización.' },
+  juego_de_manos:  { nombre: 'Juego de Manos',       stat: 'des', tipo: 'skill', descripcion: 'Habilidad con los dedos para actos sutiles, trucos de magia, robo de bolsillos o manipulación discreta de objetos.', cuandoUsarla: 'Robar un objeto de alguien sin que lo note, plantar algo en la bolsa de otra persona, o manejar herramientas de ladrón.' },
+  sigilo:          { nombre: 'Sigilo',               stat: 'des', tipo: 'skill', descripcion: 'Tu capacidad de moverte, ocultarte y actuar sin ser detectado por enemigos o testigos.', cuandoUsarla: 'Escabullirte en las sombras, tender una emboscada, seguir a alguien sin que te vea o escapar de una zona vigilada.' },
+  arcanos:         { nombre: 'Arcanos',              stat: 'int', tipo: 'skill', descripcion: 'Conocimiento sobre magia, hechizos, planos de existencia, criaturas mágicas y artefactos.', cuandoUsarla: 'Identificar un conjuro que estás viendo, reconocer una criatura mágica, recordar lore sobre un artefacto o entender una inscripción arcana.' },
+  historia:        { nombre: 'Historia',             stat: 'int', tipo: 'skill', descripcion: 'Tu conocimiento sobre eventos pasados, civilizaciones, guerras, dinastías y leyendas del mundo.', cuandoUsarla: 'Recordar quién fundó una ciudad, qué sucedió en una batalla histórica, el origen de una familia noble o el legado de un héroe antiguo.' },
+  investigacion:   { nombre: 'Investigación',        stat: 'int', tipo: 'skill', descripcion: 'Capacidad de deducir, analizar pistas, buscar información oculta y conectar datos para llegar a conclusiones.', cuandoUsarla: 'Buscar pistas en una escena del crimen, descifrar un mensaje codificado, encontrar una entrada secreta o analizar evidencia para resolver un misterio.' },
+  naturaleza:      { nombre: 'Naturaleza',           stat: 'int', tipo: 'skill', descripcion: 'Conocimiento sobre el mundo natural: plantas, animales, clima, geografía y ciclos de la naturaleza.', cuandoUsarla: 'Identificar una planta venenosa, predecir el clima, saber qué animales habitan una zona o encontrar recursos naturales en el bosque.' },
+  religion:        { nombre: 'Religión',             stat: 'int', tipo: 'skill', descripcion: 'Conocimiento de dioses, cultos, ritos sagrados, planos celestiales e infernales y doctrina religiosa.', cuandoUsarla: 'Reconocer el símbolo de un dios, recordar un ritual religioso, identificar a qué deidad pertenece un templo o entender una maldición divina.' },
+  perspicacia:     { nombre: 'Perspicacia',          stat: 'sab', tipo: 'skill', descripcion: 'Percibir las intenciones, emociones y honestidad de las personas a través de señales sutiles del lenguaje corporal.', cuandoUsarla: 'Detectar si alguien miente, intuir si una persona tiene motivos ocultos, leer el estado emocional de un PNJ o sentir si un trato es una trampa.' },
+  medicina:        { nombre: 'Medicina',             stat: 'sab', tipo: 'skill', descripcion: 'Conocimiento práctico del cuerpo: diagnóstico de enfermedades, atención de heridas y estabilización de moribundos.', cuandoUsarla: 'Estabilizar a un aliado con 0 HP, diagnosticar una enfermedad, identificar un veneno por sus síntomas o aplicar primeros auxilios.' },
+  percepcion:      { nombre: 'Percepción',           stat: 'sab', tipo: 'skill', descripcion: 'Agudeza de tus sentidos para notar detalles del entorno que otros podrían pasar por alto.', cuandoUsarla: 'Detectar una emboscada, notar una puerta secreta, escuchar pasos al otro lado de la pared, ver algo brillando en la oscuridad o sentir que te siguen.' },
+  supervivencia:   { nombre: 'Supervivencia',        stat: 'sab', tipo: 'skill', descripcion: 'Habilidades para subsistir en el exterior: rastrear, cazar, orientarse y evitar peligros naturales.', cuandoUsarla: 'Seguir las huellas de una criatura, encontrar comida en el bosque, orientarte sin mapa, montar un campamento seguro o predecir una tormenta.' },
+  trato_animales:  { nombre: 'T. con Animales',      stat: 'sab', tipo: 'skill', descripcion: 'Capacidad de calmar, domesticar y comunicarte con animales, entendiendo su naturaleza y comportamiento.', cuandoUsarla: 'Calmar un caballo asustado, montar una criatura salvaje, ganarte la confianza de un animal herido o hacer que un perro guardián no te ataque.' },
+  engano:          { nombre: 'Engaño',               stat: 'car', tipo: 'skill', descripcion: 'Habilidad para mentir, disimular, actuar un papel o manipular la percepción de otros.', cuandoUsarla: 'Hacerte pasar por otra persona, vender una mentira convincente, ocultar un objeto bajo inspección, fingir emociones o negociar con información falsa.' },
+  intimidacion:    { nombre: 'Intimidación',         stat: 'car', tipo: 'skill', descripcion: 'Influir en otros a través del miedo, amenazas directas o una presencia imponente.', cuandoUsarla: 'Hacer que un guardia se aparte, interrogar a un prisionero, disuadir a un matón de atacarte o demostrar que no es conveniente cruzarse contigo.' },
+  interpretacion:  { nombre: 'Interpretación',       stat: 'car', tipo: 'skill', descripcion: 'Capacidad artística para entretener, actuar, tocar instrumentos o contar historias de manera convincente y memorable.', cuandoUsarla: 'Actuar en una obra de teatro, ganarte el favor del público con una canción, tocar en una taberna para conseguir monedas o contar una historia cautivadora.' },
+  persuasion:      { nombre: 'Persuasión',           stat: 'car', tipo: 'skill', descripcion: 'Influir en otros de manera positiva con argumentos, encanto y buenas intenciones.', cuandoUsarla: 'Convencer al guardia de dejarte pasar, negociar un precio mejor, ganarte la confianza de un PNJ desconfiado o mediar en un conflicto.' },
+  save_fue:        { nombre: 'Salvación de Fuerza',      stat: 'fue', tipo: 'save', descripcion: 'Resistir efectos físicos que intentan mover, derribar o atrapar tu cuerpo contra tu voluntad.', cuandoUsarla: 'Un hechizo intenta empujarte, debes resistir ser arrastrado por una trampa, o un efecto mágico quiere inmovilizarte.' },
+  save_des:        { nombre: 'Salvación de Destreza',    stat: 'des', tipo: 'save', descripcion: 'Esquivar efectos de área, trampas y ataques que requieren agilidad para evitar daño.', cuandoUsarla: 'Evitar la explosión de una Bola de Fuego, esquivar una trampa de flechas, o apartarte a tiempo de un área de daño mágico.' },
+  save_con:        { nombre: 'Salvación de Constitución',stat: 'con', tipo: 'save', descripcion: 'Resistir venenos, enfermedades, fatiga extrema y efectos que afectan la vitalidad del cuerpo.', cuandoUsarla: 'Resistir el efecto de un veneno, mantener la Concentración en un conjuro bajo daño, soportar condiciones extremas o resistir una enfermedad mágica.' },
+  save_int:        { nombre: 'Salvación de Inteligencia',stat: 'int', tipo: 'save', descripcion: 'Resistir ilusiones, ataques mentales e influencias que afectan el razonamiento y la percepción.', cuandoUsarla: 'Resistir una ilusión que engaña la mente, protegerte de hechizos que alteran tus recuerdos o repeler un ataque de daño psíquico.' },
+  save_sab:        { nombre: 'Salvación de Sabiduría',   stat: 'sab', tipo: 'save', descripcion: 'Resistir hechizos que afectan la voluntad, emociones o la conexión con la realidad y el libre albedrío.', cuandoUsarla: 'No caer bajo el efecto de Miedo, resistir un hechizo de Control Mental, no ser Encantado por un PNJ o resistir el pánico de una criatura.' },
+  save_car:        { nombre: 'Salvación de Carisma',     stat: 'car', tipo: 'save', descripcion: 'Mantener tu identidad y esencia frente a efectos que alteran tu alma o te destierran a otro plano.', cuandoUsarla: 'Resistir el exilio a otro plano, mantener tu identidad ante un hechizo de posesión o resistir efectos que intentan borrar tu voluntad.' },
+};
+
 const profBonus = (level) => Math.ceil((level || 1) / 4) + 1;
 
 const SLOT_INFO = {
@@ -601,10 +629,19 @@ export default function CharacterSheet({ user }) {
         </div>
       </div>
 
+      {/* ── APRENDER MODE ── */}
+      {viewMode === 'aprender' && (
+        <LearnMode
+          draft={draft} prof={prof} accent={accent1} accentGlow={accentGlow}
+          skillVal={skillVal} saveVal={saveVal} fmtMod={fmtMod}
+          isMobile={isMobile}
+        />
+      )}
+
       {/* ══════════════════════════════════════════════════
           FICHA TAB
       ══════════════════════════════════════════════════ */}
-      {activeTab === 'ficha' && (
+      {viewMode !== 'aprender' && activeTab === 'ficha' && (
         <div className="cs-ficha-grid">
 
           {/* COL 1: Características */}
@@ -796,7 +833,7 @@ export default function CharacterSheet({ user }) {
       {/* ══════════════════════════════════════════════════
           INVENTARIO TAB (sin cambios)
       ══════════════════════════════════════════════════ */}
-      {activeTab === 'inventario' && (
+      {viewMode !== 'aprender' && activeTab === 'inventario' && (
         <InventoryTab
           inventoryItems={inventoryItems}
           itemSearch={itemSearch}
@@ -818,7 +855,7 @@ export default function CharacterSheet({ user }) {
       {/* ══════════════════════════════════════════════════
           CONJUROS TAB
       ══════════════════════════════════════════════════ */}
-      {activeTab === 'conjuros' && (
+      {viewMode !== 'aprender' && activeTab === 'conjuros' && (
         <SpellsTab
           spellSlots={spellSlots}
           preparedSpells={preparedSpells}
@@ -840,7 +877,7 @@ export default function CharacterSheet({ user }) {
       {/* ══════════════════════════════════════════════════
           LORE TAB
       ══════════════════════════════════════════════════ */}
-      {activeTab === 'lore' && (
+      {viewMode !== 'aprender' && activeTab === 'lore' && (
         <LoreTab lore={draft.lore} editing={editing} isOwner={isOwner} updateLore={updateLore} accent={accent1} />
       )}
 
@@ -935,6 +972,248 @@ function StatusRow({ label, value, field, editing, update }) {
         ? <input value={value} onChange={e => update(field, e.target.value)}
             style={{ background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '13px', padding: '3px 8px', maxWidth: '160px' }} />
         : <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--parchment)' }}>{value}</span>}
+    </div>
+  );
+}
+
+// ── Learn mode ────────────────────────────────────────────────────────────────
+function LearnMode({ draft, prof, accent, skillVal, saveVal, fmtMod, isMobile }) {
+  const [selectedId, setSelectedId] = useState('atletismo');
+  const [rollResult, setRollResult] = useState(null);
+  const [rollHistory, setRollHistory] = useState([]);
+
+  const getVal = (item) => {
+    if (item.tipo === 'skill') {
+      const skill = SKILLS.find(s => s.id === item.id);
+      return skill ? skillVal(skill) : 0;
+    }
+    return saveVal(item.stat);
+  };
+
+  const isProficient = (item) => {
+    if (item.tipo === 'skill') return !!(draft.skills?.[item.id]);
+    return !!(draft.savingThrows?.[item.stat]);
+  };
+
+  const selected = LEARN_DATA[selectedId] || LEARN_DATA.atletismo;
+  const selectedItem = { id: selectedId, stat: selected.stat, tipo: selected.tipo };
+
+  const rollDice = (mode) => {
+    const a = Math.ceil(Math.random() * 20);
+    const b = Math.ceil(Math.random() * 20);
+    let nat;
+    if (mode === 'ventaja')     nat = Math.max(a, b);
+    else if (mode === 'desventaja') nat = Math.min(a, b);
+    else                        nat = a;
+    const modifier = getVal(selectedItem);
+    const total    = nat + modifier;
+    const isCrit   = nat === 20;
+    const isPifia  = nat === 1;
+    const resultColor = isCrit ? 'var(--green-1)' : isPifia ? 'var(--red-1)' : total > 15 ? 'var(--green-1)' : total > 8 ? 'var(--gold-1)' : 'var(--red-1)';
+    const label       = isCrit ? '¡Crítico!' : isPifia ? '¡Pifia!' : total > 15 ? '¡Excelente resultado!' : total > 8 ? 'Resultado moderado' : 'Resultado bajo';
+    const result = { nat, a, b, modifier, total, mode, resultColor, label, isCrit, isPifia };
+    setRollResult(result);
+    setRollHistory(prev => [result, ...prev].slice(0, 3));
+  };
+
+  const selectItem = (id) => { setSelectedId(id); setRollResult(null); };
+
+  const desMod   = Math.floor(((draft.stats?.des || 10) - 10) / 2);
+  const initiative = desMod;
+  const hp       = draft.hp ?? '—';
+  const hpMax    = draft.hpMax ?? '—';
+  const ac       = draft.ac ?? '—';
+  const inspiration = draft.inspiration ? 'Activa' : 'Sin';
+
+  return (
+    <div className="cs-learn-grid">
+
+      {/* ── LEFT: Skill + Save list ─────────────────────── */}
+      <div className="cs-fantasy-card">
+        <div className="cs-card-header">
+          <GameIcon author={ICONS.perception.author} name={ICONS.perception.name} size={16} color="c7a242" />
+          <h2 className="cs-card-title">Habilidades y Salvaciones</h2>
+          <div className="cs-card-divider" />
+        </div>
+
+        <div style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--text-dim)', textTransform: 'uppercase', padding: '0 2px 6px', borderBottom: '1px solid rgba(234,199,94,0.1)', marginBottom: '4px' }}>
+          Habilidades
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', marginBottom: '8px' }}>
+          {SKILLS.map(skill => {
+            const item = { id: skill.id, stat: skill.stat, tipo: 'skill' };
+            const val  = getVal(item);
+            const hasProficiency = isProficient(item);
+            const isSel = selectedId === skill.id;
+            return (
+              <div key={skill.id} onClick={() => selectItem(skill.id)}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 6px', borderRadius: '6px', cursor: 'pointer', background: isSel ? `${accent}18` : 'transparent', border: `1px solid ${isSel ? accent + '44' : 'transparent'}`, transition: 'all 0.15s' }}>
+                <div style={{ width: '9px', height: '9px', borderRadius: '50%', flexShrink: 0, border: `1px solid ${hasProficiency ? accent : 'var(--text-dim)'}`, background: hasProficiency ? accent : 'transparent' }} />
+                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: isSel ? accent : 'var(--text-soft)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{skill.nombre}</span>
+                <span style={{ fontFamily: 'var(--font-title)', fontSize: '7px', color: 'var(--text-dim)', flexShrink: 0 }}>{STAT_ABBR[skill.stat]}</span>
+                <span style={{ fontFamily: 'var(--font-title)', fontSize: '12px', fontWeight: '700', color: isSel ? accent : (hasProficiency ? accent : 'var(--text-main)'), minWidth: '24px', textAlign: 'right', flexShrink: 0 }}>{fmtMod(val)}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--text-dim)', textTransform: 'uppercase', padding: '0 2px 6px', borderBottom: '1px solid rgba(234,199,94,0.1)', marginBottom: '4px' }}>
+          Tiradas de Salvación
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+          {STAT_KEYS.map(stat => {
+            const itemId = `save_${stat}`;
+            const item   = { id: itemId, stat, tipo: 'save' };
+            const val    = getVal(item);
+            const hasProficiency = isProficient(item);
+            const isSel  = selectedId === itemId;
+            return (
+              <div key={itemId} onClick={() => selectItem(itemId)}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 6px', borderRadius: '6px', cursor: 'pointer', background: isSel ? `${accent}18` : 'transparent', border: `1px solid ${isSel ? accent + '44' : 'transparent'}`, transition: 'all 0.15s' }}>
+                <div style={{ width: '9px', height: '9px', borderRadius: '3px', flexShrink: 0, border: `1px solid ${hasProficiency ? accent : 'var(--text-dim)'}`, background: hasProficiency ? accent : 'transparent' }} />
+                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: isSel ? accent : 'var(--text-soft)', flex: 1 }}>Salvación</span>
+                <span style={{ fontFamily: 'var(--font-title)', fontSize: '7px', color: 'var(--text-dim)', flexShrink: 0 }}>{STAT_ABBR[stat]}</span>
+                <span style={{ fontFamily: 'var(--font-title)', fontSize: '12px', fontWeight: '700', color: isSel ? accent : (hasProficiency ? accent : 'var(--text-main)'), minWidth: '24px', textAlign: 'right', flexShrink: 0 }}>{fmtMod(val)}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── CENTER: Explanation + dice roller ──────────── */}
+      <div className="cs-fantasy-card" style={{ border: '1px solid var(--border-gold-strong)' }}>
+        <div className="cs-card-header">
+          <GameIcon author={ICONS.dice.author} name={ICONS.dice.name} size={16} color="c7a242" />
+          <h2 className="cs-card-title">✦ {selected.nombre}</h2>
+          <div className="cs-card-divider" />
+        </div>
+
+        {/* Selected skill header card */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', padding: '0.75rem', background: 'rgba(0,0,0,0.3)', borderRadius: '10px', border: `1px solid ${accent}33` }}>
+          <div>
+            <div style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', color: 'var(--text-dim)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '4px' }}>
+              {selected.tipo === 'skill' ? 'Habilidad seleccionada' : 'Tirada de Salvación'}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontFamily: 'var(--font-title)', fontSize: '16px', color: accent }}>{selected.nombre}</span>
+              <span style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', letterSpacing: '1px', color: 'var(--text-dim)', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(234,199,94,0.2)', padding: '2px 7px', borderRadius: '4px', textTransform: 'uppercase' }}>{STAT_ABBR[selected.stat]}</span>
+            </div>
+          </div>
+          <div style={{ fontFamily: 'var(--font-title)', fontSize: '2.4rem', fontWeight: '700', color: accent, lineHeight: 1 }}>
+            {fmtMod(getVal(selectedItem))}
+          </div>
+        </div>
+
+        <div style={{ fontFamily: 'var(--font-title)', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-2)', textTransform: 'uppercase', marginBottom: '5px' }}>¿Para qué sirve?</div>
+        <p style={{ fontFamily: 'var(--font-ui)', fontSize: '13px', color: 'var(--text-soft)', lineHeight: '1.6', margin: '0 0 1rem' }}>{selected.descripcion}</p>
+
+        <div style={{ fontFamily: 'var(--font-title)', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-2)', textTransform: 'uppercase', marginBottom: '5px' }}>¿Cuándo la uso?</div>
+        <p style={{ fontFamily: 'var(--font-ui)', fontSize: '13px', color: 'var(--text-soft)', lineHeight: '1.6', margin: '0 0 1.2rem' }}>{selected.cuandoUsarla}</p>
+
+        <div style={{ fontFamily: 'var(--font-title)', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-2)', textTransform: 'uppercase', marginBottom: '8px' }}>¿Cómo se hace la tirada?</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '0.8rem 1rem', background: 'rgba(0,0,0,0.45)', border: `1px solid ${accent}33`, borderRadius: '10px', marginBottom: '1.2rem' }}>
+          <span style={{ fontFamily: 'var(--font-title)', fontSize: '1.7rem', color: 'var(--text-main)' }}>1d20</span>
+          <span style={{ fontFamily: 'var(--font-title)', fontSize: '1.3rem', color: 'var(--text-dim)' }}>+</span>
+          <span style={{ fontFamily: 'var(--font-title)', fontSize: '1.7rem', fontWeight: '700', color: accent }}>
+            {fmtMod(getVal(selectedItem))}
+          </span>
+          {isProficient(selectedItem) && (
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', color: 'var(--green-1)', background: 'rgba(166,238,129,0.1)', border: '1px solid rgba(166,238,129,0.3)', padding: '2px 8px', borderRadius: '99px', marginLeft: '4px' }}>+ Prof. incluída</span>
+          )}
+        </div>
+
+        <div style={{ fontFamily: 'var(--font-title)', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-2)', textTransform: 'uppercase', marginBottom: '8px' }}>Haz una tirada</div>
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '1rem' }}>
+          {[
+            { mode: 'normal',      label: 'Normal' },
+            { mode: 'ventaja',     label: 'Ventaja' },
+            { mode: 'desventaja',  label: 'Desventaja' },
+          ].map(({ mode, label }) => (
+            <button key={mode} onClick={() => rollDice(mode)}
+              style={{ background: mode === 'normal' ? `${accent}22` : 'rgba(0,0,0,0.4)', border: `1px solid ${mode === 'normal' ? accent + '88' : 'rgba(234,199,94,0.25)'}`, color: mode === 'normal' ? accent : 'var(--text-muted)', fontFamily: 'var(--font-ui)', fontSize: '11px', fontWeight: '500', padding: '7px 14px', cursor: 'pointer', borderRadius: '8px', transition: 'all 0.2s' }}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Roll result */}
+        {rollResult && (
+          <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.4)', border: `2px solid ${rollResult.resultColor}44`, borderRadius: '12px', marginBottom: '0.8rem', textAlign: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '6px' }}>
+              <span style={{ fontFamily: 'var(--font-title)', fontSize: '2.8rem', fontWeight: '700', color: rollResult.resultColor, lineHeight: 1 }}>{rollResult.nat}</span>
+              <span style={{ fontFamily: 'var(--font-title)', fontSize: '1.3rem', color: 'var(--text-dim)' }}>+</span>
+              <span style={{ fontFamily: 'var(--font-title)', fontSize: '1.8rem', fontWeight: '600', color: 'var(--text-main)' }}>{rollResult.modifier}</span>
+              <span style={{ fontFamily: 'var(--font-title)', fontSize: '1.3rem', color: 'var(--text-dim)' }}>=</span>
+              <span style={{ fontFamily: 'var(--font-title)', fontSize: '3rem', fontWeight: '700', color: rollResult.resultColor, lineHeight: 1 }}>{rollResult.total}</span>
+            </div>
+            <div style={{ fontFamily: 'var(--font-ui)', fontSize: '14px', color: rollResult.resultColor, fontWeight: '600', marginBottom: '4px' }}>{rollResult.label}</div>
+            {rollResult.mode !== 'normal' && (
+              <div style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--text-dim)' }}>
+                Dados: {rollResult.a} / {rollResult.b} → {rollResult.mode === 'ventaja' ? 'se usa el mayor' : 'se usa el menor'}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Roll history */}
+        {rollHistory.length > 0 && (
+          <div>
+            <div style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '6px' }}>Últimas tiradas</div>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {rollHistory.map((r, i) => (
+                <div key={i} style={{ flex: 1, padding: '6px 8px', background: 'rgba(0,0,0,0.3)', border: `1px solid ${r.resultColor}33`, borderRadius: '8px', textAlign: 'center', opacity: 1 - i * 0.28 }}>
+                  <div style={{ fontFamily: 'var(--font-title)', fontSize: '1.4rem', fontWeight: '700', color: r.resultColor }}>{r.total}</div>
+                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', color: 'var(--text-dim)' }}>d20={r.nat}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── RIGHT: Combat stat cards + turn actions ─────── */}
+      <div className="cs-fantasy-card">
+        <div className="cs-card-header">
+          <GameIcon author={ICONS.shield.author} name={ICONS.shield.name} size={16} color="c7a242" />
+          <h2 className="cs-card-title">✦ Entiende tus stats</h2>
+          <div className="cs-card-divider" />
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '1.2rem' }}>
+          {[
+            { label: 'CA',          value: ac,                    desc: 'Clase de Armadura. Lo difícil que eres de golpear.' },
+            { label: 'Iniciativa',  value: fmtMod(initiative),   desc: 'Orden de acción en combate. Basado en tu DES.' },
+            { label: 'Inspiración', value: inspiration,           desc: 'Otorgada por el DM. Ventaja en una tirada clave.' },
+            { label: 'Prof.',       value: `+${prof}`,           desc: 'Bono de Proficiencia. Suma a habilidades entrenadas.' },
+            { label: 'PG',          value: `${hp}/${hpMax}`,     desc: 'Puntos de Golpe. A 0 quedás inconsciente.' },
+            { label: 'Concentración', value: draft.activeConcentration ? '● Activa' : '—', desc: 'Solo un conjuro de conc. activo a la vez.' },
+          ].map(({ label, value, desc }) => (
+            <div key={label} style={{ padding: '8px 10px', background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(234,199,94,0.18)', borderRadius: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                <span style={{ fontFamily: 'var(--font-title)', fontSize: '8px', letterSpacing: '1px', color: 'var(--gold-2)', textTransform: 'uppercase' }}>{label}</span>
+                <span style={{ fontFamily: 'var(--font-title)', fontSize: '1rem', fontWeight: '700', color: 'var(--green-1)', lineHeight: 1 }}>{value}</span>
+              </div>
+              <p style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', color: 'var(--text-dim)', lineHeight: '1.4', margin: 0 }}>{desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ fontFamily: 'var(--font-title)', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-2)', textTransform: 'uppercase', marginBottom: '10px' }}>¿Qué puedo hacer en mi turno?</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+          {[
+            { icon: ICONS.speed,      label: 'Moverte',            desc: 'Hasta tu velocidad sin gastar acción.' },
+            { icon: ICONS.sword,      label: 'Acción',             desc: 'Atacar, conjurar, ayudar, esquivar...' },
+            { icon: ICONS.initiative, label: 'Acción adicional',   desc: 'Solo si una habilidad te la permite.' },
+            { icon: ICONS.perception, label: 'Interacción',        desc: 'Abrir puerta, sacar objeto del inventario.' },
+          ].map(({ icon, label, desc }) => (
+            <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '10px 6px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(234,199,94,0.15)', borderRadius: '10px', textAlign: 'center' }}>
+              <GameIcon author={icon.author} name={icon.name} size={20} color="c7a242" />
+              <span style={{ fontFamily: 'var(--font-title)', fontSize: '8px', letterSpacing: '1px', color: accent, textTransform: 'uppercase' }}>{label}</span>
+              <span style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', color: 'var(--text-dim)', lineHeight: '1.3' }}>{desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
