@@ -5,6 +5,7 @@ import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { uploadImage } from '../lib/uploadImage';
 import { db } from '../lib/firebase';
 import ALL_ITEMS from '../data/items.json';
+import ALL_SPELLS from '../data/spells.json';
 
 // ── CONSTANTS ─────────────────────────────────────────────────────────────────
 
@@ -51,6 +52,30 @@ const SLOT_INFO = {
   ring1:    { label: 'Anillo 1',        icon: '💍' },
   ring2:    { label: 'Anillo 2',        icon: '💍' },
 };
+
+// ── SPELL DATA ────────────────────────────────────────────────────────────────
+
+const SPELLS_MAP = Object.fromEntries(ALL_SPELLS.map(s => [s.id, s]));
+
+const PALADIN_SPELL_SLOTS = {
+  1:  { 1: 2 },  2:  { 1: 2 },  3:  { 1: 3 },  4:  { 1: 3 },
+  5:  { 1: 4, 2: 2 },  6:  { 1: 4, 2: 2 },  7:  { 1: 4, 2: 3 },  8:  { 1: 4, 2: 3 },
+  9:  { 1: 4, 2: 3, 3: 2 },  10: { 1: 4, 2: 3, 3: 2 },
+  11: { 1: 4, 2: 3, 3: 3 },  12: { 1: 4, 2: 3, 3: 3 },
+  13: { 1: 4, 2: 3, 3: 3, 4: 1 }, 14: { 1: 4, 2: 3, 3: 3, 4: 1 },
+  15: { 1: 4, 2: 3, 3: 3, 4: 2 }, 16: { 1: 4, 2: 3, 3: 3, 4: 2 },
+  17: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 1 }, 18: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 1 },
+  19: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2 }, 20: { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2 },
+};
+
+function computeDefaultSlots(level, charClass) {
+  const cls = (charClass || '').toLowerCase();
+  if (!cls.includes('palad')) return {};
+  const table = PALADIN_SPELL_SLOTS[Math.min(20, Math.max(1, level || 1))] || {};
+  const result = {};
+  Object.entries(table).forEach(([lvl, total]) => { result[lvl] = { total, used: 0 }; });
+  return result;
+}
 
 function getTargetSlot(itemId, currentInventory, extraMap = {}) {
   const item = ITEMS_MAP[itemId] || extraMap[itemId];
@@ -258,6 +283,56 @@ export default function CharacterSheet({ user }) {
     applyInventoryUpdate(newItems);
   };
 
+  // ── SPELLS ───────────────────────────────────────────────────────────────────
+
+  const spellSlots    = draft.spellSlots    || computeDefaultSlots(draft.level, draft.class);
+  const preparedSpells = draft.preparedSpells || [];
+  const carMod        = Math.floor(((draft.stats?.car || 10) - 10) / 2);
+  const maxPrepared   = Math.max(1, carMod + (draft.level || 1));
+
+  const updateSpellSlot = (level, newUsed) => {
+    const slot = spellSlots[level];
+    if (!slot) return;
+    const clamped  = Math.max(0, Math.min(slot.total, newUsed));
+    const newSlots = { ...spellSlots, [level]: { ...slot, used: clamped } };
+    setDraft(d => ({ ...d, spellSlots: newSlots }));
+    updateDoc(doc(db, 'characters', id), { spellSlots: newSlots });
+  };
+
+  const longRest = () => {
+    const newSlots = {};
+    Object.entries(spellSlots).forEach(([lvl, data]) => { newSlots[lvl] = { ...data, used: 0 }; });
+    const updates = { spellSlots: newSlots, activeConcentration: null };
+    setDraft(d => ({ ...d, ...updates }));
+    updateDoc(doc(db, 'characters', id), updates);
+  };
+
+  const togglePreparedSpell = (spellId) => {
+    const isPrepared = preparedSpells.includes(spellId);
+    const next = isPrepared
+      ? preparedSpells.filter(sid => sid !== spellId)
+      : [...preparedSpells, spellId];
+    if (!isPrepared && next.length > maxPrepared) return;
+    setDraft(d => ({ ...d, preparedSpells: next }));
+    updateDoc(doc(db, 'characters', id), { preparedSpells: next });
+  };
+
+  const castSpell = (spellId) => {
+    const spell = SPELLS_MAP[spellId];
+    if (!spell || !spell.nivel || spell.esHabilidad) return;
+    const usable = Object.entries(spellSlots)
+      .map(([lvl, data]) => ({ lvl: parseInt(lvl), data }))
+      .filter(({ lvl, data }) => lvl >= spell.nivel && data.total - data.used > 0)
+      .sort((a, b) => a.lvl - b.lvl);
+    if (!usable.length) return;
+    const { lvl, data } = usable[0];
+    const newSlots  = { ...spellSlots, [lvl]: { ...data, used: data.used + 1 } };
+    const updates   = { spellSlots: newSlots };
+    if (spell.concentracion) updates.activeConcentration = spellId;
+    setDraft(d => ({ ...d, ...updates }));
+    updateDoc(doc(db, 'characters', id), updates);
+  };
+
   // ── DERIVED VALUES ────────────────────────────────────────────────────────
 
   if (!char) return <div style={s.loading}>Cargando personaje...</div>;
@@ -276,6 +351,7 @@ export default function CharacterSheet({ user }) {
   const TABS = [
     { id: 'ficha',      label: '📋 Ficha' },
     { id: 'inventario', label: '🎒 Inventario', badge: inventoryItems.length || null },
+    { id: 'conjuros',   label: '✨ Conjuros',   badge: preparedSpells.length || null },
     { id: 'lore',       label: '📖 Lore' },
   ];
 
@@ -568,7 +644,22 @@ export default function CharacterSheet({ user }) {
             {/* Estado */}
             <Section title="Estado" accent={accent1}>
               <StatusRow label="Condiciones"  value={draft.conditions   || 'Ninguna'} field="conditions"   editing={editing} update={update} />
-              <StatusRow label="Concentración" value={draft.concentration || '—'}       field="concentration" editing={editing} update={update} />
+              {/* Concentración — muestra conjuro activo si existe */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid var(--line)' }}>
+                <span style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--gold-dim)', textTransform: 'uppercase' }}>Concentración</span>
+                {editing
+                  ? <input value={draft.concentration || ''} onChange={e => update('concentration', e.target.value)}
+                      style={{ background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '13px', padding: '3px 8px', maxWidth: '160px' }} />
+                  : draft.activeConcentration
+                    ? <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: accent1 }}>✦ {SPELLS_MAP[draft.activeConcentration]?.nombre || '—'}</span>
+                        {isOwner && (
+                          <button onClick={() => { setDraft(d => ({ ...d, activeConcentration: null })); updateDoc(doc(db, 'characters', id), { activeConcentration: null }); }}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--ember-dim)', cursor: 'pointer', fontSize: '12px', padding: '0 2px' }}>✕</button>
+                        )}
+                      </div>
+                    : <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--parchment)' }}>{draft.concentration || '—'}</span>}
+              </div>
               <StatusRow label="Notas sesión"  value={draft.sessionNotes  || '—'}       field="sessionNotes"  editing={editing} update={update} />
             </Section>
 
@@ -611,6 +702,28 @@ export default function CharacterSheet({ user }) {
           accent={accent1}
           customItems={customItemsData}
           createCustomItem={createCustomItem}
+        />
+      )}
+
+      {/* ══════════════════════════════════════════════════
+          CONJUROS TAB
+      ══════════════════════════════════════════════════ */}
+      {activeTab === 'conjuros' && (
+        <SpellsTab
+          spellSlots={spellSlots}
+          preparedSpells={preparedSpells}
+          maxPrepared={maxPrepared}
+          isOwner={isOwner}
+          accent={accent1}
+          charClass={draft.class}
+          charLevel={draft.level}
+          charStats={draft.stats}
+          isMobile={isMobile}
+          updateSpellSlot={updateSpellSlot}
+          longRest={longRest}
+          togglePrepared={togglePreparedSpell}
+          castSpell={castSpell}
+          activeConcentration={draft.activeConcentration}
         />
       )}
 
@@ -1120,6 +1233,210 @@ function CustomItemModal({ onSave, onClose }) {
   );
 }
 
+// ── Spell slot row ────────────────────────────────────────────────────────────
+function SpellSlotRow({ level, total, used, isOwner, accent, onUse, onRecover }) {
+  const available = total - used;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase', minWidth: '52px' }}>Nivel {level}</span>
+      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+        {Array.from({ length: total }, (_, i) => {
+          const filled = i < available;
+          return (
+            <div key={i} onClick={isOwner ? (filled ? onUse : onRecover) : undefined}
+              title={isOwner ? (filled ? 'Clic para gastar' : 'Clic para recuperar') : ''}
+              style={{ width: '24px', height: '24px', borderRadius: '50%', border: `2px solid ${filled ? accent : accent + '44'}`, background: filled ? accent : 'transparent', cursor: isOwner ? 'pointer' : 'default', transition: 'all 0.15s', boxShadow: filled ? `0 0 8px ${accent}44` : 'none' }} />
+          );
+        })}
+      </div>
+      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', color: 'var(--gold-dim)', letterSpacing: '1px' }}>{available}/{total}</span>
+    </div>
+  );
+}
+
+// ── Spell meta line ───────────────────────────────────────────────────────────
+function SpellMeta({ label, value }) {
+  return (
+    <div>
+      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', letterSpacing: '1.5px', color: 'var(--gold-dim)', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>{label}</span>
+      <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--parchment-dim)' }}>{value}</span>
+    </div>
+  );
+}
+
+// ── Spell card ────────────────────────────────────────────────────────────────
+const SCHOOL_COLORS = {
+  'Abjuración': '#6a9fd8', 'Evocación': '#d8a06a', 'Encantamiento': '#a06ad8',
+  'Adivinación': '#6ad8d8', 'Transmutación': '#6ad87a', 'Conjuración': '#d8d86a',
+  'Necromancia': '#8b8b8b', 'Ilusión': '#d86a9f',
+};
+
+function SpellCard({ spell, isOwner, accent, expanded, onToggle, onCast, onUnprepare, canCast, isConcentration }) {
+  const schoolColor = SCHOOL_COLORS[spell.escuela] || 'var(--gold-dim)';
+  const hasSlot     = onCast && !spell.esHabilidad && spell.nivel > 0;
+  return (
+    <div style={{ border: `1px solid ${isConcentration ? accent : 'var(--line)'}`, background: isConcentration ? `${accent}0a` : 'rgba(11,9,6,0.4)', marginBottom: '6px', transition: 'border-color 0.2s' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', cursor: 'pointer' }} onClick={onToggle}>
+        <span style={{ fontFamily: 'Cinzel,serif', fontSize: '13px', color: 'var(--gold-bright)', fontWeight: '700', flex: 1 }}>{spell.nombre}</span>
+        {spell.esHabilidad
+          ? <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', letterSpacing: '1px', color: 'var(--gold-dim)', border: '1px solid var(--line)', padding: '2px 6px', textTransform: 'uppercase' }}>HABILIDAD</span>
+          : <span style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', color: accent, border: `1px solid ${accent}55`, padding: '2px 8px' }}>Nv.{spell.nivel}</span>}
+        {spell.concentracion && <span style={{ color: 'var(--ember)', fontSize: '8px' }}>●</span>}
+        <span style={{ color: 'var(--gold-dim)', fontSize: '9px' }}>{expanded ? '▲' : '▼'}</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '0 12px 8px', flexWrap: 'wrap' }}>
+        <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', letterSpacing: '1px', color: schoolColor, border: `1px solid ${schoolColor}55`, padding: '1px 6px', textTransform: 'uppercase' }}>{spell.escuela}</span>
+        {spell.concentracion && <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', letterSpacing: '1px', color: 'var(--ember)', border: '1px solid var(--ember-dim)', padding: '1px 6px', textTransform: 'uppercase' }}>● Concentración</span>}
+        {spell.ritual && <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', letterSpacing: '1px', color: '#6ad8d8', border: '1px solid #6ad8d855', padding: '1px 6px', textTransform: 'uppercase' }}>Ritual</span>}
+        {isConcentration && <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', letterSpacing: '1px', color: accent, border: `1px solid ${accent}`, padding: '1px 6px', textTransform: 'uppercase' }}>✦ Activo</span>}
+      </div>
+      {expanded && (
+        <div style={{ borderTop: '1px solid var(--line)', padding: '12px' }}>
+          <p style={{ fontFamily: 'Crimson Pro,serif', fontSize: '13px', color: 'var(--parchment-dim)', lineHeight: '1.6', margin: '0 0 12px 0' }}>{spell.descripcion}</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', marginBottom: '12px' }}>
+            <SpellMeta label="Tiempo" value={spell.tiempoCasteo} />
+            <SpellMeta label="Alcance" value={spell.alcance} />
+            <SpellMeta label="Duración" value={spell.duracion} />
+            <SpellMeta label="Componentes" value={spell.componentes} />
+          </div>
+          {isOwner && (
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {hasSlot && (
+                <button onClick={onCast} disabled={!canCast}
+                  style={{ background: canCast ? `${accent}20` : 'transparent', border: `1px solid ${canCast ? accent : 'var(--line)'}`, color: canCast ? accent : 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', padding: '6px 14px', cursor: canCast ? 'pointer' : 'not-allowed', textTransform: 'uppercase' }}>
+                  ✨ Castear
+                </button>
+              )}
+              {onUnprepare && (
+                <button onClick={onUnprepare}
+                  style={{ background: 'transparent', border: '1px solid var(--line)', color: 'var(--ember-dim)', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase' }}>
+                  ✕ Quitar
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Spells tab ────────────────────────────────────────────────────────────────
+function SpellsTab({ spellSlots, preparedSpells, maxPrepared, isOwner, accent, charClass, charLevel, charStats, isMobile, updateSpellSlot, longRest, togglePrepared, castSpell, activeConcentration }) {
+  const [expanded, setExpanded]       = useState(null);
+  const [spellSearch, setSpellSearch] = useState('');
+
+  const classSpells  = ALL_SPELLS.filter(s => s.clases?.includes('paladin') && !s.esHabilidad);
+  const abilities    = ALL_SPELLS.filter(s => s.clases?.includes('paladin') && s.esHabilidad);
+
+  const searchResults = spellSearch.length > 1
+    ? classSpells.filter(s =>
+        !preparedSpells.includes(s.id) &&
+        (s.nombre.toLowerCase().includes(spellSearch.toLowerCase()) ||
+         s.escuela.toLowerCase().includes(spellSearch.toLowerCase()))
+      ).slice(0, 6)
+    : [];
+
+  const preparedList  = preparedSpells.map(id => SPELLS_MAP[id]).filter(Boolean);
+  const activeSlots   = Object.entries(spellSlots || {}).filter(([, d]) => d.total > 0).sort(([a], [b]) => parseInt(a) - parseInt(b));
+
+  const canCast = (spell) => {
+    if (spell.nivel === 0 || spell.esHabilidad) return true;
+    return Object.entries(spellSlots || {}).some(([lvl, d]) => parseInt(lvl) >= spell.nivel && d.total - d.used > 0);
+  };
+
+  const toggle = (id) => setExpanded(e => e === id ? null : id);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '12px' }}>
+
+      {/* Botones descanso */}
+      {isOwner && (
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button style={sp.restBtn} onClick={longRest}>☽ Descanso Largo</button>
+          <button style={{ ...sp.restBtn, opacity: 0.35, cursor: 'not-allowed' }} disabled>☀ Descanso Corto</button>
+        </div>
+      )}
+
+      {/* Sección A — Espacios */}
+      <Section title="Espacios de Conjuro" accent={accent}>
+        {activeSlots.length === 0
+          ? <div style={sp.muted}>Este personaje no tiene espacios de conjuro aún.</div>
+          : <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {activeSlots.map(([lvl, data]) => (
+                <SpellSlotRow key={lvl} level={parseInt(lvl)} total={data.total} used={data.used}
+                  isOwner={isOwner} accent={accent}
+                  onUse={() => updateSpellSlot(lvl, data.used + 1)}
+                  onRecover={() => updateSpellSlot(lvl, data.used - 1)} />
+              ))}
+            </div>}
+      </Section>
+
+      {/* Sección B — Conjuros preparados */}
+      <Section title={`Conjuros Preparados — ${preparedList.length} / ${maxPrepared}`} accent={accent}>
+        {preparedList.length === 0
+          ? <div style={sp.muted}>Ningún conjuro preparado. Usa el buscador para preparar.</div>
+          : preparedList.map(spell => (
+              <SpellCard key={spell.id} spell={spell} isOwner={isOwner} accent={accent}
+                expanded={expanded === spell.id} onToggle={() => toggle(spell.id)}
+                onCast={() => castSpell(spell.id)} onUnprepare={() => togglePrepared(spell.id)}
+                canCast={canCast(spell)} isConcentration={activeConcentration === spell.id} />
+            ))}
+      </Section>
+
+      {/* Sección C — Agregar conjuros */}
+      {isOwner && (
+        <Section title="Agregar Conjuros" accent={accent}>
+          <div style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--gold-dim)', marginBottom: '8px' }}>
+            Máximo preparados: <span style={{ color: accent }}>{maxPrepared}</span>
+            <span style={{ color: 'var(--line)', margin: '0 6px' }}>·</span>
+            <span style={{ fontStyle: 'italic', fontFamily: 'Crimson Pro,serif', fontSize: '10px' }}>CAR mod + nivel de personaje</span>
+          </div>
+          <input value={spellSearch} onChange={e => setSpellSearch(e.target.value)}
+            style={sp.searchInput} placeholder="Buscar por nombre o escuela..." />
+          {searchResults.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
+              {searchResults.map(spell => (
+                <div key={spell.id} style={sp.searchRow}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '12px', color: 'var(--gold-bright)' }}>{spell.nombre}</span>
+                      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', border: `1px solid ${SCHOOL_COLORS[spell.escuela] || 'var(--line)'}55`, color: SCHOOL_COLORS[spell.escuela] || 'var(--gold-dim)', padding: '1px 5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{spell.escuela}</span>
+                      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', color: accent, border: `1px solid ${accent}55`, padding: '1px 5px' }}>Nv.{spell.nivel}</span>
+                      {spell.concentracion && <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', color: 'var(--ember)', letterSpacing: '0.5px' }}>● Conc.</span>}
+                    </div>
+                    <div style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--parchment-dim)', marginTop: '2px', lineHeight: 1.3 }}>{spell.descripcion?.substring(0, 90)}…</div>
+                  </div>
+                  <button style={{ ...sp.addBtn, opacity: preparedList.length >= maxPrepared ? 0.4 : 1 }}
+                    disabled={preparedList.length >= maxPrepared}
+                    onClick={() => { if (preparedList.length < maxPrepared) { togglePrepared(spell.id); setSpellSearch(''); } }}>
+                    + Preparar
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          {spellSearch.length > 1 && searchResults.length === 0 && (
+            <div style={{ ...sp.muted, marginTop: '8px' }}>Sin resultados para "{spellSearch}".</div>
+          )}
+
+          {/* Habilidades de clase */}
+          {abilities.length > 0 && (
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase', marginBottom: '8px' }}>Habilidades de Clase</div>
+              {abilities.map(ab => (
+                <SpellCard key={ab.id} spell={ab} isOwner={false} accent={accent}
+                  expanded={expanded === ab.id} onToggle={() => toggle(ab.id)}
+                  onCast={null} onUnprepare={null} canCast={false} isConcentration={false} />
+              ))}
+            </div>
+          )}
+        </Section>
+      )}
+    </div>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // STYLES
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1195,6 +1512,15 @@ const sl = {
   textarea: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '10px', width: '100%', resize: 'vertical', lineHeight: '1.7' },
   input:    { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '8px 10px', width: '100%' },
   loreTxt:  { fontFamily: 'Crimson Pro,serif', fontSize: '14px', lineHeight: '1.7', whiteSpace: 'pre-wrap', margin: 0 },
+};
+
+// Spells styles
+const sp = {
+  restBtn:     { background: 'rgba(201,168,76,0.07)', border: '1px solid var(--line)', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', padding: '8px 16px', cursor: 'pointer', textTransform: 'uppercase' },
+  searchInput: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '8px 12px', width: '100%', boxSizing: 'border-box' },
+  searchRow:   { display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '8px 10px', background: 'rgba(11,9,6,0.5)', border: '1px solid var(--line)' },
+  addBtn:      { background: 'rgba(201,168,76,0.12)', border: '1px solid var(--gold-dim)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1px', padding: '5px 10px', cursor: 'pointer', whiteSpace: 'nowrap', alignSelf: 'flex-start', flexShrink: 0 },
+  muted:       { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '13px', color: 'var(--gold-dim)' },
 };
 
 // Equipment slots styles
