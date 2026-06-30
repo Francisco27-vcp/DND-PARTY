@@ -1,28 +1,70 @@
 // src/pages/CharacterSheet.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { uploadImage } from '../lib/uploadImage';
 import { db } from '../lib/firebase';
 import ALL_ITEMS from '../data/items.json';
 
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+
 const ITEMS_MAP = Object.fromEntries(ALL_ITEMS.map(i => [i.id, i]));
 const TYPE_LABEL = { weapon: 'Arma', armor: 'Armadura', potion: 'Poción', magic: 'Objeto Mágico' };
 const TYPE_COLOR = { weapon: 'var(--ember)', armor: 'var(--gold)', potion: '#6aaa6a', magic: '#a07ad0' };
 const TYPE_ICON  = { weapon: '⚔️', armor: '🛡️', potion: '⚗️', magic: '✨' };
 
+const STAT_KEYS = ['fue', 'des', 'con', 'int', 'sab', 'car'];
+const STAT_ABBR = { fue: 'FUE', des: 'DES', con: 'CON', int: 'INT', sab: 'SAB', car: 'CAR' };
+
+const SKILLS = [
+  { id: 'atletismo',       nombre: 'Atletismo',          stat: 'fue' },
+  { id: 'acrobacias',      nombre: 'Acrobacias',         stat: 'des' },
+  { id: 'juego_de_manos',  nombre: 'Juego de Manos',     stat: 'des' },
+  { id: 'sigilo',          nombre: 'Sigilo',             stat: 'des' },
+  { id: 'arcanos',         nombre: 'Arcanos',            stat: 'int' },
+  { id: 'historia',        nombre: 'Historia',           stat: 'int' },
+  { id: 'investigacion',   nombre: 'Investigación',      stat: 'int' },
+  { id: 'naturaleza',      nombre: 'Naturaleza',         stat: 'int' },
+  { id: 'religion',        nombre: 'Religión',           stat: 'int' },
+  { id: 'perspicacia',     nombre: 'Perspicacia',        stat: 'sab' },
+  { id: 'medicina',        nombre: 'Medicina',           stat: 'sab' },
+  { id: 'percepcion',      nombre: 'Percepción',         stat: 'sab' },
+  { id: 'supervivencia',   nombre: 'Supervivencia',      stat: 'sab' },
+  { id: 'trato_animales',  nombre: 'T. con Animales',    stat: 'sab' },
+  { id: 'engano',          nombre: 'Engaño',             stat: 'car' },
+  { id: 'intimidacion',    nombre: 'Intimidación',       stat: 'car' },
+  { id: 'interpretacion',  nombre: 'Interpretación',     stat: 'car' },
+  { id: 'persuasion',      nombre: 'Persuasión',         stat: 'car' },
+];
+
+const profBonus = (level) => Math.ceil((level || 1) / 4) + 1;
+
+// ── MAIN COMPONENT ────────────────────────────────────────────────────────────
+
 export default function CharacterSheet({ user }) {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [char, setChar] = useState(null);
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [draft, setDraft] = useState({});
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [char, setChar]         = useState(null);
+  const [editing, setEditing]   = useState(false);
+  const [saving, setSaving]     = useState(false);
+  const [draft, setDraft]       = useState({});
+  const [userRole, setUserRole] = useState('');
   const [activeTab, setActiveTab] = useState('ficha');
   const [itemSearch, setItemSearch] = useState('');
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+  const [accentColors, setAccentColors] = useState([null, null]);
+  const [initRoll, setInitRoll] = useState(null);
+  const portraitRef = useRef(null);
 
+  const isAdmin = userRole === 'Dungeon Master' || userRole === 'Jugador / DM';
   const isOwner = char?.ownerEmail === user.email || isAdmin;
+  const canToggleInspiration = userRole === 'Dungeon Master' || userRole === 'Jugador / DM';
+
+  // Accent colors from portrait; fallback to character color → token
+  const accent1 = accentColors[0] || draft.color || 'var(--gold)';
+  const accent2 = accentColors[1] || 'var(--ember)';
+
+  // ── EFFECTS ──────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     const load = async () => {
@@ -40,16 +82,53 @@ export default function CharacterSheet({ user }) {
     const loadRole = async () => {
       try {
         const snap = await getDoc(doc(db, 'profiles', user.uid));
-        if (snap.exists()) {
-          const role = snap.data().role;
-          setIsAdmin(role === 'Dungeon Master' || role === 'Jugador / DM');
-        }
+        if (snap.exists()) setUserRole(snap.data().role || '');
       } catch (err) {
-        console.error('Error cargando rol del perfil:', err);
+        console.error('Error cargando rol:', err);
       }
     };
     loadRole();
   }, [user.uid]);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // Extract 2 dominant mid-tone colors from portrait for accent theming.
+  // Uses try/catch because cross-origin canvas access throws SecurityError when
+  // Firebase Storage CORS is not configured — silently falls back to tokens.
+  const extractDominantColors = useCallback((imgEl) => {
+    try {
+      const W = 60, H = 60;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(imgEl, 0, 0, W, H);
+      const { data } = ctx.getImageData(0, 0, W, H);
+      const buckets = {};
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3] < 128) continue;
+        const r = Math.round(data[i]     / 32) * 32;
+        const g = Math.round(data[i + 1] / 32) * 32;
+        const b = Math.round(data[i + 2] / 32) * 32;
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        if (lum < 30 || lum > 220) continue; // skip near-black and near-white
+        const key = `${r}|${g}|${b}`;
+        buckets[key] = (buckets[key] || 0) + 1;
+      }
+      const top = Object.entries(buckets)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 2)
+        .map(([k]) => { const [r, g, b] = k.split('|'); return `rgb(${r},${g},${b})`; });
+      if (top.length === 2) setAccentColors(top);
+    } catch {
+      // SecurityError from tainted canvas — keep token defaults
+    }
+  }, []);
+
+  // ── HANDLERS ─────────────────────────────────────────────────────────────────
 
   const save = async () => {
     setSaving(true);
@@ -59,8 +138,9 @@ export default function CharacterSheet({ user }) {
     setSaving(false);
   };
 
-  const update = (field, value) => setDraft(d => ({ ...d, [field]: value }));
-  const updateStat = (stat, value) => setDraft(d => ({ ...d, stats: { ...d.stats, [stat]: parseInt(value) || 0 } }));
+  const update     = (field, value) => setDraft(d => ({ ...d, [field]: value }));
+  const updateStat = (stat, value)  => setDraft(d => ({ ...d, stats: { ...d.stats, [stat]: parseInt(value) || 0 } }));
+  const updateLore = (key, value)   => setDraft(d => ({ ...d, lore: { ...d.lore, [key]: value } }));
 
   const handlePortrait = async (e) => {
     const file = e.target.files[0];
@@ -75,7 +155,39 @@ export default function CharacterSheet({ user }) {
     setSaving(false);
   };
 
-  // ── INVENTORY ──────────────────────────────────────────────────────────────
+  const toggleInspiration = async () => {
+    if (!canToggleInspiration) return;
+    const newVal = !draft.inspiration;
+    setDraft(d => ({ ...d, inspiration: newVal }));
+    await updateDoc(doc(db, 'characters', id), { inspiration: newVal });
+  };
+
+  const updateDeathSave = (type, index) => {
+    const current = draft.deathSaves?.[type] || 0;
+    const newVal  = Math.min(3, current > index ? index : index + 1);
+    const newDS   = { ...(draft.deathSaves || {}), [type]: newVal };
+    setDraft(d => ({ ...d, deathSaves: newDS }));
+    updateDoc(doc(db, 'characters', id), { deathSaves: newDS });
+  };
+
+  const rollInitiative = () => {
+    const nat    = Math.ceil(Math.random() * 20);
+    const desMod = Math.floor(((draft.stats?.des || 10) - 10) / 2);
+    setInitRoll({ nat, total: nat + desMod });
+    setTimeout(() => setInitRoll(null), 4000);
+  };
+
+  const toggleSkill = (skillId) => {
+    if (!editing) return;
+    update('skills', { ...draft.skills, [skillId]: !(draft.skills?.[skillId]) });
+  };
+  const toggleSave = (stat) => {
+    if (!editing) return;
+    update('savingThrows', { ...draft.savingThrows, [stat]: !(draft.savingThrows?.[stat]) });
+  };
+
+  // ── INVENTORY (unchanged) ─────────────────────────────────────────────────
+
   const inventoryItems = draft.inventoryItems || [];
 
   const recomputeAC = (items, stats) => {
@@ -98,24 +210,18 @@ export default function CharacterSheet({ user }) {
     updateDoc(doc(db, 'characters', id), { inventoryItems: newItems, ac: newAC });
   };
 
-  const addToInventory = (itemId) => {
+  const addToInventory    = (itemId) => {
     if (inventoryItems.find(i => i.itemId === itemId)) return;
     applyInventoryUpdate([...inventoryItems, { itemId, equipped: false, quantity: 1 }]);
   };
-
-  const removeFromInventory = (itemId) => {
-    applyInventoryUpdate(inventoryItems.filter(i => i.itemId !== itemId));
-  };
+  const removeFromInventory = (itemId) => applyInventoryUpdate(inventoryItems.filter(i => i.itemId !== itemId));
 
   const toggleEquipped = (itemId) => {
     const item = ITEMS_MAP[itemId];
     const currentlyEquipped = inventoryItems.find(i => i.itemId === itemId)?.equipped;
     const newItems = inventoryItems.map(i => {
       if (i.itemId === itemId) return { ...i, equipped: !i.equipped };
-      // Only one armor equipped at a time
-      if (!currentlyEquipped && item?.tipo === 'armor' && ITEMS_MAP[i.itemId]?.tipo === 'armor') {
-        return { ...i, equipped: false };
-      }
+      if (!currentlyEquipped && item?.tipo === 'armor' && ITEMS_MAP[i.itemId]?.tipo === 'armor') return { ...i, equipped: false };
       return i;
     });
     applyInventoryUpdate(newItems);
@@ -128,49 +234,71 @@ export default function CharacterSheet({ user }) {
     setDraft(d => ({ ...d, inventoryItems: newItems }));
     updateDoc(doc(db, 'characters', id), { inventoryItems: newItems });
   };
-  // ────────────────────────────────────────────────────────────────────────────
+
+  // ── DERIVED VALUES ────────────────────────────────────────────────────────
 
   if (!char) return <div style={s.loading}>Cargando personaje...</div>;
 
-  const xpPct = Math.min(100, Math.round(((draft.xp || 0) / (draft.xpNext || 2700)) * 100));
-  const hpPct = Math.min(100, Math.round(((draft.hp || 0) / (draft.hpMax || 1)) * 100));
-  const statMod = (val) => { const m = Math.floor((val - 10) / 2); return m >= 0 ? `+${m}` : `${m}`; };
+  const statMod    = (val) => { const m = Math.floor((val - 10) / 2); return m >= 0 ? `+${m}` : `${m}`; };
+  const prof       = profBonus(draft.level);
+  const hpPct      = Math.min(100, Math.round(((draft.hp || 0) / (draft.hpMax || 1)) * 100));
+  const xpPct      = Math.min(100, Math.round(((draft.xp || 0) / (draft.xpNext || 2700)) * 100));
+  const passivePerc = 10 + Math.floor(((draft.stats?.sab || 10) - 10) / 2) + (draft.skills?.percepcion ? prof : 0);
+
+  const skillVal = (skill) => Math.floor(((draft.stats?.[skill.stat] || 10) - 10) / 2) + (draft.skills?.[skill.id] ? prof : 0);
+  const saveVal  = (stat)  => Math.floor(((draft.stats?.[stat]      || 10) - 10) / 2) + (draft.savingThrows?.[stat] ? prof : 0);
+
+  const fmtMod = (n) => (n >= 0 ? `+${n}` : `${n}`);
+
+  const TABS = [
+    { id: 'ficha',      label: '📋 Ficha' },
+    { id: 'inventario', label: '🎒 Inventario', badge: inventoryItems.length || null },
+    { id: 'lore',       label: '📖 Lore' },
+  ];
+
+  // ── RENDER ────────────────────────────────────────────────────────────────
 
   return (
     <div style={s.page} className="fade-in">
 
-      {/* PORTRAIT COVER */}
+      {/* ── PORTRAIT ── */}
       {draft.portrait && (
-        <div style={s.coverWrap}>
-          <img src={draft.portrait} alt={draft.name} style={s.coverImg} />
+        <div style={s.portraitWrap}>
+          <img
+            ref={portraitRef}
+            src={draft.portrait}
+            alt={draft.name}
+            style={s.portraitImg}
+            onLoad={e => extractDominantColors(e.target)}
+          />
           <div style={s.coverOverlay} />
           <div style={s.coverText}>
-            <div style={s.coverName}>{draft.name}</div>
+            <div style={{ ...s.coverName, color: accent1 }}>{draft.name}</div>
             <div style={s.coverSub}>{draft.race} {draft.class} · Lv{draft.level}</div>
           </div>
         </div>
       )}
 
-      {/* TOP BAR */}
+      {/* ── TOP BAR ── */}
       <div style={s.topBar}>
         <button style={s.backBtn} onClick={() => navigate('/')}>← Volver</button>
-        {isOwner && !editing && <button style={s.editBtn} onClick={() => setEditing(true)}>✏️ Editar</button>}
-        {editing && (
-          <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {isOwner && !editing && <button style={s.editBtn} onClick={() => setEditing(true)}>✏️ Editar</button>}
+          {editing && <>
             <button style={s.cancelBtn} onClick={() => { setEditing(false); setDraft(char); }}>Cancelar</button>
             <button style={s.saveBtn} onClick={save} disabled={saving}>{saving ? 'Guardando...' : '✓ Guardar'}</button>
-          </div>
-        )}
+          </>}
+        </div>
       </div>
 
-      {/* HEADER */}
-      <div style={{ ...s.header, borderColor: draft.color || '#c9a84c' }}>
+      {/* ── HEADER ── */}
+      <div style={{ ...s.header, borderColor: accent1 }}>
         <div style={s.headerLeft}>
           <span style={{ fontSize: '36px' }}>{draft.icon || '⚔️'}</span>
           <div style={{ flex: 1 }}>
             {editing
               ? <input value={draft.name} onChange={e => update('name', e.target.value)} style={s.inputLarge} />
-              : <h1 style={s.charName}>{draft.name}</h1>}
+              : <h1 style={{ ...s.charName, color: accent1 }}>{draft.name}</h1>}
             <div style={s.charSub}>{draft.race} {draft.class} · Lv{draft.level} · {draft.alignment}</div>
             <div style={s.charSubclass}>{draft.subclass}</div>
           </div>
@@ -178,20 +306,20 @@ export default function CharacterSheet({ user }) {
         <div style={s.levelCircle}>
           {editing
             ? <input type="number" value={draft.level} onChange={e => update('level', parseInt(e.target.value))} style={{ ...s.inputNum, fontSize: '28px', width: '60px' }} />
-            : <span style={{ fontFamily: 'Cinzel,serif', fontSize: '32px', fontWeight: '900', color: draft.color || '#c9a84c' }}>{draft.level}</span>}
+            : <span style={{ fontFamily: 'Cinzel,serif', fontSize: '32px', fontWeight: '900', color: accent1 }}>{draft.level}</span>}
           <span style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase' }}>Nivel</span>
         </div>
       </div>
 
-      {/* Portrait upload in edit mode */}
+      {/* Portrait upload */}
       {editing && (
         <div style={s.portraitEditBox}>
-          <div style={s.formLabel}>Cambiar ilustración / foto del personaje</div>
+          <div style={s.formLabel}>Ilustración del personaje</div>
           <input type="file" accept="image/*" onChange={handlePortrait} style={s.fileInput} />
         </div>
       )}
 
-      {/* XP BAR */}
+      {/* ── XP BAR ── */}
       <div style={s.xpSection}>
         <div style={s.xpRow}>
           <span style={s.xpLabel}>Experiencia</span>
@@ -199,100 +327,223 @@ export default function CharacterSheet({ user }) {
             ? <input type="number" value={draft.xp} onChange={e => update('xp', parseInt(e.target.value) || 0)} style={s.inputNum} />
             : <span style={s.xpVal}>{(draft.xp || 0).toLocaleString()} XP</span>}
         </div>
-        <div style={s.barTrack}><div style={{ ...s.barFill, width: `${xpPct}%`, background: 'linear-gradient(to right, #7a6030, #c9a84c)' }} /></div>
+        <div style={s.barTrack}>
+          <div style={{ ...s.barFill, width: `${xpPct}%`, background: `linear-gradient(to right, ${accent1}88, ${accent1})` }} />
+        </div>
         <div style={{ ...s.xpRow, marginTop: '3px' }}>
           <span style={s.dimLabel}>Lv{(draft.level || 3) + 1} →</span>
           <span style={s.dimLabel}>{(draft.xpNext || 2700).toLocaleString()} XP</span>
         </div>
       </div>
 
-      {/* TABS */}
+      {/* ── TABS ── */}
       <div style={s.tabBar}>
-        {['ficha', 'inventario'].map(tab => (
-          <button
-            key={tab}
-            style={{ ...s.tabBtn, ...(activeTab === tab ? s.tabBtnActive : {}) }}
-            onClick={() => setActiveTab(tab)}
+        {TABS.map(tab => (
+          <button key={tab.id}
+            style={{ ...s.tabBtn, ...(activeTab === tab.id ? { ...s.tabBtnActive, borderColor: accent1, color: accent1 } : {}) }}
+            onClick={() => setActiveTab(tab.id)}
           >
-            {tab === 'ficha' ? '📋 Ficha' : '🎒 Inventario'}
-            {tab === 'inventario' && inventoryItems.length > 0 && (
-              <span style={s.tabBadge}>{inventoryItems.length}</span>
-            )}
+            {tab.label}
+            {tab.badge && <span style={s.tabBadge}>{tab.badge}</span>}
           </button>
         ))}
       </div>
 
-      {/* FICHA TAB */}
+      {/* ══════════════════════════════════════════════════
+          FICHA TAB
+      ══════════════════════════════════════════════════ */}
       {activeTab === 'ficha' && (
-        <div style={s.mainGrid}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', paddingTop: '12px' }}>
 
-          {/* LEFT */}
-          <div style={s.leftCol}>
-            <Section title="Características">
+          {/* LEFT: Características + Salvaciones + Habilidades */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
+            <Section title="Características" accent={accent1}>
               <div style={s.statsGrid}>
-                {['fue','des','con','int','sab','car'].map(stat => (
+                {STAT_KEYS.map(stat => (
                   <div key={stat} style={s.statBlock}>
-                    <span style={s.statName}>{stat.toUpperCase()}</span>
+                    <span style={s.statName}>{STAT_ABBR[stat]}</span>
                     {editing
-                      ? <input type="number" value={draft.stats?.[stat] || 10} onChange={e => updateStat(stat, e.target.value)} style={{ ...s.inputNum, fontSize: '18px', width: '48px', textAlign: 'center' }} />
+                      ? <input type="number" value={draft.stats?.[stat] || 10} onChange={e => updateStat(stat, e.target.value)}
+                          style={{ ...s.inputNum, fontSize: '18px', width: '48px', textAlign: 'center' }} />
                       : <span style={s.statScore}>{draft.stats?.[stat] || 10}</span>}
-                    <span style={s.statMod}>{statMod(draft.stats?.[stat] || 10)}</span>
+                    <span style={{ ...s.statMod, color: accent1 }}>{statMod(draft.stats?.[stat] || 10)}</span>
                   </div>
                 ))}
               </div>
             </Section>
 
-            <Section title="Combate">
-              <div style={s.combatRow}>
-                <CombatStat label="CA" value={draft.ac} field="ac" editing={editing} update={update} />
-                <CombatStat label="Iniciativa" value={statMod(draft.stats?.des || 10)} />
-                <CombatStat label="Velocidad" value="9m" />
-                <CombatStat label="Prof." value="+2" />
-              </div>
-              <div style={s.hpBox}>
-                <div style={s.xpRow}>
-                  <span style={s.xpLabel}>Puntos de Golpe</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {editing
-                      ? <><input type="number" value={draft.hp} onChange={e => update('hp', parseInt(e.target.value) || 0)} style={{ ...s.inputNum, width: '48px' }} />
-                         <span style={{ color: '#5a4820' }}>/</span>
-                         <input type="number" value={draft.hpMax} onChange={e => update('hpMax', parseInt(e.target.value) || 0)} style={{ ...s.inputNum, width: '48px' }} />
-                        </>
-                      : <span style={{ fontFamily: 'Cinzel,serif', fontSize: '20px', color: 'var(--ember)', fontWeight: '700' }}>{draft.hp} <span style={{ color: 'var(--gold-dim)', fontSize: '13px' }}>/ {draft.hpMax}</span></span>}
-                  </div>
-                </div>
-                <div style={s.barTrack}><div style={{ ...s.barFill, width: `${hpPct}%`, background: hpPct > 50 ? '#4a8a4a' : hpPct > 25 ? '#a07020' : '#8b1a1a' }} /></div>
+            <Section title="Tiradas de Salvación" accent={accent1}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                {STAT_KEYS.map(stat => {
+                  const active = draft.savingThrows?.[stat] || false;
+                  const val    = saveVal(stat);
+                  return (
+                    <div key={stat} style={fs.row}>
+                      <Pip active={active} accent={accent1} editing={editing} onClick={() => toggleSave(stat)} />
+                      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1px', color: 'var(--gold-dim)', width: '28px' }}>{STAT_ABBR[stat]}</span>
+                      <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '13px', color: 'var(--parchment-dim)', flex: 1 }}>Salvación</span>
+                      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', color: active ? accent1 : 'var(--parchment)', minWidth: '28px', textAlign: 'right' }}>{fmtMod(val)}</span>
+                    </div>
+                  );
+                })}
               </div>
             </Section>
 
-            <Section title="Jugador">
-              {editing
-                ? <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <input value={draft.player || ''} onChange={e => update('player', e.target.value)} style={s.inputFull} placeholder="Nombre del jugador" />
-                    <input value={draft.ownerEmail || ''} onChange={e => update('ownerEmail', e.target.value)} style={s.inputFull} placeholder="Email del jugador (para permisos de edición)" />
-                  </div>
-                : <span style={{ fontFamily: 'Cinzel,serif', fontSize: '15px', color: 'var(--gold-bright)' }}>{draft.player || '—'}</span>}
+            <Section title="Habilidades" accent={accent1}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px 4px' }}>
+                {SKILLS.map(skill => {
+                  const active = draft.skills?.[skill.id] || false;
+                  const val    = skillVal(skill);
+                  return (
+                    <div key={skill.id} style={fs.row}>
+                      <Pip active={active} accent={accent1} editing={editing} onClick={() => toggleSkill(skill.id)} />
+                      <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--parchment-dim)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{skill.nombre}</span>
+                      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', color: 'var(--gold-dim)', marginRight: '2px', flexShrink: 0 }}>{STAT_ABBR[skill.stat]}</span>
+                      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '12px', fontWeight: '700', color: active ? accent1 : 'var(--parchment)', minWidth: '22px', textAlign: 'right', flexShrink: 0 }}>{fmtMod(val)}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </Section>
           </div>
 
-          {/* RIGHT */}
-          <div style={s.rightCol}>
-            <Section title="Notas del personaje">
-              {editing
-                ? <textarea value={draft.notes || ''} onChange={e => update('notes', e.target.value)} style={s.textarea} placeholder="Motivaciones, lore personal, backstory..." rows={5} />
-                : <p style={s.notesText}>{draft.notes || <span style={{ color: 'var(--gold-dim)', fontStyle: 'italic' }}>Sin notas. Editá para agregar.</span>}</p>}
+          {/* RIGHT: Combate + HP + Estado */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
+            <Section title="Combate" accent={accent1}>
+              <div style={s.combatRow}>
+                <CombatStat label="CA" value={draft.ac} field="ac" editing={editing} update={update} />
+
+                {/* Iniciativa — clickeable para tirar */}
+                <div
+                  style={{ ...ss.combatStat, cursor: 'pointer', borderColor: initRoll ? accent1 : 'var(--line)', transition: 'border-color 0.3s' }}
+                  onClick={rollInitiative}
+                  title="Clic para tirar iniciativa (1d20 + DES)"
+                >
+                  <span style={ss.combatLabel}>Iniciativa</span>
+                  {initRoll
+                    ? <>
+                        <span style={{ fontFamily: 'Cinzel,serif', fontSize: '20px', fontWeight: '900', color: accent1, lineHeight: 1 }}>{fmtMod(initRoll.total)}</span>
+                        <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '10px', color: 'var(--gold-dim)' }}>d20={initRoll.nat}</span>
+                      </>
+                    : <span style={ss.combatVal}>{statMod(draft.stats?.des || 10)}</span>}
+                </div>
+
+                <CombatStat label="Velocidad" value={draft.speed || '9m'} field="speed" editing={editing} update={update} />
+
+                <div style={{ ...ss.combatStat, borderColor: `${accent1}55` }}>
+                  <span style={ss.combatLabel}>Prof.</span>
+                  <span style={{ ...ss.combatVal, color: accent1 }}>+{prof}</span>
+                </div>
+              </div>
             </Section>
 
-            <Section title="Estado actual">
-              <StatusRow label="Condiciones" value={draft.conditions || 'Ninguna'} field="conditions" editing={editing} update={update} />
-              <StatusRow label="Concentración" value={draft.concentration || '—'} field="concentration" editing={editing} update={update} />
-              <StatusRow label="Inspiración" value={draft.inspiration ? '✦ Activa' : 'No tiene'} field="inspiration" editing={editing} update={update} isToggle />
+            {/* Puntos de Golpe */}
+            <Section title="Puntos de Golpe" accent={accent2}>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', marginBottom: '8px' }}>
+                {editing
+                  ? <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <input type="number" value={draft.hp} onChange={e => update('hp', parseInt(e.target.value) || 0)}
+                        style={{ ...s.inputNum, width: '56px', fontSize: '22px' }} />
+                      <span style={{ color: 'var(--gold-dim)', fontSize: '18px' }}>/</span>
+                      <input type="number" value={draft.hpMax} onChange={e => update('hpMax', parseInt(e.target.value) || 0)}
+                        style={{ ...s.inputNum, width: '56px', fontSize: '22px' }} />
+                    </div>
+                  : <div>
+                      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '32px', fontWeight: '900', color: hpPct > 50 ? '#6aaa6a' : hpPct > 25 ? accent2 : 'var(--ember)', lineHeight: 1 }}>{draft.hp}</span>
+                      <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--gold-dim)' }}> / {draft.hpMax}</span>
+                    </div>}
+                <span style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--gold-dim)', paddingBottom: '4px' }}>{hpPct}%</span>
+              </div>
+              <div style={s.barTrack}>
+                <div style={{ ...s.barFill, width: `${hpPct}%`, background: hpPct > 50 ? '#4a8a4a' : hpPct > 25 ? '#a07020' : '#8b1a1a' }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid var(--line)' }}>
+                <span style={s.xpLabel}>HP Temporales</span>
+                {editing
+                  ? <input type="number" value={draft.hpTemp || 0} onChange={e => update('hpTemp', parseInt(e.target.value) || 0)} style={{ ...s.inputNum, width: '56px' }} />
+                  : <span style={{ fontFamily: 'Cinzel,serif', fontSize: '22px', fontWeight: '700', color: '#6abf6a' }}>{draft.hpTemp || 0}</span>}
+              </div>
+            </Section>
+
+            {/* Tiradas de muerte — solo visible cuando HP = 0 */}
+            {(draft.hp || 0) === 0 && (
+              <Section title="Tiradas de Muerte" accent={accent2}>
+                <div style={{ display: 'flex', gap: '20px' }}>
+                  {[
+                    { type: 'successes', label: 'Éxitos',  color: '#6aaa6a' },
+                    { type: 'failures',  label: 'Fallos',  color: accent2 },
+                  ].map(({ type, label, color }) => (
+                    <div key={type} style={{ flex: 1 }}>
+                      <div style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1.5px', color, textTransform: 'uppercase', marginBottom: '8px' }}>{label}</div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {[0, 1, 2].map(i => (
+                          <div key={i} onClick={() => updateDeathSave(type, i)} style={{
+                            width: '28px', height: '28px', borderRadius: '50%',
+                            border: `2px solid ${color}`,
+                            background: (draft.deathSaves?.[type] || 0) > i ? color : 'transparent',
+                            cursor: 'pointer', transition: 'all 0.2s',
+                          }} />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
+
+            {/* Percepción pasiva + Inspiración */}
+            <Section title="Extras" accent={accent1}>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={fs.extraBox}>
+                  <div style={s.xpLabel}>Percepción Pasiva</div>
+                  <div style={{ fontFamily: 'Cinzel,serif', fontSize: '28px', fontWeight: '700', color: 'var(--parchment)', lineHeight: 1, marginTop: '6px' }}>{passivePerc}</div>
+                </div>
+                <div
+                  onClick={canToggleInspiration ? toggleInspiration : undefined}
+                  style={{ ...fs.extraBox, flex: 1.2, borderColor: draft.inspiration ? accent1 : 'var(--line)', background: draft.inspiration ? `${accent1}15` : 'rgba(11,9,6,0.5)', cursor: canToggleInspiration ? 'pointer' : 'default', transition: 'all 0.3s' }}
+                  title={canToggleInspiration ? 'Clic para activar/desactivar' : ''}
+                >
+                  <div style={s.xpLabel}>Inspiración</div>
+                  <div style={{ fontFamily: 'Cinzel,serif', fontSize: '18px', fontWeight: '700', color: draft.inspiration ? accent1 : 'var(--gold-dim)', marginTop: '6px' }}>
+                    {draft.inspiration ? '✦ Activa' : '✧ Sin'}
+                  </div>
+                  {canToggleInspiration && <div style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', letterSpacing: '1px', color: 'var(--gold-dim)', marginTop: '2px' }}>SOLO DM</div>}
+                </div>
+              </div>
+            </Section>
+
+            {/* Estado */}
+            <Section title="Estado" accent={accent1}>
+              <StatusRow label="Condiciones"  value={draft.conditions   || 'Ninguna'} field="conditions"   editing={editing} update={update} />
+              <StatusRow label="Concentración" value={draft.concentration || '—'}       field="concentration" editing={editing} update={update} />
+              <StatusRow label="Notas sesión"  value={draft.sessionNotes  || '—'}       field="sessionNotes"  editing={editing} update={update} />
+            </Section>
+
+            {/* Jugador */}
+            <Section title="Jugador" accent={accent1}>
+              {editing
+                ? <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <input value={draft.player || ''} onChange={e => update('player', e.target.value)} style={s.inputFull} placeholder="Nombre del jugador" />
+                    <input value={draft.ownerEmail || ''} onChange={e => update('ownerEmail', e.target.value)} style={s.inputFull} placeholder="Email del jugador (para permisos)" />
+                  </div>
+                : <span style={{ fontFamily: 'Cinzel,serif', fontSize: '15px', color: 'var(--gold-bright)' }}>{draft.player || '—'}</span>}
+            </Section>
+
+            {/* Notas */}
+            <Section title="Notas del personaje" accent={accent1}>
+              {editing
+                ? <textarea value={draft.notes || ''} onChange={e => update('notes', e.target.value)} style={s.textarea} placeholder="Motivaciones, lore personal, backstory..." rows={4} />
+                : <p style={s.notesText}>{draft.notes || <span style={{ color: 'var(--gold-dim)', fontStyle: 'italic' }}>Sin notas.</span>}</p>}
             </Section>
           </div>
         </div>
       )}
 
-      {/* INVENTARIO TAB */}
+      {/* ══════════════════════════════════════════════════
+          INVENTARIO TAB (sin cambios)
+      ══════════════════════════════════════════════════ */}
       {activeTab === 'inventario' && (
         <InventoryTab
           inventoryItems={inventoryItems}
@@ -306,14 +557,110 @@ export default function CharacterSheet({ user }) {
         />
       )}
 
+      {/* ══════════════════════════════════════════════════
+          LORE TAB
+      ══════════════════════════════════════════════════ */}
+      {activeTab === 'lore' && (
+        <LoreTab lore={draft.lore} editing={editing} isOwner={isOwner} updateLore={updateLore} accent={accent1} />
+      )}
+
       {!isOwner && <div style={s.readOnlyBadge}>👁️ Vista de solo lectura — este no es tu personaje</div>}
       <div style={{ height: '80px' }} />
     </div>
   );
 }
 
-// ── SUB-COMPONENTS ────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// SUB-COMPONENTS
+// ══════════════════════════════════════════════════════════════════════════════
 
+// ── Proficiency pip ──────────────────────────────────────────────────────────
+function Pip({ active, accent, editing, onClick }) {
+  return (
+    <div
+      onClick={editing ? onClick : undefined}
+      style={{
+        width: '11px', height: '11px', borderRadius: '50%', flexShrink: 0,
+        border: `1px solid ${active ? (accent || 'var(--gold)') : 'var(--gold-dim)'}`,
+        background: active ? (accent || 'var(--gold)') : 'transparent',
+        cursor: editing ? 'pointer' : 'default',
+        transition: 'all 0.15s',
+      }}
+    />
+  );
+}
+
+// ── Section wrapper ───────────────────────────────────────────────────────────
+function Section({ title, children, accent }) {
+  const lineColor = accent ? `${accent}55` : 'var(--line)';
+  return (
+    <div style={ss.section}>
+      <div style={ss.sectionHeader}>
+        <span style={ss.sectionTitle}>{title}</span>
+        <div style={{ ...ss.sectionLine, background: `linear-gradient(to right, ${lineColor}, transparent)` }} />
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Combat stat box ───────────────────────────────────────────────────────────
+function CombatStat({ label, value, field, editing, update }) {
+  return (
+    <div style={ss.combatStat}>
+      <span style={ss.combatLabel}>{label}</span>
+      {editing && field
+        ? <input type="text" value={value ?? ''} onChange={e => update(field, e.target.value)}
+            style={{ ...ss.inputNum, fontSize: '16px', width: '50px' }} />
+        : <span style={ss.combatVal}>{value}</span>}
+    </div>
+  );
+}
+
+// ── Status row ────────────────────────────────────────────────────────────────
+function StatusRow({ label, value, field, editing, update }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid var(--line)' }}>
+      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--gold-dim)', textTransform: 'uppercase' }}>{label}</span>
+      {editing
+        ? <input value={value} onChange={e => update(field, e.target.value)}
+            style={{ background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '13px', padding: '3px 8px', maxWidth: '160px' }} />
+        : <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--parchment)' }}>{value}</span>}
+    </div>
+  );
+}
+
+// ── Lore tab ──────────────────────────────────────────────────────────────────
+function LoreTab({ lore, editing, isOwner, updateLore, accent }) {
+  const fields = [
+    { key: 'rasgos',   label: 'Rasgos de Personalidad', placeholder: 'Maneras de hablar, hábitos, peculiaridades...', rows: 3 },
+    { key: 'ideal',    label: 'Ideal',                  placeholder: 'Lo que el personaje valora profundamente...' },
+    { key: 'defecto',  label: 'Defecto',                placeholder: 'La debilidad o vicio del personaje...' },
+    { key: 'meta',     label: 'Meta',                   placeholder: 'El objetivo a largo plazo del personaje...' },
+    { key: 'historia', label: 'Trasfondo Narrativo',    placeholder: 'Historia del personaje antes de la campaña...', rows: 6 },
+    { key: 'vinculos', label: 'Vínculos Actuales',      placeholder: 'Relaciones y lazos forjados durante la aventura...', rows: 4 },
+  ];
+  const canEdit = editing && isOwner;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '12px' }}>
+      {fields.map(f => (
+        <Section key={f.key} title={f.label} accent={accent}>
+          {canEdit
+            ? f.rows
+              ? <textarea value={lore?.[f.key] || ''} onChange={e => updateLore(f.key, e.target.value)}
+                  style={sl.textarea} placeholder={f.placeholder} rows={f.rows} />
+              : <input value={lore?.[f.key] || ''} onChange={e => updateLore(f.key, e.target.value)}
+                  style={sl.input} placeholder={f.placeholder} />
+            : <p style={{ ...sl.loreTxt, color: lore?.[f.key] ? 'var(--parchment-dim)' : 'var(--gold-dim)', fontStyle: lore?.[f.key] ? 'normal' : 'italic' }}>
+                {lore?.[f.key] || f.placeholder}
+              </p>}
+        </Section>
+      ))}
+    </div>
+  );
+}
+
+// ── Inventory tab (unchanged) ─────────────────────────────────────────────────
 function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventory, removeFromInventory, toggleEquipped, changeQuantity, isOwner }) {
   const searchResults = itemSearch.length > 1
     ? ALL_ITEMS.filter(item =>
@@ -323,7 +670,7 @@ function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventor
       ).slice(0, 6)
     : [];
 
-  const equippedItems  = inventoryItems.filter(i => i.equipped);
+  const equippedItems   = inventoryItems.filter(i => i.equipped);
   const unequippedItems = inventoryItems.filter(i => !i.equipped);
   const equippedWeapons = equippedItems
     .map(i => ({ inv: i, item: ITEMS_MAP[i.itemId] }))
@@ -331,17 +678,11 @@ function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventor
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
-
-      {/* Search */}
       {isOwner && (
         <div style={iv.searchWrap}>
           <div style={iv.sectionLabel}>Agregar objeto al inventario</div>
-          <input
-            value={itemSearch}
-            onChange={e => setItemSearch(e.target.value)}
-            style={iv.searchInput}
-            placeholder="Buscar por nombre o tipo (arma, armadura, poción, objeto mágico)..."
-          />
+          <input value={itemSearch} onChange={e => setItemSearch(e.target.value)} style={iv.searchInput}
+            placeholder="Buscar por nombre o tipo (arma, armadura, poción, objeto mágico)..." />
           {searchResults.length > 0 && (
             <div style={iv.searchResults}>
               {searchResults.map(item => (
@@ -354,9 +695,7 @@ function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventor
                     </div>
                     <div style={iv.resultDesc}>{item.descripcion}</div>
                   </div>
-                  <button style={iv.addBtn} onClick={() => { addToInventory(item.id); setItemSearch(''); }}>
-                    + Agregar
-                  </button>
+                  <button style={iv.addBtn} onClick={() => { addToInventory(item.id); setItemSearch(''); }}>+ Agregar</button>
                 </div>
               ))}
             </div>
@@ -364,14 +703,11 @@ function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventor
         </div>
       )}
 
-      {/* Attacks table from equipped weapons */}
       {equippedWeapons.length > 0 && (
         <div style={iv.section}>
           <div style={iv.sectionHeader}><span style={iv.sectionTitle}>Ataques</span><div style={iv.sectionLine} /></div>
           <div style={iv.attackTable}>
-            <div style={iv.attackHeader}>
-              <span>Arma</span><span>Daño</span><span>Tipo</span><span>Propiedades</span>
-            </div>
+            <div style={iv.attackHeader}><span>Arma</span><span>Daño</span><span>Tipo</span><span>Propiedades</span></div>
             {equippedWeapons.map(({ inv, item }) => (
               <div key={inv.itemId} style={iv.attackRow}>
                 <span style={{ fontFamily: 'Cinzel,serif', fontSize: '12px', color: 'var(--parchment)' }}>{item.nombre}</span>
@@ -384,7 +720,6 @@ function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventor
         </div>
       )}
 
-      {/* Equipped items */}
       {equippedItems.length > 0 && (
         <div style={iv.section}>
           <div style={iv.sectionHeader}><span style={iv.sectionTitle}>Equipado</span><div style={iv.sectionLine} /></div>
@@ -395,7 +730,6 @@ function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventor
         </div>
       )}
 
-      {/* Unequipped items */}
       {unequippedItems.length > 0 && (
         <div style={iv.section}>
           <div style={iv.sectionHeader}><span style={iv.sectionTitle}>Mochila</span><div style={iv.sectionLine} /></div>
@@ -418,13 +752,11 @@ function InventoryTab({ inventoryItems, itemSearch, setItemSearch, addToInventor
 function ItemRow({ inv, isOwner, toggleEquipped, removeFromInventory, changeQuantity }) {
   const item = ITEMS_MAP[inv.itemId];
   if (!item) return null;
-
   const statsText = item.tipo === 'weapon'
     ? `${item.stats.daño} ${item.stats.tipoDaño}`
     : item.tipo === 'armor'
     ? `CA ${item.stats.caBase}${item.stats.armorType !== 'heavy' ? ' + DES' : ''}`
     : item.stats.efecto;
-
   return (
     <div style={{ ...iv.itemRow, background: inv.equipped ? 'rgba(201,168,76,0.06)' : 'rgba(11,9,6,0.4)' }}>
       <span style={{ fontSize: '20px', minWidth: '28px', paddingTop: '2px' }}>{TYPE_ICON[item.tipo]}</span>
@@ -433,33 +765,25 @@ function ItemRow({ inv, isOwner, toggleEquipped, removeFromInventory, changeQuan
           <span style={iv.itemName}>{item.nombre}</span>
           <span style={{ ...iv.typeBadge, borderColor: TYPE_COLOR[item.tipo], color: TYPE_COLOR[item.tipo] }}>{TYPE_LABEL[item.tipo]}</span>
           {inv.equipped && <span style={iv.equippedBadge}>✓ Equipado</span>}
-          {item.tipo === 'potion' && (inv.quantity || 1) > 1 && (
-            <span style={iv.equippedBadge}>×{inv.quantity}</span>
-          )}
+          {item.tipo === 'potion' && (inv.quantity || 1) > 1 && <span style={iv.equippedBadge}>×{inv.quantity}</span>}
         </div>
         <div style={iv.itemStats}>{statsText}</div>
         {item.descripcion && <div style={iv.itemDesc}>{item.descripcion}</div>}
       </div>
       {isOwner && (
         <div style={iv.itemActions}>
-          {item.tipo === 'potion' ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <button style={iv.qtyBtn} onClick={() => changeQuantity(inv.itemId, -1)}>−</button>
-              <span style={iv.qtyVal}>{inv.quantity || 1}</span>
-              <button style={iv.qtyBtn} onClick={() => changeQuantity(inv.itemId, 1)}>+</button>
-            </div>
-          ) : (
-            <button
-              style={{ ...iv.actionBtn, borderColor: inv.equipped ? 'var(--gold-dim)' : 'var(--line)', color: inv.equipped ? 'var(--gold)' : 'var(--parchment-dim)' }}
-              onClick={() => toggleEquipped(inv.itemId)}
-            >
-              {inv.equipped ? 'Desequipar' : 'Equipar'}
-            </button>
-          )}
-          <button
-            style={{ ...iv.actionBtn, color: 'var(--ember-dim)', borderColor: 'transparent', marginTop: '4px' }}
-            onClick={() => removeFromInventory(inv.itemId)}
-          >
+          {item.tipo === 'potion'
+            ? <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <button style={iv.qtyBtn} onClick={() => changeQuantity(inv.itemId, -1)}>−</button>
+                <span style={iv.qtyVal}>{inv.quantity || 1}</span>
+                <button style={iv.qtyBtn} onClick={() => changeQuantity(inv.itemId, 1)}>+</button>
+              </div>
+            : <button style={{ ...iv.actionBtn, borderColor: inv.equipped ? 'var(--gold-dim)' : 'var(--line)', color: inv.equipped ? 'var(--gold)' : 'var(--parchment-dim)' }}
+                onClick={() => toggleEquipped(inv.itemId)}>
+                {inv.equipped ? 'Desequipar' : 'Equipar'}
+              </button>}
+          <button style={{ ...iv.actionBtn, color: 'var(--ember-dim)', borderColor: 'transparent', marginTop: '4px' }}
+            onClick={() => removeFromInventory(inv.itemId)}>
             ✕ Quitar
           </button>
         </div>
@@ -468,131 +792,108 @@ function ItemRow({ inv, isOwner, toggleEquipped, removeFromInventory, changeQuan
   );
 }
 
-function Section({ title, children }) {
-  return (
-    <div style={ss.section}>
-      <div style={ss.sectionHeader}>
-        <span style={ss.sectionTitle}>{title}</span>
-        <div style={ss.sectionLine} />
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function CombatStat({ label, value, field, editing, update }) {
-  return (
-    <div style={ss.combatStat}>
-      <span style={ss.combatLabel}>{label}</span>
-      {editing && field
-        ? <input type="number" value={value} onChange={e => update(field, parseInt(e.target.value))} style={{ ...ss.inputNum, fontSize: '18px', width: '50px' }} />
-        : <span style={ss.combatVal}>{value}</span>}
-    </div>
-  );
-}
-
-function StatusRow({ label, value, field, editing, update, isToggle }) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--line)' }}>
-      <span style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--gold-dim)', textTransform: 'uppercase' }}>{label}</span>
-      {editing
-        ? isToggle
-          ? <button onClick={() => update(field, !value)} style={{ background: value ? 'rgba(201,168,76,0.2)' : 'transparent', border: '1px solid var(--line)', color: 'var(--gold-bright)', padding: '3px 10px', fontFamily: 'Cinzel,serif', fontSize: '9px', cursor: 'pointer' }}>{value ? 'Quitar' : 'Dar'}</button>
-          : <input value={value} onChange={e => update(field, e.target.value)} style={{ background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '13px', padding: '3px 8px', maxWidth: '160px' }} />
-        : <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '13px', color: 'var(--parchment)' }}>{value}</span>}
-    </div>
-  );
-}
-
-// ── STYLES ────────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// STYLES
+// ══════════════════════════════════════════════════════════════════════════════
 
 const s = {
-  page: { maxWidth: '900px', margin: '0 auto', padding: '0 16px 20px' },
-  loading: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', fontFamily: 'Cinzel,serif', color: 'var(--gold-dim)', letterSpacing: '3px', fontSize: '11px' },
-  coverWrap: { position: 'relative', height: '280px', overflow: 'hidden', margin: '0 -16px' },
-  coverImg: { width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' },
-  coverOverlay: { position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(11,9,6,1) 0%, rgba(11,9,6,0.5) 50%, transparent 100%)' },
-  coverText: { position: 'absolute', bottom: '20px', left: '20px', right: '20px', zIndex: 2 },
-  coverName: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(20px,5vw,34px)', fontWeight: '900', color: 'var(--gold-bright)', letterSpacing: '2px', textShadow: '0 0 20px rgba(227,200,120,0.5)' },
-  coverSub: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '14px', color: 'rgba(201,168,76,0.6)', marginTop: '4px' },
-  topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' },
-  backBtn: { background: 'transparent', border: 'none', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '1px', cursor: 'pointer', padding: '6px 0' },
-  editBtn: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase' },
-  saveBtn: { background: 'rgba(74,138,74,0.15)', border: '1px solid rgba(74,138,74,0.4)', color: '#7aaa7a', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase' },
-  cancelBtn: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--parchment-dim)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '20px', background: 'var(--panel)', borderTop: '3px solid', borderLeft: '1px solid var(--line)', borderRight: '1px solid var(--line)', borderBottom: '1px solid var(--line)', marginBottom: '12px' },
-  headerLeft: { display: 'flex', alignItems: 'flex-start', gap: '16px', flex: 1 },
-  charName: { fontFamily: 'Cinzel,serif', fontSize: 'clamp(18px,4vw,26px)', fontWeight: '900', color: 'var(--gold-bright)', letterSpacing: '2px' },
-  charSub: { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--gold-dim)', marginTop: '4px' },
-  charSubclass: { fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '2px', color: 'var(--gold-dim)', marginTop: '4px', textTransform: 'uppercase' },
-  levelCircle: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 16px', border: '1px solid var(--line)', minWidth: '70px' },
-  portraitEditBox: { background: 'var(--panel)', border: '1px solid var(--line)', padding: '12px', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '6px' },
-  formLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
-  fileInput: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '10px', padding: '6px', cursor: 'pointer' },
-  inputLarge: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--gold-bright)', fontFamily: 'Cinzel,serif', fontSize: '20px', fontWeight: '700', padding: '4px 8px', width: '100%' },
-  inputFull: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '8px', width: '100%' },
-  inputNum: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--gold-bright)', fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', padding: '4px 6px', textAlign: 'center', width: '60px' },
-  textarea: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '10px', width: '100%', resize: 'vertical', lineHeight: '1.6' },
-  xpSection: { background: 'var(--panel)', border: '1px solid var(--line)', padding: '12px', marginBottom: '12px' },
-  xpRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' },
-  xpLabel: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
-  xpVal: { fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '700', color: 'var(--gold)' },
-  dimLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', color: 'var(--gold-dim)', letterSpacing: '1px' },
-  barTrack: { height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' },
-  barFill: { height: '100%', borderRadius: '2px', transition: 'width 0.4s' },
-  tabBar: { display: 'flex', gap: '4px', marginBottom: '0', borderBottom: '1px solid var(--line)', paddingTop: '8px' },
-  tabBtn: { background: 'transparent', border: '1px solid transparent', borderBottom: 'none', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '8px 16px', cursor: 'pointer', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' },
-  tabBtnActive: { background: 'var(--panel)', border: '1px solid var(--line)', borderBottom: '1px solid var(--panel)', color: 'var(--gold)', marginBottom: '-1px' },
-  tabBadge: { background: 'rgba(201,168,76,0.2)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '8px', padding: '1px 6px', borderRadius: '2px' },
-  mainGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', paddingTop: '12px' },
-  leftCol: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  rightCol: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' },
-  statBlock: { background: 'rgba(11,9,6,0.6)', border: '1px solid var(--line)', padding: '10px 6px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' },
-  statName: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1.5px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
-  statScore: { fontFamily: 'Cinzel,serif', fontSize: '22px', fontWeight: '700', color: 'var(--parchment)' },
-  statMod: { fontFamily: 'Cinzel,serif', fontSize: '12px', fontWeight: '600', color: 'var(--gold)' },
-  combatRow: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '8px', marginBottom: '10px' },
-  hpBox: { background: 'rgba(11,9,6,0.5)', border: '1px solid var(--line)', padding: '10px' },
-  notesText: { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--parchment-dim)', lineHeight: '1.7', whiteSpace: 'pre-wrap' },
-  readOnlyBadge: { textAlign: 'center', padding: '10px', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-dim)', border: '1px solid var(--line)', marginTop: '12px', textTransform: 'uppercase' },
+  page:           { maxWidth: '900px', margin: '0 auto', padding: '0 16px 20px' },
+  loading:        { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', fontFamily: 'Cinzel,serif', color: 'var(--gold-dim)', letterSpacing: '3px', fontSize: '11px' },
+  // Portrait: contain so the full image is always visible
+  portraitWrap:   { position: 'relative', height: '320px', overflow: 'hidden', margin: '0 -16px', background: '#060504', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  portraitImg:    { width: '100%', height: '100%', objectFit: 'contain' },
+  coverOverlay:   { position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(11,9,6,0.95) 0%, rgba(11,9,6,0.2) 40%, transparent 100%)', pointerEvents: 'none' },
+  coverText:      { position: 'absolute', bottom: '20px', left: '20px', right: '20px', zIndex: 2 },
+  coverName:      { fontFamily: 'Cinzel,serif', fontSize: 'clamp(20px,5vw,34px)', fontWeight: '900', letterSpacing: '2px', textShadow: '0 0 24px rgba(0,0,0,0.8)' },
+  coverSub:       { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '14px', color: 'rgba(201,168,76,0.6)', marginTop: '4px' },
+  topBar:         { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' },
+  backBtn:        { background: 'transparent', border: 'none', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '1px', cursor: 'pointer', padding: '6px 0' },
+  editBtn:        { background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase' },
+  saveBtn:        { background: 'rgba(74,138,74,0.15)', border: '1px solid rgba(74,138,74,0.4)', color: '#7aaa7a', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase' },
+  cancelBtn:      { background: 'transparent', border: '1px solid var(--line)', color: 'var(--parchment-dim)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '6px 14px', cursor: 'pointer', textTransform: 'uppercase' },
+  header:         { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '20px', background: 'var(--panel)', borderTop: '3px solid', borderLeft: '1px solid var(--line)', borderRight: '1px solid var(--line)', borderBottom: '1px solid var(--line)', marginBottom: '12px' },
+  headerLeft:     { display: 'flex', alignItems: 'flex-start', gap: '16px', flex: 1 },
+  charName:       { fontFamily: 'Cinzel,serif', fontSize: 'clamp(18px,4vw,26px)', fontWeight: '900', letterSpacing: '2px' },
+  charSub:        { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--gold-dim)', marginTop: '4px' },
+  charSubclass:   { fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '2px', color: 'var(--gold-dim)', marginTop: '4px', textTransform: 'uppercase' },
+  levelCircle:    { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '8px 16px', border: '1px solid var(--line)', minWidth: '70px' },
+  portraitEditBox:{ background: 'var(--panel)', border: '1px solid var(--line)', padding: '12px', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '6px' },
+  formLabel:      { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
+  fileInput:      { background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '10px', padding: '6px', cursor: 'pointer' },
+  inputLarge:     { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--gold-bright)', fontFamily: 'Cinzel,serif', fontSize: '20px', fontWeight: '700', padding: '4px 8px', width: '100%' },
+  inputFull:      { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '8px', width: '100%' },
+  inputNum:       { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--gold-bright)', fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', padding: '4px 6px', textAlign: 'center', width: '60px' },
+  textarea:       { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '10px', width: '100%', resize: 'vertical', lineHeight: '1.6' },
+  xpSection:      { background: 'var(--panel)', border: '1px solid var(--line)', padding: '12px', marginBottom: '12px' },
+  xpRow:          { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' },
+  xpLabel:        { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
+  xpVal:          { fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '700', color: 'var(--gold)' },
+  dimLabel:       { fontFamily: 'Cinzel,serif', fontSize: '8px', color: 'var(--gold-dim)', letterSpacing: '1px' },
+  barTrack:       { height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' },
+  barFill:        { height: '100%', borderRadius: '2px', transition: 'width 0.4s' },
+  tabBar:         { display: 'flex', gap: '4px', borderBottom: '1px solid var(--line)', paddingTop: '8px' },
+  tabBtn:         { background: 'transparent', border: '1px solid transparent', borderBottom: 'none', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '8px 16px', cursor: 'pointer', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' },
+  tabBtnActive:   { background: 'var(--panel)', border: '1px solid', borderBottom: '1px solid var(--panel)', marginBottom: '-1px' },
+  tabBadge:       { background: 'rgba(201,168,76,0.2)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '8px', padding: '1px 6px', borderRadius: '2px' },
+  statsGrid:      { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' },
+  statBlock:      { background: 'rgba(11,9,6,0.6)', border: '1px solid var(--line)', padding: '10px 6px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' },
+  statName:       { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1.5px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
+  statScore:      { fontFamily: 'Cinzel,serif', fontSize: '24px', fontWeight: '700', color: 'var(--parchment)' },
+  statMod:        { fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '600' },
+  combatRow:      { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '8px' },
+  notesText:      { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--parchment-dim)', lineHeight: '1.7', whiteSpace: 'pre-wrap' },
+  readOnlyBadge:  { textAlign: 'center', padding: '10px', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2px', color: 'var(--gold-dim)', border: '1px solid var(--line)', marginTop: '12px', textTransform: 'uppercase' },
 };
 
 const ss = {
-  section: { background: 'var(--panel)', border: '1px solid var(--line)', padding: '14px' },
-  sectionHeader: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' },
+  section:      { background: 'var(--panel)', border: '1px solid var(--line)', padding: '14px' },
+  sectionHeader:{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' },
   sectionTitle: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2.5px', color: 'var(--gold-dim)', textTransform: 'uppercase', whiteSpace: 'nowrap' },
-  sectionLine: { flex: 1, height: '1px', background: 'linear-gradient(to right, var(--line), transparent)' },
-  combatStat: { background: 'rgba(11,9,6,0.6)', border: '1px solid var(--line)', padding: '8px 6px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' },
-  combatLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
-  combatVal: { fontFamily: 'Cinzel,serif', fontSize: '18px', fontWeight: '700', color: 'var(--parchment)' },
-  inputNum: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--gold-bright)', fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', padding: '4px 6px', textAlign: 'center', width: '60px' },
+  sectionLine:  { flex: 1, height: '1px' },
+  combatStat:   { background: 'rgba(11,9,6,0.6)', border: '1px solid var(--line)', padding: '10px 6px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' },
+  combatLabel:  { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
+  combatVal:    { fontFamily: 'Cinzel,serif', fontSize: '20px', fontWeight: '700', color: 'var(--parchment)' },
+  inputNum:     { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--gold-bright)', fontFamily: 'Cinzel,serif', fontSize: '14px', fontWeight: '700', padding: '4px 6px', textAlign: 'center', width: '60px' },
 };
 
+// Ficha-specific styles
+const fs = {
+  row:      { display: 'flex', alignItems: 'center', gap: '6px', padding: '3px 2px', borderBottom: '1px solid rgba(255,255,255,0.04)', minHeight: '26px' },
+  extraBox: { flex: 1, background: 'rgba(11,9,6,0.5)', border: '1px solid var(--line)', padding: '10px 12px' },
+};
+
+// Lore-specific styles
+const sl = {
+  textarea: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '10px', width: '100%', resize: 'vertical', lineHeight: '1.7' },
+  input:    { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '8px 10px', width: '100%' },
+  loreTxt:  { fontFamily: 'Crimson Pro,serif', fontSize: '14px', lineHeight: '1.7', whiteSpace: 'pre-wrap', margin: 0 },
+};
+
+// Inventory styles (unchanged)
 const iv = {
-  searchWrap: { background: 'var(--panel)', border: '1px solid var(--line)', padding: '14px' },
-  sectionLabel: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2.5px', color: 'var(--gold-dim)', textTransform: 'uppercase', marginBottom: '8px' },
-  searchInput: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '8px 12px', width: '100%', boxSizing: 'border-box' },
+  searchWrap:    { background: 'var(--panel)', border: '1px solid var(--line)', padding: '14px' },
+  sectionLabel:  { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2.5px', color: 'var(--gold-dim)', textTransform: 'uppercase', marginBottom: '8px' },
+  searchInput:   { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif', fontSize: '14px', padding: '8px 12px', width: '100%', boxSizing: 'border-box' },
   searchResults: { marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' },
-  searchResult: { display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '8px 10px', background: 'rgba(11,9,6,0.5)', border: '1px solid var(--line)' },
-  resultName: { fontFamily: 'Cinzel,serif', fontSize: '12px', color: 'var(--gold-bright)', marginRight: '4px' },
-  resultDesc: { fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--parchment-dim)', marginTop: '2px', lineHeight: '1.4' },
-  addBtn: { background: 'rgba(201,168,76,0.12)', border: '1px solid var(--gold-dim)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1px', padding: '5px 10px', cursor: 'pointer', whiteSpace: 'nowrap', alignSelf: 'flex-start', flexShrink: 0 },
-  typeBadge: { fontFamily: 'Cinzel,serif', fontSize: '7px', letterSpacing: '1px', border: '1px solid', padding: '1px 6px', textTransform: 'uppercase', whiteSpace: 'nowrap' },
-  section: { background: 'var(--panel)', border: '1px solid var(--line)', padding: '14px' },
+  searchResult:  { display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '8px 10px', background: 'rgba(11,9,6,0.5)', border: '1px solid var(--line)' },
+  resultName:    { fontFamily: 'Cinzel,serif', fontSize: '12px', color: 'var(--gold-bright)', marginRight: '4px' },
+  resultDesc:    { fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--parchment-dim)', marginTop: '2px', lineHeight: '1.4' },
+  addBtn:        { background: 'rgba(201,168,76,0.12)', border: '1px solid var(--gold-dim)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1px', padding: '5px 10px', cursor: 'pointer', whiteSpace: 'nowrap', alignSelf: 'flex-start', flexShrink: 0 },
+  typeBadge:     { fontFamily: 'Cinzel,serif', fontSize: '7px', letterSpacing: '1px', border: '1px solid', padding: '1px 6px', textTransform: 'uppercase', whiteSpace: 'nowrap' },
+  section:       { background: 'var(--panel)', border: '1px solid var(--line)', padding: '14px' },
   sectionHeader: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' },
-  sectionTitle: { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2.5px', color: 'var(--gold-dim)', textTransform: 'uppercase', whiteSpace: 'nowrap' },
-  sectionLine: { flex: 1, height: '1px', background: 'linear-gradient(to right, var(--line), transparent)' },
-  attackTable: { display: 'flex', flexDirection: 'column', gap: '4px' },
-  attackHeader: { display: 'grid', gridTemplateColumns: '1fr 80px 100px 1fr', gap: '12px', padding: '4px 8px', fontFamily: 'Cinzel,serif', fontSize: '7px', letterSpacing: '1.5px', color: 'var(--gold-dim)', textTransform: 'uppercase', borderBottom: '1px solid var(--line)', marginBottom: '4px' },
-  attackRow: { display: 'grid', gridTemplateColumns: '1fr 80px 100px 1fr', gap: '12px', padding: '7px 8px', background: 'rgba(11,9,6,0.5)', border: '1px solid var(--line)' },
-  itemRow: { display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px', border: '1px solid var(--line)', marginBottom: '6px' },
-  itemName: { fontFamily: 'Cinzel,serif', fontSize: '13px', color: 'var(--gold-bright)' },
-  itemStats: { fontFamily: 'Cinzel,serif', fontSize: '11px', color: 'var(--ember)', marginTop: '3px', letterSpacing: '0.5px' },
-  itemDesc: { fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--parchment-dim)', marginTop: '3px', lineHeight: '1.4' },
+  sectionTitle:  { fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '2.5px', color: 'var(--gold-dim)', textTransform: 'uppercase', whiteSpace: 'nowrap' },
+  sectionLine:   { flex: 1, height: '1px', background: 'linear-gradient(to right, var(--line), transparent)' },
+  attackTable:   { display: 'flex', flexDirection: 'column', gap: '4px' },
+  attackHeader:  { display: 'grid', gridTemplateColumns: '1fr 80px 100px 1fr', gap: '12px', padding: '4px 8px', fontFamily: 'Cinzel,serif', fontSize: '7px', letterSpacing: '1.5px', color: 'var(--gold-dim)', textTransform: 'uppercase', borderBottom: '1px solid var(--line)', marginBottom: '4px' },
+  attackRow:     { display: 'grid', gridTemplateColumns: '1fr 80px 100px 1fr', gap: '12px', padding: '7px 8px', background: 'rgba(11,9,6,0.5)', border: '1px solid var(--line)' },
+  itemRow:       { display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px', border: '1px solid var(--line)', marginBottom: '6px' },
+  itemName:      { fontFamily: 'Cinzel,serif', fontSize: '13px', color: 'var(--gold-bright)' },
+  itemStats:     { fontFamily: 'Cinzel,serif', fontSize: '11px', color: 'var(--ember)', marginTop: '3px', letterSpacing: '0.5px' },
+  itemDesc:      { fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--parchment-dim)', marginTop: '3px', lineHeight: '1.4' },
   equippedBadge: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: 'var(--gold)', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)', padding: '1px 6px' },
-  itemActions: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 },
-  actionBtn: { background: 'transparent', border: '1px solid', fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', padding: '4px 10px', cursor: 'pointer', textTransform: 'uppercase', whiteSpace: 'nowrap' },
-  qtyBtn: { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '14px', width: '26px', height: '26px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 },
-  qtyVal: { fontFamily: 'Cinzel,serif', fontSize: '14px', color: 'var(--parchment)', minWidth: '22px', textAlign: 'center' },
+  itemActions:   { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 },
+  actionBtn:     { background: 'transparent', border: '1px solid', fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', padding: '4px 10px', cursor: 'pointer', textTransform: 'uppercase', whiteSpace: 'nowrap' },
+  qtyBtn:        { background: 'var(--panel-raised)', border: '1px solid var(--line)', color: 'var(--gold)', fontFamily: 'Cinzel,serif', fontSize: '14px', width: '26px', height: '26px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 },
+  qtyVal:        { fontFamily: 'Cinzel,serif', fontSize: '14px', color: 'var(--parchment)', minWidth: '22px', textAlign: 'center' },
 };
