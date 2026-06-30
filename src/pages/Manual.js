@@ -102,9 +102,9 @@ export default function Manual() {
         </div>
       )}
 
-      <div style={s.layout}>
+      <div style={s.layout} className="manual-layout">
         {/* TOPIC LIST */}
-        <div style={s.topicList}>
+        <div style={s.topicList} className="manual-topic-list">
           {search && filteredTopics.length === 0 && (
             <div style={{ fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', color: 'var(--gold-dim)', padding: '20px', textAlign: 'center' }}>Sin resultados para "{search}"</div>
           )}

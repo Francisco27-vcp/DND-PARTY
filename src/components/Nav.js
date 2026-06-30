@@ -48,7 +48,7 @@ export default function Nav({ user }) {
             <span style={styles.logoGem}>⚔</span>
             <span style={styles.logoText}>DND PARTY</span>
           </div>
-          <div style={styles.navLinks}>
+          <div style={styles.navLinks} className="nav-desktop-links">
             {items.map(item => (
               <button key={item.path} onClick={() => navigate(item.path)}
                 style={{ ...styles.navBtn, ...(location.pathname === item.path ? styles.navBtnActive : {}) }}>
@@ -57,14 +57,14 @@ export default function Nav({ user }) {
               </button>
             ))}
           </div>
-          <div style={styles.userArea}>
+          <div style={styles.userArea} className="nav-user-area">
             <span style={styles.userName}>{alias}</span>
             <button style={styles.logoutBtn} onClick={handleLogout}>Salir</button>
           </div>
         </div>
       </nav>
 
-      <nav style={styles.mobileNav}>
+      <nav style={styles.mobileNav} className="nav-mobile">
         {items.map(item => (
           <button key={item.path} onClick={() => navigate(item.path)}
             style={{ ...styles.mobileNavBtn, ...(location.pathname === item.path ? styles.mobileNavBtnActive : {}) }}>
