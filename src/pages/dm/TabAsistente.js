@@ -6,6 +6,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import ReactMarkdown from 'react-markdown';
+import { jsonrepair } from 'json-repair';
 import './TabAsistente.css';
 
 // ─── system prompt for chat mode ──────────────────────────────────────────────
@@ -260,12 +261,8 @@ export default function TabAsistente({ user }) {
         }
       }
 
-      // Parse JSON from response — jsonrepair handles all cases:
-      // truncated output, unescaped quotes, newlines in strings, trailing commas, etc.
+      // Parse JSON — jsonrepair handles truncated output, unescaped quotes, etc.
       try {
-        const { jsonrepair } = await import(‘json-repair’);
-
-        // Strip markdown fences and normalize typographic quotes
         const clean = fullText
           .replace(/```json\s*/gi, ‘’).replace(/```\s*/g, ‘’).trim()
           .replace(/[“”]/g, ‘”’).replace(/[‘’]/g, “’”);
@@ -276,8 +273,6 @@ export default function TabAsistente({ user }) {
           return;
         }
 
-        // Pass the full (possibly truncated) text to jsonrepair — it finds and
-        // repairs the JSON block, adding missing closing brackets/braces as needed.
         const data = JSON.parse(jsonrepair(clean));
         setGenerated(data);
         setSelections({
