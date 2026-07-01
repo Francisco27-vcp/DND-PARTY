@@ -11,12 +11,14 @@ import TabMundo     from './dm/TabMundo';
 import TabNotasDM   from './dm/TabNotasDM';
 import TabCombate   from './dm/TabCombate';
 import TabAsistente from './dm/TabAsistente';
+import TabMapa      from './dm/TabMapa';
 
 const TABS = [
   { id: 'resumen',   label: 'Resumen',      icon: '👁' },
   { id: 'sesiones',  label: 'Sesiones',     icon: '📜' },
   { id: 'historia',  label: 'Historia',     icon: '🗺' },
   { id: 'mundo',     label: 'Mundo',        icon: '🌍' },
+  { id: 'mapa',      label: 'Mapas',        icon: '🗾' },
   { id: 'notas',     label: 'Notas DM',     icon: '🔒' },
   { id: 'combate',   label: 'Combate',      icon: '⚔' },
   { id: 'asistente', label: 'Asistente IA', icon: '✦' },
@@ -92,6 +94,7 @@ export default function DMPanel({ user }) {
         {activeTab === 'sesiones'  && <TabSesiones  user={user} />}
         {activeTab === 'historia'  && <TabHistoria  user={user} />}
         {activeTab === 'mundo'     && <TabMundo />}
+        {activeTab === 'mapa'      && <TabMapa />}
         {activeTab === 'notas'     && <TabNotasDM   user={user} />}
         {activeTab === 'combate'   && <TabCombate />}
         {activeTab === 'asistente' && <TabAsistente />}

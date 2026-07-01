@@ -125,6 +125,9 @@ export default function Home({ user }) {
   const [sharedFactions, setSharedFactions] = useState([]);
   const [sharedTimeline, setSharedTimeline] = useState([]);
 
+  // Maps
+  const [sharedMaps, setSharedMaps] = useState([]);
+
   // Combat
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'combat', 'current'), (snap) => {
@@ -212,6 +215,10 @@ export default function Home({ user }) {
   useEffect(() => {
     const q = query(collection(db, 'timeline'), where('visibleToParty', '==', true));
     return onSnapshot(q, snap => setSharedTimeline(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => {});
+  }, []);
+  useEffect(() => {
+    const q = query(collection(db, 'maps'), where('visibleToParty', '==', true));
+    return onSnapshot(q, snap => setSharedMaps(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => {});
   }, []);
 
   // Computed
@@ -680,20 +687,53 @@ export default function Home({ user }) {
             </div>
 
             {/* Mapa del viaje — span 2 */}
-            <div style={{ ...s.dashCard, ...s.dashCardSpan2 }}>
-              <div style={s.dashCardHeader}>
-                <span style={s.dashCardTitle}>Mapa del viaje</span>
-                <button style={s.dashLinkBtn} onClick={() => navigate('/historia')}>Ver historia →</button>
-              </div>
-              <div style={s.dashCardBody}>
-                <div style={s.mapCard}>
-                  <div style={s.mapOverlay}>
-                    <span style={s.mapText}>Montañas de Valgrun</span>
+            {sharedMaps.length > 0 ? (
+              sharedMaps.map(map => (
+                <div key={map.id} style={{ ...s.dashCard, ...s.dashCardSpan2 }}>
+                  <div style={s.dashCardHeader}>
+                    <span style={s.dashCardTitle}>🗾 {map.title}</span>
+                  </div>
+                  <div style={s.dashCardBody}>
+                    <div style={s.partyMapWrap}>
+                      <img src={map.imageUrl} alt={map.title} style={s.partyMapImg} />
+                      {(map.tokens || []).map(token => (
+                        <div
+                          key={token.id}
+                          style={{
+                            position: 'absolute',
+                            left: `${token.x}%`,
+                            top: `${token.y}%`,
+                            transform: 'translate(-50%, -50%)',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px',
+                            padding: '3px 5px', border: `1.5px solid ${token.color}`,
+                            borderRadius: '6px', background: `${token.color}33`,
+                            backdropFilter: 'blur(4px)', zIndex: 5, minWidth: '32px',
+                          }}
+                          title={token.label}
+                        >
+                          <span style={{ fontSize: '16px', lineHeight: 1 }}>{token.emoji}</span>
+                          <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', color: token.color, whiteSpace: 'nowrap' }}>{token.label}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <p style={{ ...s.dashText, marginTop: '8px', textAlign: 'center', opacity: 0.5 }}>Mapa interactivo con niebla de guerra — próximamente</p>
+              ))
+            ) : (
+              <div style={{ ...s.dashCard, ...s.dashCardSpan2 }}>
+                <div style={s.dashCardHeader}>
+                  <span style={s.dashCardTitle}>Mapa del viaje</span>
+                </div>
+                <div style={s.dashCardBody}>
+                  <div style={s.mapCard}>
+                    <div style={s.mapOverlay}>
+                      <span style={s.mapText}>Montañas de Valgrun</span>
+                    </div>
+                  </div>
+                  <p style={{ ...s.dashText, marginTop: '8px', textAlign: 'center', opacity: 0.5 }}>El DM no ha compartido ningún mapa todavía.</p>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Manual rápido — span 2 */}
             <div style={{ ...s.dashCard, ...s.dashCardSpan2 }}>
@@ -1018,6 +1058,10 @@ const s = {
   lootGrid: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' },
   lootItem: { aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(201,168,76,0.2)', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', position: 'relative', cursor: 'default' },
   lootDeleteBtn: { position: 'absolute', top: '-4px', right: '-4px', width: '14px', height: '14px', background: 'rgba(139,26,26,0.8)', border: '1px solid rgba(224,80,80,0.5)', color: '#e05050', fontSize: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', lineHeight: 1, padding: 0 },
+
+  // Party map viewer
+  partyMapWrap: { position: 'relative', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--line)', background: '#0a0806' },
+  partyMapImg: { width: '100%', height: 'auto', display: 'block', userSelect: 'none' },
 
   // Map
   mapCard: { minHeight: '140px', borderRadius: '10px', background: 'radial-gradient(circle at 30% 40%, rgba(247,221,120,0.18), transparent 8%), radial-gradient(circle at 70% 60%, rgba(139,26,26,0.15), transparent 10%), linear-gradient(135deg, #2a1f0f, #5a3d1a 52%, #1a110a)', position: 'relative', overflow: 'hidden' },
