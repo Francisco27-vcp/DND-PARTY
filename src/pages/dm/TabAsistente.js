@@ -276,20 +276,40 @@ export default function TabAsistente({ user }) {
         }
       }
 
-      // Parse JSON from response
-      const jsonMatch = fullText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) { setGenError('La IA no devolvió JSON válido. Intentá de nuevo.'); setGenLoading(false); return; }
+      // Parse JSON from response — robust handling
+      try {
+        // Strip markdown code blocks if present
+        let clean = fullText
+          .replace(/```json\s*/gi, '')
+          .replace(/```\s*/g, '')
+          .trim();
 
-      const data = JSON.parse(jsonMatch[0]);
-      setGenerated(data);
-      setSelections({
-        session: true,
-        npcs: (data.npcs || []).map((_, i) => i),
-        timeline: (data.timeline || []).map((_, i) => i),
-      });
+        // Replace typographic quotes with straight quotes
+        clean = clean
+          .replace(/[“”]/g, '"')  // " "  → "
+          .replace(/[‘’]/g, "'");  // ' '  → '
+
+        const jsonMatch = clean.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          setGenError('La IA no devolvió JSON válido. Intentá con una descripción más corta o simple.');
+          setGenLoading(false);
+          return;
+        }
+
+        const data = JSON.parse(jsonMatch[0]);
+        setGenerated(data);
+        setSelections({
+          session: true,
+          npcs: (data.npcs || []).map((_, i) => i),
+          timeline: (data.timeline || []).map((_, i) => i),
+        });
+      } catch (parseErr) {
+        console.error('Parse error:', parseErr, '\nRaw response:', fullText);
+        setGenError(`Error al interpretar la respuesta (${parseErr.message}). Intentá de nuevo.`);
+      }
     } catch (err) {
       console.error(err);
-      setGenError('Error al procesar la respuesta de la IA.');
+      setGenError('Error de conexión con la IA. Verificá tu conexión e intentá de nuevo.');
     }
     setGenLoading(false);
   };
