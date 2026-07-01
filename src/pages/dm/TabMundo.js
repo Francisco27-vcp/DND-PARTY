@@ -277,13 +277,16 @@ function FaccionesSection() {
   };
 
   const del = async (id) => { await deleteDoc(doc(db, 'factions', id)); };
+  const toggleVisible = async (item) => {
+    await setDoc(doc(db, 'factions', item.id), { visibleToPlayers: !item.visibleToPlayers }, { merge: true });
+  };
 
   const repColors = (r) => r > 60 ? '#65c260' : r > 30 ? '#c7a242' : '#ef7368';
 
   return (
     <div>
       <div style={s.toolbar}>
-        <span style={s.count}>{items.length} facciones</span>
+        <span style={s.count}>{items.length} facciones · <span style={{ color: '#65c260' }}>{items.filter(i => i.visibleToPlayers).length} visibles</span></span>
         <button style={s.newBtn} onClick={openNew}>+ Nueva facción</button>
       </div>
       {formOpen && (
@@ -303,6 +306,12 @@ function FaccionesSection() {
             <FL label="Relación con la party"><textarea style={s.textarea} rows={2} value={form.partyRelation} onChange={f('partyRelation')} /></FL>
             <FL label="Reputación (0-100)"><input type="number" min="0" max="100" style={s.input} value={form.reputation} onChange={f('reputation')} /></FL>
           </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '8px' }}>
+            <label style={s.checkLabel}>
+              <input type="checkbox" checked={form.visibleToPlayers} onChange={f('visibleToPlayers')} />
+              Visible para la party
+            </label>
+          </div>
           <div style={s.formActions}>
             <button style={s.cancelBtn} onClick={closeForm}>Cancelar</button>
             <button style={s.saveBtn} onClick={save} disabled={saving}>{saving ? '...' : editing ? '✓ Guardar' : '✦ Crear'}</button>
@@ -311,9 +320,12 @@ function FaccionesSection() {
       )}
       <div style={s.itemList}>
         {items.map(item => (
-          <div key={item.id} style={s.itemRow}>
+          <div key={item.id} style={{ ...s.itemRow, borderLeft: item.visibleToPlayers ? '3px solid #65c260' : '3px solid transparent' }}>
             <div style={{ flex: 1 }}>
-              <div style={s.itemName}>{item.name}</div>
+              <div style={s.itemName}>
+                {item.name}
+                {item.visibleToPlayers && <span style={s.visibleBadge}>👁 Visible</span>}
+              </div>
               {item.alignment && <div style={s.itemSub}>{item.alignment}</div>}
               {item.description && <p style={s.itemDesc}>{item.description}</p>}
               {item.reputation !== undefined && (
@@ -325,9 +337,14 @@ function FaccionesSection() {
                 </div>
               )}
             </div>
-            <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-              <button style={s.editBtnSm} onClick={() => openEdit(item)}>✎</button>
-              <button style={s.deleteBtnSm} onClick={() => del(item.id)}>✕</button>
+            <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexDirection: 'column', alignItems: 'flex-end' }}>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button style={s.editBtnSm} onClick={() => openEdit(item)}>✎</button>
+                <button style={s.deleteBtnSm} onClick={() => del(item.id)}>✕</button>
+              </div>
+              <button style={item.visibleToPlayers ? s.unpublishBtnSm : s.publishBtnSm} onClick={() => toggleVisible(item)}>
+                {item.visibleToPlayers ? '↓ Ocultar' : '↑ Mostrar a party'}
+              </button>
             </div>
           </div>
         ))}
@@ -371,11 +388,14 @@ function UbicacionesSection() {
   };
 
   const del = async (id) => { await deleteDoc(doc(db, 'locations', id)); };
+  const toggleVisible = async (item) => {
+    await setDoc(doc(db, 'locations', item.id), { visibleToPlayers: !item.visibleToPlayers }, { merge: true });
+  };
 
   return (
     <div>
       <div style={s.toolbar}>
-        <span style={s.count}>{items.length} ubicaciones</span>
+        <span style={s.count}>{items.length} ubicaciones · <span style={{ color: '#65c260' }}>{items.filter(i => i.visibleToPlayers).length} visibles</span></span>
         <button style={s.newBtn} onClick={openNew}>+ Nueva ubicación</button>
       </div>
       {formOpen && (
@@ -396,6 +416,12 @@ function UbicacionesSection() {
               <FL label="Secretos (DM)"><textarea style={s.textarea} rows={2} value={form.secrets} onChange={f('secrets')} placeholder="Lo que la party no descubrió todavía..." /></FL>
             </div>
           </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '8px' }}>
+            <label style={s.checkLabel}>
+              <input type="checkbox" checked={form.visibleToPlayers || false} onChange={e => setForm(p => ({ ...p, visibleToPlayers: e.target.checked }))} />
+              Visible para la party
+            </label>
+          </div>
           <div style={s.formActions}>
             <button style={s.cancelBtn} onClick={closeForm}>Cancelar</button>
             <button style={s.saveBtn} onClick={save} disabled={saving}>{saving ? '...' : editing ? '✓ Guardar' : '✦ Crear'}</button>
@@ -404,16 +430,24 @@ function UbicacionesSection() {
       )}
       <div style={s.itemList}>
         {items.map(item => (
-          <div key={item.id} style={s.itemRow}>
+          <div key={item.id} style={{ ...s.itemRow, borderLeft: item.visibleToPlayers ? '3px solid #65c260' : '3px solid transparent' }}>
             <div style={{ flex: 1 }}>
-              <div style={s.itemName}>{item.name} {item.type && <span style={s.itemType}>{item.type}</span>}</div>
+              <div style={s.itemName}>
+                {item.name} {item.type && <span style={s.itemType}>{item.type}</span>}
+                {item.visibleToPlayers && <span style={s.visibleBadge}>👁 Visible</span>}
+              </div>
               {item.description && <p style={s.itemDesc}>{item.description}</p>}
               {item.secrets && <p style={{ ...s.itemDesc, color: 'rgba(199,162,66,0.5)', fontStyle: 'italic' }}>🔒 {item.secrets}</p>}
               {item.connectedTo && <div style={s.itemSub}>↔ {item.connectedTo}</div>}
             </div>
-            <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-              <button style={s.editBtnSm} onClick={() => openEdit(item)}>✎</button>
-              <button style={s.deleteBtnSm} onClick={() => del(item.id)}>✕</button>
+            <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexDirection: 'column', alignItems: 'flex-end' }}>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button style={s.editBtnSm} onClick={() => openEdit(item)}>✎</button>
+                <button style={s.deleteBtnSm} onClick={() => del(item.id)}>✕</button>
+              </div>
+              <button style={item.visibleToPlayers ? s.unpublishBtnSm : s.publishBtnSm} onClick={() => toggleVisible(item)}>
+                {item.visibleToPlayers ? '↓ Ocultar' : '↑ Mostrar a party'}
+              </button>
             </div>
           </div>
         ))}
@@ -488,6 +522,7 @@ const s = {
   itemType: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: 'var(--gold-dim)', textTransform: 'uppercase', border: '1px solid rgba(201,168,76,0.2)', borderRadius: '3px', padding: '2px 6px' },
   itemSub: { fontFamily: 'Cinzel,serif', fontSize: '9px', color: 'var(--gold-dim)', letterSpacing: '0.5px', marginTop: '4px' },
   itemDesc: { fontFamily: 'Crimson Pro,serif', fontSize: '13px', color: 'var(--text-soft)', lineHeight: '1.5', margin: '6px 0 0' },
+  visibleBadge: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: '#65c260', border: '1px solid rgba(101,194,96,0.3)', borderRadius: '3px', padding: '2px 6px', textTransform: 'uppercase' },
 
   empty: { fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '14px', color: 'var(--gold-dim)', padding: '40px 0', textAlign: 'center' },
 };

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   collection, getDocs, doc, getDoc, setDoc, addDoc, deleteDoc,
-  onSnapshot, serverTimestamp, query, orderBy, limit, updateDoc,
+  onSnapshot, serverTimestamp, query, orderBy, limit, updateDoc, where,
 } from 'firebase/firestore';
 import { uploadImage } from '../lib/uploadImage';
 import { db } from '../lib/firebase';
@@ -119,6 +119,12 @@ export default function Home({ user }) {
   const [metaForm, setMetaForm] = useState({});
   const [longDescanso, setLongDescanso] = useState(false);
 
+  // Shared world content (DM → party)
+  const [sharedNpcs, setSharedNpcs] = useState([]);
+  const [sharedLocations, setSharedLocations] = useState([]);
+  const [sharedFactions, setSharedFactions] = useState([]);
+  const [sharedTimeline, setSharedTimeline] = useState([]);
+
   // Combat
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'combat', 'current'), (snap) => {
@@ -188,6 +194,24 @@ export default function Home({ user }) {
       setMissions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     }, () => {});
     return unsub;
+  }, []);
+
+  // Shared world content (DM → party visibility)
+  useEffect(() => {
+    const q = query(collection(db, 'npcs'), where('visibleToPlayers', '==', true));
+    return onSnapshot(q, snap => setSharedNpcs(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => {});
+  }, []);
+  useEffect(() => {
+    const q = query(collection(db, 'locations'), where('visibleToPlayers', '==', true));
+    return onSnapshot(q, snap => setSharedLocations(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => {});
+  }, []);
+  useEffect(() => {
+    const q = query(collection(db, 'factions'), where('visibleToPlayers', '==', true));
+    return onSnapshot(q, snap => setSharedFactions(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => {});
+  }, []);
+  useEffect(() => {
+    const q = query(collection(db, 'timeline'), where('visibleToParty', '==', true), orderBy('date', 'asc'));
+    return onSnapshot(q, snap => setSharedTimeline(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => {});
   }, []);
 
   // Computed
@@ -448,6 +472,76 @@ export default function Home({ user }) {
               ))}
             </div>
           </section>
+
+          {/* TABLÓN DE CAMPAÑA — shared by DM */}
+          {(sharedNpcs.length > 0 || sharedLocations.length > 0 || sharedFactions.length > 0 || sharedTimeline.length > 0) && (
+            <section style={s.section}>
+              <div style={s.sectionHeader}>
+                <span style={s.sectionTitle}>📌 Tablón de campaña</span>
+                <div style={s.sectionLine} />
+              </div>
+              <div style={s.tablon}>
+
+                {/* NPCs */}
+                {sharedNpcs.length > 0 && (
+                  <div style={s.tablonCard}>
+                    <div style={s.tablonCardHeader}><span style={s.tablonCardIcon}>🧑‍🤝‍🧑</span> NPCs conocidos</div>
+                    {sharedNpcs.map(npc => (
+                      <div key={npc.id} style={s.tablonRow}>
+                        <span style={s.tablonRowName}>{npc.name}</span>
+                        {npc.role && <span style={s.tablonTag}>{npc.role}</span>}
+                        {npc.faction && <span style={{ ...s.tablonTag, opacity: 0.7 }}>{npc.faction}</span>}
+                        {npc.motivation && <span style={s.tablonDesc}>{npc.motivation}</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Locations */}
+                {sharedLocations.length > 0 && (
+                  <div style={s.tablonCard}>
+                    <div style={s.tablonCardHeader}><span style={s.tablonCardIcon}>🗺</span> Ubicaciones</div>
+                    {sharedLocations.map(loc => (
+                      <div key={loc.id} style={s.tablonRow}>
+                        <span style={s.tablonRowName}>{loc.name}</span>
+                        {loc.type && <span style={s.tablonTag}>{loc.type}</span>}
+                        {loc.description && <span style={s.tablonDesc}>{loc.description.slice(0, 80)}{loc.description.length > 80 ? '…' : ''}</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Factions */}
+                {sharedFactions.length > 0 && (
+                  <div style={s.tablonCard}>
+                    <div style={s.tablonCardHeader}><span style={s.tablonCardIcon}>⚜️</span> Facciones</div>
+                    {sharedFactions.map(fac => (
+                      <div key={fac.id} style={s.tablonRow}>
+                        <span style={s.tablonRowName}>{fac.name}</span>
+                        {fac.alignment && <span style={s.tablonTag}>{fac.alignment}</span>}
+                        {fac.description && <span style={s.tablonDesc}>{fac.description.slice(0, 80)}{fac.description.length > 80 ? '…' : ''}</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Timeline */}
+                {sharedTimeline.length > 0 && (
+                  <div style={s.tablonCard}>
+                    <div style={s.tablonCardHeader}><span style={s.tablonCardIcon}>📜</span> Eventos conocidos</div>
+                    {sharedTimeline.map(ev => (
+                      <div key={ev.id} style={s.tablonRow}>
+                        {ev.date && <span style={s.tablonDate}>{ev.date}</span>}
+                        <span style={s.tablonRowName}>{ev.title}</span>
+                        {ev.description && <span style={s.tablonDesc}>{ev.description.slice(0, 80)}{ev.description.length > 80 ? '…' : ''}</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+              </div>
+            </section>
+          )}
 
           {/* DASHBOARD GRID */}
           <div style={s.dashboardGrid} className="dashboard-grid-2col">
@@ -946,6 +1040,17 @@ const s = {
   activityDesc: { fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--text-soft)', display: 'block', lineHeight: 1.4 },
   activityTime: { fontFamily: 'Cinzel,serif', fontSize: '8px', color: 'var(--gold-dim)', whiteSpace: 'nowrap', letterSpacing: '0.5px', marginTop: '2px' },
   levelPip: { fontFamily: 'Cinzel,serif', fontSize: '10px', fontWeight: '700', border: '1px solid', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', flexShrink: 0 },
+
+  // Tablón de campaña
+  tablon: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '12px' },
+  tablonCard: { background: 'var(--bg-panel, rgba(20,18,12,0.8))', border: '1px solid var(--line, rgba(201,168,76,0.15))', borderRadius: '10px', overflow: 'hidden' },
+  tablonCardHeader: { display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderBottom: '1px solid var(--line)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase', background: 'rgba(0,0,0,0.2)' },
+  tablonCardIcon: { fontSize: '14px' },
+  tablonRow: { display: 'flex', flexDirection: 'column', gap: '3px', padding: '8px 14px', borderBottom: '1px solid rgba(201,168,76,0.06)' },
+  tablonRowName: { fontFamily: 'Crimson Pro,serif', fontSize: '14px', color: 'var(--gold-bright)', fontWeight: '600' },
+  tablonTag: { display: 'inline-block', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', padding: '2px 6px', borderRadius: '3px', alignSelf: 'flex-start', textTransform: 'uppercase' },
+  tablonDesc: { fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--text-soft, #b8a87a)', lineHeight: 1.4 },
+  tablonDate: { fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1px', color: 'var(--gold-dim)', textTransform: 'uppercase' },
 
   // DM button
   dmPanelBtn: { marginTop: '12px', width: '100%', background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.25)', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1.5px', padding: '12px', cursor: 'pointer', textTransform: 'uppercase', borderRadius: '8px', transition: 'border-color 0.2s' },
