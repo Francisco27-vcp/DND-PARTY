@@ -284,9 +284,14 @@ export default function TabAsistente({ user }) {
         try {
           data = JSON.parse(jsonStr);
         } catch {
-          // Strategy B: state-machine pass — fix unescaped control chars inside strings.
-          // More reliable than regex because it correctly tracks string boundaries
-          // and handles escaped quotes (\” inside strings).
+          // Strategy B: state-machine with lookahead heuristic.
+          // Handles:
+          //   1. Unescaped newlines/tabs inside strings → replace with space
+          //   2. Unescaped double quotes inside strings → escape as \”
+          //      Heuristic: a “ that closes a string must be followed (after
+          //      optional whitespace) by , : } ] or end-of-input. If the next
+          //      non-whitespace char is anything else, the “ is embedded and
+          //      gets escaped instead.
           let fixed = ‘’;
           let inStr = false;
           let esc = false;
@@ -294,9 +299,25 @@ export default function TabAsistente({ user }) {
             const ch = jsonStr[i];
             if (esc) { fixed += ch; esc = false; continue; }
             if (ch === ‘\\’) { esc = true; fixed += ch; continue; }
-            if (ch === ‘”’) { inStr = !inStr; fixed += ch; continue; }
-            if (inStr && (ch === ‘\n’ || ch === ‘\r’ || ch === ‘\t’)) {
-              fixed += ‘ ‘; continue;
+            // Control chars: handle based on context
+            if (ch === ‘\n’ || ch === ‘\r’ || ch === ‘\t’) {
+              fixed += inStr ? ‘ ‘ : ch; continue;
+            }
+            if (ch === ‘”’) {
+              if (!inStr) {
+                inStr = true; fixed += ch; continue;
+              }
+              // Inside a string: check if this “ is a valid terminator or embedded.
+              let j = i + 1;
+              while (j < jsonStr.length && (jsonStr[j] === ‘ ‘ || jsonStr[j] === ‘\t’)) j++;
+              const nxt = jsonStr[j];
+              const isTerminator = !nxt || nxt === ‘,’ || nxt === ‘:’ || nxt === ‘}’ || nxt === ‘]’ || nxt === ‘\n’ || nxt === ‘\r’;
+              if (isTerminator) {
+                inStr = false; fixed += ch;
+              } else {
+                fixed += ‘\\”’; // escape the embedded quote
+              }
+              continue;
             }
             fixed += ch;
           }
