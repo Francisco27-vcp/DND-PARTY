@@ -36,43 +36,21 @@ Podés responder preguntas sobre reglas de D&D 2024, los personajes y la campañ
 // ─── system prompt for generate mode ──────────────────────────────────────────
 const GENERATE_PROMPT = `Sos el asistente de un DM de D&D 5e. A partir de la descripción de una sesión, extraé datos estructurados.
 
-Respondé ÚNICAMENTE con JSON válido, sin texto adicional, sin bloques de código markdown.
+REGLAS CRÍTICAS DE FORMATO:
+- Respondé ÚNICAMENTE con JSON válido en UNA SOLA LÍNEA CONTINUA.
+- NUNCA uses saltos de línea dentro de los valores de string. Usa \\n si necesitás separar párrafos.
+- NUNCA uses comillas dobles dentro de los valores. Usá comillas simples o paráfrasis.
+- Sin bloques de código markdown, sin texto antes o después del JSON.
 
-Formato exacto:
-{
-  "session": {
-    "title": "string - título épico y breve de la sesión",
-    "date": "string - fecha si se menciona, sino cadena vacía",
-    "xpEarned": 0,
-    "summary": "string - resumen narrativo en 2-3 oraciones",
-    "highlights": "string - momentos épicos separados por comas"
-  },
-  "npcs": [
-    {
-      "name": "string",
-      "tipo": "antagonista|aliado|party_temporal|situacional|neutro",
-      "race": "string o cadena vacía",
-      "role": "string o cadena vacía",
-      "motivation": "string o cadena vacía",
-      "visibleToPlayers": false
-    }
-  ],
-  "timeline": [
-    {
-      "title": "string - título del evento",
-      "category": "evento|combate|lore|npc|lugar",
-      "description": "string",
-      "visibleToParty": false
-    }
-  ]
-}
+Formato (todo en una línea):
+{"session":{"title":"string","date":"string o vacío","xpEarned":0,"summary":"string sin saltos de línea","highlights":"momento1, momento2, momento3"},"npcs":[{"name":"string","tipo":"antagonista|aliado|party_temporal|situacional|neutro","race":"string","role":"string","motivation":"string","visibleToPlayers":false}],"timeline":[{"title":"string","category":"evento|combate|lore|npc|lugar","description":"string sin saltos de línea","visibleToParty":false}]}
 
-Reglas:
+Reglas de contenido:
 - Extraé SOLO lo mencionado explícitamente. No inventes datos.
-- NPCs: incluí solo personajes con nombre propio. Si no hay, devolvé npcs=[].
-- Timeline: incluí el evento/combate principal. Si no hay nada notable, devolvé timeline=[].
-- xpEarned debe ser un número, 0 si no se menciona.
-- Respondé siempre en español.`;
+- NPCs: solo personajes con nombre propio. Si no hay, npcs:[].
+- Timeline: máximo 4 eventos. Si no hay nada notable, timeline:[].
+- xpEarned: número, 0 si no se menciona.
+- Todos los strings en español, sin saltos de línea literales.`;
 
 // ─── MD components ─────────────────────────────────────────────────────────────
 const mdComponents = {
@@ -286,8 +264,19 @@ export default function TabAsistente({ user }) {
 
         // Replace typographic quotes with straight quotes
         clean = clean
-          .replace(/[“”]/g, '"')  // " "  → "
-          .replace(/[‘’]/g, "'");  // ' '  → '
+          .replace(/[“”]/g, ‘”’)
+          .replace(/[‘’]/g, “’”);
+
+        // Extract the JSON block first, then sanitize newlines inside strings
+        const rawMatch = clean.match(/\{[\s\S]*\}/);
+        if (rawMatch) {
+          // Replace literal newlines/tabs inside JSON string values
+          // (any newline that isn’t structural JSON whitespace)
+          clean = rawMatch[0]
+            .replace(/:\s*”([^”]*)”/g, (match, val) =>
+              ‘: “’ + val.replace(/\n/g, ‘ ‘).replace(/\r/g, ‘’).replace(/\t/g, ‘ ‘) + ‘”’
+            );
+        }
 
         const jsonMatch = clean.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
