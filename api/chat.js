@@ -79,6 +79,30 @@ function searchChunks(query, topK = 6, minScore = 2) {
   return results.slice(0, topK).filter(r => r.score > 0).map(r => r.chunk);
 }
 
+// Repair a truncated JSON string by closing any open strings and brackets.
+function closeTruncatedJSON(text) {
+  text = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+  const start = text.indexOf('{');
+  if (start === -1) return text;
+  text = text.slice(start);
+
+  let inStr = false, esc = false;
+  const stack = [];
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (esc) { esc = false; continue; }
+    if (ch === '\\') { esc = true; continue; }
+    if (ch === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (ch === '{') stack.push('}');
+    else if (ch === '[') stack.push(']');
+    else if (ch === '}' || ch === ']') stack.pop();
+  }
+  if (inStr) text += '"';           // close open string
+  text += stack.reverse().join(''); // close open brackets
+  return text;
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -101,7 +125,14 @@ module.exports = async function handler(req, res) {
 
   const relevantChunks = skipRAG ? [] : searchChunks(query);
 
-  let finalSystemPrompt = systemPrompt || '';
+  // For generate-session mode (skipRAG=true), override the client systemPrompt with a
+  // server-side minimal prompt. This guarantees a short JSON response that fits within
+  // Vercel's 10-second function timeout regardless of which client version is deployed.
+  const GENERATE_SYSTEM = `Extract D&D session data as compact JSON on ONE LINE. No markdown, no extra text.
+Format: {"session":{"title":"str","date":"","xpEarned":0,"summary":"max 20 words","highlights":"phrase1, phrase2, phrase3"},"npcs":[{"name":"str","tipo":"antagonista|aliado|party_temporal|situacional|neutro","race":"str","role":"str","motivation":"max 8 words","visibleToPlayers":false}],"timeline":[{"title":"str","category":"evento|combate|lore|npc|lugar","description":"max 12 words","visibleToParty":false}]}
+Rules: ONLY data explicitly mentioned. Max 2 npcs. Max 3 timeline events. Short descriptions only. Never use double quotes inside string values.`;
+
+  let finalSystemPrompt = skipRAG ? GENERATE_SYSTEM : (systemPrompt || '');
   if (relevantChunks.length > 0) {
     const ragSection = relevantChunks
       .map(c => {
@@ -147,6 +178,42 @@ module.exports = async function handler(req, res) {
 
   const reader = anthropicRes.body.getReader();
   const decoder = new TextDecoder();
+
+  // For generate mode: buffer full response, repair truncated JSON, send as one synthetic event.
+  // This ensures the client always receives a parseable JSON even if Anthropic's stream is cut short.
+  if (skipRAG) {
+    let buf = '', fullText = '';
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split('\n');
+        buf = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const raw = line.slice(6);
+          if (raw === '[DONE]') continue;
+          try {
+            const p = JSON.parse(raw);
+            if (p.type === 'content_block_delta' && p.delta?.type === 'text_delta') {
+              fullText += p.delta.text;
+            }
+          } catch {}
+        }
+      }
+    } catch {}
+
+    // Close any open strings / brackets from a truncated response
+    const repaired = closeTruncatedJSON(fullText);
+
+    // Emit one synthetic SSE event the client already knows how to parse
+    const evt = JSON.stringify({ type: 'content_block_delta', delta: { type: 'text_delta', text: repaired } });
+    res.write(`data: ${evt}\n\n`);
+    res.end();
+    return;
+  }
+
   try {
     while (true) {
       const { done, value } = await reader.read();
