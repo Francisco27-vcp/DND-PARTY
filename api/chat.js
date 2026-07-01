@@ -89,7 +89,7 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured on the server.' });
   }
 
-  const { messages, systemPrompt, skipRAG } = req.body || {};
+  const { messages, systemPrompt, skipRAG, maxTokens } = req.body || {};
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'messages array is required.' });
   }
@@ -126,7 +126,7 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1024,
+        max_tokens: maxTokens || 1024,
         stream: true,
         system: finalSystemPrompt,
         messages,

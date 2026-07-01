@@ -228,7 +228,8 @@ export default function TabAsistente({ user }) {
         body: JSON.stringify({
           messages: [{ role: 'user', content: safeInput }],
           systemPrompt: GENERATE_PROMPT,
-          skipRAG: true,   // no necesitamos chunks del manual para extraer JSON
+          skipRAG: true,
+          maxTokens: 2048,
         }),
       });
 
