@@ -221,6 +221,7 @@ export default function TabAsistente({ user }) {
         body: JSON.stringify({
           messages: [{ role: 'user', content: genInput }],
           systemPrompt: GENERATE_PROMPT,
+          skipRAG: true,   // no necesitamos chunks del manual para extraer JSON
         }),
       });
 

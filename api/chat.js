@@ -89,16 +89,17 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured on the server.' });
   }
 
-  const { messages, systemPrompt } = req.body || {};
+  const { messages, systemPrompt, skipRAG } = req.body || {};
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'messages array is required.' });
   }
 
   // Use the last user message for RAG retrieval.
+  // Skip RAG when the caller doesn't need D&D manual context (e.g. generate-session mode).
   const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
   const query = typeof lastUserMsg?.content === 'string' ? lastUserMsg.content : '';
 
-  const relevantChunks = searchChunks(query);
+  const relevantChunks = skipRAG ? [] : searchChunks(query);
 
   let finalSystemPrompt = systemPrompt || '';
   if (relevantChunks.length > 0) {
