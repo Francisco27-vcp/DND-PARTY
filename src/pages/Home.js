@@ -696,25 +696,33 @@ export default function Home({ user }) {
                   <div style={s.dashCardBody}>
                     <div style={s.partyMapWrap}>
                       <img src={map.imageUrl} alt={map.title} style={s.partyMapImg} />
-                      {(map.tokens || []).map(token => (
-                        <div
-                          key={token.id}
-                          style={{
-                            position: 'absolute',
-                            left: `${token.x}%`,
-                            top: `${token.y}%`,
-                            transform: 'translate(-50%, -50%)',
+                      {/* Fog overlays based on viewport */}
+                      {(() => { const vp = map.viewport || {}; return (<>
+                        {vp.t > 0 && <div style={{ position:'absolute', top:0, left:0, right:0, height:`${vp.t}%`, background:'rgba(0,0,0,0.8)', zIndex:20, pointerEvents:'none' }} />}
+                        {vp.b > 0 && <div style={{ position:'absolute', bottom:0, left:0, right:0, height:`${vp.b}%`, background:'rgba(0,0,0,0.8)', zIndex:20, pointerEvents:'none' }} />}
+                        {vp.l > 0 && <div style={{ position:'absolute', top:`${vp.t||0}%`, bottom:`${vp.b||0}%`, left:0, width:`${vp.l}%`, background:'rgba(0,0,0,0.8)', zIndex:20, pointerEvents:'none' }} />}
+                        {vp.r > 0 && <div style={{ position:'absolute', top:`${vp.t||0}%`, bottom:`${vp.b||0}%`, right:0, width:`${vp.r}%`, background:'rgba(0,0,0,0.8)', zIndex:20, pointerEvents:'none' }} />}
+                      </>); })()}
+                      {/* Only show tokens visible to party */}
+                      {(map.tokens || []).filter(t => t.visibleToParty !== false).map(token => {
+                        const sizes = [28,36,48,64,88,120];
+                        const px = sizes[(token.size || 3) - 1] || 48;
+                        return (
+                          <div key={token.id} style={{
+                            position: 'absolute', left: `${token.x}%`, top: `${token.y}%`,
+                            transform: 'translate(-50%, -50%)', width: `${px}px`,
                             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px',
-                            padding: '3px 5px', border: `1.5px solid ${token.color}`,
-                            borderRadius: '6px', background: `${token.color}33`,
-                            backdropFilter: 'blur(4px)', zIndex: 5, minWidth: '32px',
-                          }}
-                          title={token.label}
-                        >
-                          <span style={{ fontSize: '16px', lineHeight: 1 }}>{token.emoji}</span>
-                          <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', color: token.color, whiteSpace: 'nowrap' }}>{token.label}</span>
-                        </div>
-                      ))}
+                            border: `2px solid ${token.color}`, borderRadius: '8px',
+                            background: `${token.color}33`, backdropFilter: 'blur(4px)', zIndex: 10,
+                            padding: '2px 3px',
+                          }}>
+                            {token.imageUrl
+                              ? <img src={token.imageUrl} alt={token.label} style={{ width: '100%', borderRadius: '4px', display: 'block' }} />
+                              : <span style={{ fontSize: `${Math.round(px * 0.5)}px`, lineHeight: 1 }}>{token.emoji}</span>}
+                            <span style={{ fontFamily: 'Cinzel,serif', fontSize: `${Math.max(6, Math.round(px * 0.15))}px`, color: token.color, whiteSpace: 'nowrap' }}>{token.label}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
