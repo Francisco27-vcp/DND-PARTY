@@ -210,7 +210,7 @@ export default function Home({ user }) {
     return onSnapshot(q, snap => setSharedFactions(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => {});
   }, []);
   useEffect(() => {
-    const q = query(collection(db, 'timeline'), where('visibleToParty', '==', true), orderBy('date', 'asc'));
+    const q = query(collection(db, 'timeline'), where('visibleToParty', '==', true));
     return onSnapshot(q, snap => setSharedTimeline(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => {});
   }, []);
 
@@ -474,12 +474,14 @@ export default function Home({ user }) {
           </section>
 
           {/* TABLÓN DE CAMPAÑA — shared by DM */}
-          {(sharedNpcs.length > 0 || sharedLocations.length > 0 || sharedFactions.length > 0 || sharedTimeline.length > 0) && (
-            <section style={s.section}>
-              <div style={s.sectionHeader}>
-                <span style={s.sectionTitle}>📌 Tablón de campaña</span>
-                <div style={s.sectionLine} />
-              </div>
+          <section style={s.section}>
+            <div style={s.sectionHeader}>
+              <span style={s.sectionTitle}>📌 Tablón de campaña</span>
+              <div style={s.sectionLine} />
+            </div>
+            {(sharedNpcs.length === 0 && sharedLocations.length === 0 && sharedFactions.length === 0 && sharedTimeline.length === 0) ? (
+              <p style={{ ...s.dashText, opacity: 0.5, fontStyle: 'italic' }}>El DM no ha compartido nada con la party todavía.</p>
+            ) : (
               <div style={s.tablon}>
 
                 {/* NPCs */}
@@ -540,8 +542,8 @@ export default function Home({ user }) {
                 )}
 
               </div>
-            </section>
-          )}
+            )}
+          </section>
 
           {/* DASHBOARD GRID */}
           <div style={s.dashboardGrid} className="dashboard-grid-2col">
