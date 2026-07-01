@@ -34,24 +34,21 @@ Podés responder preguntas sobre reglas de D&D 2024, los personajes y la campañ
 }
 
 // ─── system prompt for generate mode ──────────────────────────────────────────
-const GENERATE_PROMPT = `Sos el asistente de un DM de D&D 5e. A partir de la descripción de una sesión, extraé datos estructurados.
+const GENERATE_PROMPT = `Sos el asistente de un DM de D&D 5e. Extraé datos estructurados de la descripción de sesión.
 
-REGLAS CRÍTICAS DE FORMATO:
-- Respondé ÚNICAMENTE con JSON válido en UNA SOLA LÍNEA CONTINUA.
-- NUNCA uses saltos de línea dentro de los valores de string.
-- NUNCA uses comillas dobles dentro de los valores. Si el texto contiene diálogos o citas, parafraseá en tercera persona, nunca copies las comillas literalmente.
-- Sin bloques de código markdown, sin texto antes o después del JSON.
+FORMATO: Respondé ÚNICAMENTE con JSON válido en UNA SOLA LÍNEA CONTINUA. Sin markdown, sin texto extra.
 
-Formato (todo en una línea):
-{"session":{"title":"string","date":"string o vacío","xpEarned":0,"summary":"string sin saltos de línea","highlights":"momento1, momento2, momento3"},"npcs":[{"name":"string","tipo":"antagonista|aliado|party_temporal|situacional|neutro","race":"string","role":"string","motivation":"string","visibleToPlayers":false}],"timeline":[{"title":"string","category":"evento|combate|lore|npc|lugar","description":"string sin saltos de línea","visibleToParty":false}]}
+{"session":{"title":"string","date":"","xpEarned":0,"summary":"string","highlights":"item1, item2, item3"},"npcs":[{"name":"string","tipo":"antagonista|aliado|party_temporal|situacional|neutro","race":"string","role":"string","motivation":"string","visibleToPlayers":false}],"timeline":[{"title":"string","category":"evento|combate|lore|npc|lugar","description":"string","visibleToParty":false}]}
 
-Reglas de contenido:
-- Extraé SOLO lo mencionado explícitamente. No inventes datos.
-- NPCs: solo personajes con nombre propio. Si no hay, npcs:[].
-- Timeline: máximo 4 eventos. Si no hay nada notable, timeline:[].
-- xpEarned: número, 0 si no se menciona.
-- Todos los strings en español, sin saltos de línea literales.
-- Nunca copies diálogos textuales del input. Si hay frases entre comillas, descríbelas en tercera persona.`;
+LÍMITES ESTRICTOS (es crítico respetar esto para no superar el largo máximo):
+- summary: máximo 25 palabras.
+- highlights: máximo 3 frases cortas separadas por coma.
+- npcs: máximo 2 personajes con nombre propio. Si no hay, [].
+- timeline: máximo 2 eventos. Si no hay, [].
+- Cada description de timeline: máximo 15 palabras.
+- motivation: máximo 8 palabras.
+- NUNCA uses comillas dobles dentro de los valores. Parafraseá los diálogos en tercera persona.
+- xpEarned: número, 0 si no se menciona.`;
 
 // ─── MD components ─────────────────────────────────────────────────────────────
 const mdComponents = {
