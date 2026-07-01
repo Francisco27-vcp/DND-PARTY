@@ -114,11 +114,21 @@ export default function TabAsistente({ user }) {
   const [sessions, setSessions]     = useState([]);
   const [mode, setMode]             = useState('chat'); // 'chat' | 'generar'
 
-  // Chat state
-  const [aiMessages, setAiMessages] = useState([]);
+  // Chat state — persisted in localStorage
+  const [aiMessages, setAiMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem('dm_chat_history');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [aiInput, setAiInput]       = useState('');
   const [aiLoading, setAiLoading]   = useState(false);
   const scrollRef = useRef(null);
+
+  // Persist messages on every change
+  useEffect(() => {
+    try { localStorage.setItem('dm_chat_history', JSON.stringify(aiMessages)); } catch {}
+  }, [aiMessages]);
 
   // Generate state
   const [genInput, setGenInput]     = useState('');
@@ -361,6 +371,14 @@ export default function TabAsistente({ user }) {
             ? 'Preguntá sobre reglas, estrategias o la campaña'
             : 'Describí la sesión y la IA genera los datos estructurados'}
         </span>
+        {mode === 'chat' && aiMessages.length > 0 && (
+          <button
+            style={s.clearBtn}
+            onClick={() => { setAiMessages([]); localStorage.removeItem('dm_chat_history'); }}
+          >
+            🗑 Limpiar
+          </button>
+        )}
       </div>
 
       {/* ══════════════ CHAT MODE ══════════════ */}
@@ -574,6 +592,11 @@ const s = {
   modeHint: {
     fontFamily: 'Crimson Pro,serif', fontStyle: 'italic', fontSize: '12px',
     color: 'var(--gold-dim)', marginLeft: '8px',
+  },
+  clearBtn: {
+    marginLeft: 'auto', background: 'transparent', border: '1px solid rgba(239,115,104,0.3)',
+    color: 'rgba(239,115,104,0.7)', fontFamily: 'Cinzel,serif', fontSize: '9px',
+    letterSpacing: '1px', padding: '5px 10px', cursor: 'pointer', textTransform: 'uppercase',
   },
 
   // ── Chat ──
