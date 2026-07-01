@@ -38,8 +38,8 @@ const GENERATE_PROMPT = `Sos el asistente de un DM de D&D 5e. A partir de la des
 
 REGLAS CRÍTICAS DE FORMATO:
 - Respondé ÚNICAMENTE con JSON válido en UNA SOLA LÍNEA CONTINUA.
-- NUNCA uses saltos de línea dentro de los valores de string. Usa \\n si necesitás separar párrafos.
-- NUNCA uses comillas dobles dentro de los valores. Usá comillas simples o paráfrasis.
+- NUNCA uses saltos de línea dentro de los valores de string.
+- NUNCA uses comillas dobles dentro de los valores. Si el texto contiene diálogos o citas, parafraseá en tercera persona, nunca copies las comillas literalmente.
 - Sin bloques de código markdown, sin texto antes o después del JSON.
 
 Formato (todo en una línea):
@@ -50,7 +50,8 @@ Reglas de contenido:
 - NPCs: solo personajes con nombre propio. Si no hay, npcs:[].
 - Timeline: máximo 4 eventos. Si no hay nada notable, timeline:[].
 - xpEarned: número, 0 si no se menciona.
-- Todos los strings en español, sin saltos de línea literales.`;
+- Todos los strings en español, sin saltos de línea literales.
+- Nunca copies diálogos textuales del input. Si hay frases entre comillas, descríbelas en tercera persona.`;
 
 // ─── MD components ─────────────────────────────────────────────────────────────
 const mdComponents = {
@@ -214,12 +215,18 @@ export default function TabAsistente({ user }) {
     setGenerated(null);
     setSaved(false);
 
+    // Sanitize input: replace any quote characters with apostrophes so the AI
+    // won't accidentally reproduce them as unescaped quotes inside JSON string values.
+    const safeInput = genInput
+      .replace(/[""«»]/g, "'")
+      .replace(/"/g, "'");
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [{ role: 'user', content: genInput }],
+          messages: [{ role: 'user', content: safeInput }],
           systemPrompt: GENERATE_PROMPT,
           skipRAG: true,   // no necesitamos chunks del manual para extraer JSON
         }),
@@ -255,38 +262,47 @@ export default function TabAsistente({ user }) {
         }
       }
 
-      // Parse JSON from response — robust handling
+      // Parse JSON from response — multi-strategy robust handling
       try {
-        // Strip markdown code blocks if present
+        // 1. Strip markdown fences and normalize typographic quotes
         let clean = fullText
-          .replace(/```json\s*/gi, '')
-          .replace(/```\s*/g, '')
-          .trim();
+          .replace(/```json\s*/gi, ‘’).replace(/```\s*/g, ‘’).trim()
+          .replace(/[“”]/g, ‘”’).replace(/[‘’]/g, “’”);
 
-        // Replace typographic quotes with straight quotes
-        clean = clean
-          .replace(/[“”]/g, ‘”’)
-          .replace(/[‘’]/g, “’”);
-
-        // Extract the JSON block first, then sanitize newlines inside strings
-        const rawMatch = clean.match(/\{[\s\S]*\}/);
-        if (rawMatch) {
-          // Replace literal newlines/tabs inside JSON string values
-          // (any newline that isn’t structural JSON whitespace)
-          clean = rawMatch[0]
-            .replace(/:\s*”([^”]*)”/g, (match, val) =>
-              ‘: “’ + val.replace(/\n/g, ‘ ‘).replace(/\r/g, ‘’).replace(/\t/g, ‘ ‘) + ‘”’
-            );
-        }
-
-        const jsonMatch = clean.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-          setGenError('La IA no devolvió JSON válido. Intentá con una descripción más corta o simple.');
+        // 2. Extract the outermost JSON block
+        const match = clean.match(/\{[\s\S]*\}/);
+        if (!match) {
+          setGenError(‘La IA no devolvió JSON válido. Intentá con una descripción más corta o simple.’);
           setGenLoading(false);
           return;
         }
 
-        const data = JSON.parse(jsonMatch[0]);
+        let jsonStr = match[0];
+        let data;
+
+        // Strategy A: parse as-is (handles pretty-printed JSON fine)
+        try {
+          data = JSON.parse(jsonStr);
+        } catch {
+          // Strategy B: state-machine pass — fix unescaped control chars inside strings.
+          // More reliable than regex because it correctly tracks string boundaries
+          // and handles escaped quotes (\” inside strings).
+          let fixed = ‘’;
+          let inStr = false;
+          let esc = false;
+          for (let i = 0; i < jsonStr.length; i++) {
+            const ch = jsonStr[i];
+            if (esc) { fixed += ch; esc = false; continue; }
+            if (ch === ‘\\’) { esc = true; fixed += ch; continue; }
+            if (ch === ‘”’) { inStr = !inStr; fixed += ch; continue; }
+            if (inStr && (ch === ‘\n’ || ch === ‘\r’ || ch === ‘\t’)) {
+              fixed += ‘ ‘; continue;
+            }
+            fixed += ch;
+          }
+          data = JSON.parse(fixed);
+        }
+
         setGenerated(data);
         setSelections({
           session: true,
@@ -294,7 +310,7 @@ export default function TabAsistente({ user }) {
           timeline: (data.timeline || []).map((_, i) => i),
         });
       } catch (parseErr) {
-        console.error('Parse error:', parseErr, '\nRaw response:', fullText);
+        console.error(‘Parse error:’, parseErr, ‘\nRaw response:’, fullText);
         setGenError(`Error al interpretar la respuesta (${parseErr.message}). Intentá de nuevo.`);
       }
     } catch (err) {
