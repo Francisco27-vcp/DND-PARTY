@@ -6,7 +6,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import ReactMarkdown from 'react-markdown';
-import { jsonrepair } from 'json-repair';
+import { jsonrepair } from 'jsonrepair';
 import './TabAsistente.css';
 
 // ─── system prompt for chat mode ──────────────────────────────────────────────
