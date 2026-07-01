@@ -126,7 +126,7 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: maxTokens || 1024,
+        max_tokens: maxTokens || 2048,
         stream: true,
         system: finalSystemPrompt,
         messages,

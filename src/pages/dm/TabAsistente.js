@@ -263,68 +263,25 @@ export default function TabAsistente({ user }) {
         }
       }
 
-      // Parse JSON from response — multi-strategy robust handling
+      // Parse JSON from response — jsonrepair handles all cases:
+      // truncated output, unescaped quotes, newlines in strings, trailing commas, etc.
       try {
-        // 1. Strip markdown fences and normalize typographic quotes
-        let clean = fullText
+        const { jsonrepair } = await import(‘json-repair’);
+
+        // Strip markdown fences and normalize typographic quotes
+        const clean = fullText
           .replace(/```json\s*/gi, ‘’).replace(/```\s*/g, ‘’).trim()
           .replace(/[“”]/g, ‘”’).replace(/[‘’]/g, “’”);
 
-        // 2. Extract the outermost JSON block
-        const match = clean.match(/\{[\s\S]*\}/);
-        if (!match) {
-          setGenError(‘La IA no devolvió JSON válido. Intentá con una descripción más corta o simple.’);
+        if (!clean.includes(‘{‘)) {
+          setGenError(‘La IA no devolvió JSON válido. Intentá de nuevo.’);
           setGenLoading(false);
           return;
         }
 
-        let jsonStr = match[0];
-        let data;
-
-        // Strategy A: parse as-is (handles pretty-printed JSON fine)
-        try {
-          data = JSON.parse(jsonStr);
-        } catch {
-          // Strategy B: state-machine with lookahead heuristic.
-          // Handles:
-          //   1. Unescaped newlines/tabs inside strings → replace with space
-          //   2. Unescaped double quotes inside strings → escape as \”
-          //      Heuristic: a “ that closes a string must be followed (after
-          //      optional whitespace) by , : } ] or end-of-input. If the next
-          //      non-whitespace char is anything else, the “ is embedded and
-          //      gets escaped instead.
-          let fixed = ‘’;
-          let inStr = false;
-          let esc = false;
-          for (let i = 0; i < jsonStr.length; i++) {
-            const ch = jsonStr[i];
-            if (esc) { fixed += ch; esc = false; continue; }
-            if (ch === ‘\\’) { esc = true; fixed += ch; continue; }
-            // Control chars: handle based on context
-            if (ch === ‘\n’ || ch === ‘\r’ || ch === ‘\t’) {
-              fixed += inStr ? ‘ ‘ : ch; continue;
-            }
-            if (ch === ‘”’) {
-              if (!inStr) {
-                inStr = true; fixed += ch; continue;
-              }
-              // Inside a string: check if this “ is a valid terminator or embedded.
-              let j = i + 1;
-              while (j < jsonStr.length && (jsonStr[j] === ‘ ‘ || jsonStr[j] === ‘\t’)) j++;
-              const nxt = jsonStr[j];
-              const isTerminator = !nxt || nxt === ‘,’ || nxt === ‘:’ || nxt === ‘}’ || nxt === ‘]’ || nxt === ‘\n’ || nxt === ‘\r’;
-              if (isTerminator) {
-                inStr = false; fixed += ch;
-              } else {
-                fixed += ‘\\”’; // escape the embedded quote
-              }
-              continue;
-            }
-            fixed += ch;
-          }
-          data = JSON.parse(fixed);
-        }
-
+        // Pass the full (possibly truncated) text to jsonrepair — it finds and
+        // repairs the JSON block, adding missing closing brackets/braces as needed.
+        const data = JSON.parse(jsonrepair(clean));
         setGenerated(data);
         setSelections({
           session: true,
