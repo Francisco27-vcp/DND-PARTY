@@ -698,10 +698,10 @@ export default function Home({ user }) {
                       <img src={map.imageUrl} alt={map.title} style={s.partyMapImg} />
                       {/* Fog overlays based on viewport */}
                       {(() => { const vp = map.viewport || {}; return (<>
-                        {vp.t > 0 && <div style={{ position:'absolute', top:0, left:0, right:0, height:`${vp.t}%`, background:'rgba(0,0,0,0.8)', zIndex:20, pointerEvents:'none' }} />}
-                        {vp.b > 0 && <div style={{ position:'absolute', bottom:0, left:0, right:0, height:`${vp.b}%`, background:'rgba(0,0,0,0.8)', zIndex:20, pointerEvents:'none' }} />}
-                        {vp.l > 0 && <div style={{ position:'absolute', top:`${vp.t||0}%`, bottom:`${vp.b||0}%`, left:0, width:`${vp.l}%`, background:'rgba(0,0,0,0.8)', zIndex:20, pointerEvents:'none' }} />}
-                        {vp.r > 0 && <div style={{ position:'absolute', top:`${vp.t||0}%`, bottom:`${vp.b||0}%`, right:0, width:`${vp.r}%`, background:'rgba(0,0,0,0.8)', zIndex:20, pointerEvents:'none' }} />}
+                        {vp.t > 0 && <div style={{ position:'absolute', top:0, left:0, right:0, height:`${vp.t}%`, background:'#0a0804', zIndex:20, pointerEvents:'none' }} />}
+                        {vp.b > 0 && <div style={{ position:'absolute', bottom:0, left:0, right:0, height:`${vp.b}%`, background:'#0a0804', zIndex:20, pointerEvents:'none' }} />}
+                        {vp.l > 0 && <div style={{ position:'absolute', top:`${vp.t||0}%`, bottom:`${vp.b||0}%`, left:0, width:`${vp.l}%`, background:'#0a0804', zIndex:20, pointerEvents:'none' }} />}
+                        {vp.r > 0 && <div style={{ position:'absolute', top:`${vp.t||0}%`, bottom:`${vp.b||0}%`, right:0, width:`${vp.r}%`, background:'#0a0804', zIndex:20, pointerEvents:'none' }} />}
                       </>); })()}
                       {/* Only show tokens visible to party */}
                       {(map.tokens || []).filter(t => t.visibleToParty !== false).map(token => {

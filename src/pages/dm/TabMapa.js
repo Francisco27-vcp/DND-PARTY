@@ -511,7 +511,7 @@ const s = {
   mapWrap: { overflow: 'auto', maxHeight: '68vh', borderRadius: '10px', border: '1px solid var(--line)', background: '#0a0806' },
   mapCanvas: { position: 'relative', display: 'inline-block', minWidth: '100%' },
   mapImg: { display: 'block', width: '100%', height: 'auto', userSelect: 'none', pointerEvents: 'none' },
-  fog: { position: 'absolute', background: 'rgba(0,0,0,0.75)', backgroundImage: 'repeating-linear-gradient(45deg,transparent,transparent 4px,rgba(0,0,0,0.2) 4px,rgba(0,0,0,0.2) 8px)', pointerEvents: 'none', zIndex: 20 },
+  fog: { position: 'absolute', background: '#0a0804', pointerEvents: 'none', zIndex: 20 },
   popClose: { background: 'transparent', border: 'none', color: 'var(--gold-dim)', cursor: 'pointer', fontSize: '12px', padding: '2px', lineHeight: 1 },
   popBtn: { background: 'rgba(0,0,0,0.3)', border: '1px solid var(--line)', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1px', padding: '6px 10px', cursor: 'pointer', textTransform: 'uppercase', borderRadius: '4px', transition: 'all 0.15s' },
   legend: { display: 'flex', gap: '5px', flexWrap: 'wrap' },
