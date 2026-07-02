@@ -6,12 +6,12 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 
 const navItems = [
-  { path: '/', label: 'Party', icon: '⚔️' },
-  { path: '/campana', label: 'Campaña', icon: '📜' },
+  { path: '/',         label: 'Party',    icon: '⚔️' },
+  { path: '/campana',  label: 'Campaña',  icon: '📜' },
   { path: '/historia', label: 'Historia', icon: '🗺️' },
-  { path: '/manual', label: 'Manual', icon: '📖' },
-  { path: '/notas', label: 'Notas', icon: '📝' },
-  { path: '/perfil', label: 'Perfil', icon: '👤' },
+  { path: '/manual',   label: 'Manual',   icon: '📖' },
+  { path: '/notas',    label: 'Notas',    icon: '📝' },
+  { path: '/perfil',   label: 'Perfil',   icon: '👤' },
 ];
 
 export default function Nav({ user }) {
@@ -33,7 +33,9 @@ export default function Nav({ user }) {
     return unsub;
   }, [user.uid]);
 
-  const items = isDM ? [...navItems, { path: '/dm', label: 'Panel DM', icon: '🛠️' }] : navItems;
+  const items = isDM
+    ? [...navItems, { path: '/dm', label: 'Panel DM', icon: '🛠️' }]
+    : navItems;
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -42,55 +44,205 @@ export default function Nav({ user }) {
 
   return (
     <>
-      <nav style={styles.nav}>
-        <div style={styles.navInner}>
-          <div style={styles.logo} onClick={() => navigate('/')}>
-            <span style={styles.logoGem}>⚔</span>
-            <span style={styles.logoText}>DND PARTY</span>
+      {/* ── Desktop topbar ── */}
+      <nav style={S.topbar}>
+
+        {/* Brand */}
+        <div style={S.brand} onClick={() => navigate('/')} role="button" tabIndex={0}
+          onKeyDown={e => e.key === 'Enter' && navigate('/')}>
+          <div style={S.brandMark}>⚔</div>
+          <div>
+            <div style={S.brandTitle}>DND PARTY</div>
+            <div style={S.brandSub}>Rakets Campaign</div>
           </div>
-          <div style={styles.navLinks} className="nav-desktop-links">
-            {items.map(item => (
-              <button key={item.path} onClick={() => navigate(item.path)}
-                style={{ ...styles.navBtn, ...(location.pathname === item.path ? styles.navBtnActive : {}) }}>
-                <span>{item.icon}</span>
+        </div>
+
+        {/* Centre nav */}
+        <div style={S.navLinks} className="nav-desktop-links">
+          {items.map(item => {
+            const active = location.pathname === item.path;
+            return (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className={active ? 'nav-btn nav-btn-active' : 'nav-btn'}
+                style={active ? S.navBtnActive : S.navBtn}
+              >
+                <span style={{ fontSize: '13px' }}>{item.icon}</span>
                 <span>{item.label}</span>
+                {active && <span className="nav-active-line" style={S.activeUnderline} />}
               </button>
-            ))}
-          </div>
-          <div style={styles.userArea} className="nav-user-area">
-            <span style={styles.userName}>{alias}</span>
-            <button style={styles.logoutBtn} onClick={handleLogout}>Salir</button>
-          </div>
+            );
+          })}
+        </div>
+
+        {/* Right — profile orb + name + logout */}
+        <div style={S.userArea} className="nav-user-area">
+          <div style={S.profileOrb} title={alias} />
+          <span style={S.userName}>{alias}</span>
+          <button style={S.logoutBtn} onClick={handleLogout}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(247,221,120,0.55)'; e.currentTarget.style.color = 'var(--gold-1)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(234,199,94,0.3)'; e.currentTarget.style.color = 'var(--text-muted)'; }}>
+            Salir
+          </button>
         </div>
       </nav>
 
-      <nav style={styles.mobileNav} className="nav-mobile">
-        {items.map(item => (
-          <button key={item.path} onClick={() => navigate(item.path)}
-            style={{ ...styles.mobileNavBtn, ...(location.pathname === item.path ? styles.mobileNavBtnActive : {}) }}>
-            <span style={{ fontSize: '16px' }}>{item.icon}</span>
-            <span style={{ fontSize: '7px', fontFamily: 'Cinzel,serif', letterSpacing: '0.5px' }}>{item.label}</span>
-          </button>
-        ))}
+      {/* ── Mobile bottom nav ── */}
+      <nav style={S.mobileNav} className="nav-mobile">
+        {items.map(item => {
+          const active = location.pathname === item.path;
+          return (
+            <button key={item.path} onClick={() => navigate(item.path)}
+              style={active ? { ...S.mobileNavBtn, ...S.mobileNavBtnActive } : S.mobileNavBtn}>
+              <span style={{ fontSize: '16px' }}>{item.icon}</span>
+              <span style={{ fontSize: '7px', fontFamily: 'Georgia,serif', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
       </nav>
     </>
   );
 }
 
-const styles = {
-  nav: { background: 'rgba(11,9,6,0.95)', borderBottom: '1px solid var(--line)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 100 },
-  navInner: { maxWidth: '1100px', margin: '0 auto', padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px' },
-  logo: { display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' },
-  logoGem: { fontSize: '18px', color: 'var(--gold)', textShadow: '0 0 12px rgba(201,164,73,0.6)' },
-  logoText: { fontFamily: 'Cinzel,serif', fontSize: '13px', fontWeight: '700', letterSpacing: '3px', color: 'var(--gold-bright)' },
-  navLinks: { display: 'flex', gap: '2px', flex: 1, justifyContent: 'center' },
-  navBtn: { background: 'transparent', border: 'none', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '10px', letterSpacing: '1px', padding: '8px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', textTransform: 'uppercase', transition: 'all 0.2s' },
-  navBtnActive: { color: 'var(--gold-bright)', background: 'rgba(201,164,73,0.08)', borderBottom: '1px solid var(--gold)' },
-  userArea: { display: 'flex', alignItems: 'center', gap: '12px' },
-  userName: { fontFamily: 'Cinzel,serif', fontSize: '10px', color: 'var(--parchment-dim)', letterSpacing: '1px', textTransform: 'uppercase' },
-  logoutBtn: { background: 'transparent', border: '1px solid var(--line)', color: 'var(--gold-dim)', fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1px', padding: '4px 10px', cursor: 'pointer', textTransform: 'uppercase' },
-  mobileNav: { position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(11,9,6,0.98)', borderTop: '1px solid var(--line)', display: 'flex', justifyContent: 'space-around', padding: '6px 0 max(6px, env(safe-area-inset-bottom))', zIndex: 100, backdropFilter: 'blur(10px)' },
-  mobileNavBtn: { background: 'transparent', border: 'none', color: 'var(--gold-dim)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '4px 8px', cursor: 'pointer', transition: 'color 0.2s' },
-  mobileNavBtnActive: { color: 'var(--gold-bright)' },
-};
+const S = {
+  topbar: {
+    position: 'sticky', top: 0, zIndex: 100,
+    display: 'grid',
+    gridTemplateColumns: 'auto 1fr auto',
+    alignItems: 'center',
+    gap: '1.25rem',
+    minHeight: '76px',
+    padding: '0 1.5rem',
+    borderBottom: '1px solid rgba(234,199,94,0.22)',
+    background: 'rgba(3,3,2,0.84)',
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
+    boxShadow: '0 20px 70px rgba(0,0,0,0.52)',
+  },
 
+  /* Brand */
+  brand: {
+    display: 'flex', alignItems: 'center', gap: '12px',
+    cursor: 'pointer', userSelect: 'none',
+  },
+  brandMark: {
+    width: '48px', height: '48px', flexShrink: 0,
+    display: 'grid', placeItems: 'center',
+    border: '1px solid rgba(247,221,120,0.72)',
+    borderRadius: '14px',
+    background: 'radial-gradient(circle at top, rgba(247,221,120,0.18), rgba(8,7,5,0.92))',
+    boxShadow: '0 0 30px rgba(247,221,120,0.22)',
+    fontSize: '1.45rem',
+    lineHeight: 1,
+  },
+  brandTitle: {
+    fontFamily: 'Georgia,"Times New Roman",serif',
+    fontSize: '0.82rem',
+    fontWeight: '400',
+    letterSpacing: '0.22em',
+    lineHeight: 1,
+    color: 'var(--gold-1)',
+    textTransform: 'uppercase',
+    textShadow: '0 0 20px rgba(247,221,120,0.5)',
+    marginBottom: '3px',
+  },
+  brandSub: {
+    fontFamily: 'Inter,ui-sans-serif,system-ui,sans-serif',
+    fontSize: '0.62rem',
+    letterSpacing: '0.1em',
+    color: 'var(--text-muted)',
+    textTransform: 'uppercase',
+  },
+
+  /* Nav links */
+  navLinks: {
+    display: 'flex', justifyContent: 'center', gap: '2px',
+  },
+  navBtn: {
+    position: 'relative',
+    display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
+    padding: '1.65rem 0.75rem',
+    background: 'transparent', border: 'none',
+    color: 'var(--text-muted)',
+    fontFamily: 'Georgia,"Times New Roman",serif',
+    fontSize: '0.78rem', letterSpacing: '0.13em',
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+    transition: 'color 160ms ease',
+    whiteSpace: 'nowrap',
+  },
+  navBtnActive: {
+    position: 'relative',
+    display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
+    padding: '1.65rem 0.75rem',
+    background: 'transparent', border: 'none',
+    color: 'var(--gold-1)',
+    fontFamily: 'Georgia,"Times New Roman",serif',
+    fontSize: '0.78rem', letterSpacing: '0.13em',
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+    transition: 'color 160ms ease',
+    whiteSpace: 'nowrap',
+  },
+  activeUnderline: {
+    position: 'absolute', left: '0.55rem', right: '0.55rem', bottom: 0,
+    height: '2px',
+    background: 'linear-gradient(90deg, transparent, var(--green-1), var(--gold-1), transparent)',
+    boxShadow: '0 0 12px rgba(120,218,96,0.45)',
+    pointerEvents: 'none',
+  },
+
+  /* Right area */
+  userArea: {
+    display: 'flex', alignItems: 'center', gap: '10px',
+  },
+  profileOrb: {
+    width: '34px', height: '34px', borderRadius: '50%', flexShrink: 0,
+    background: 'radial-gradient(circle at 45% 35%, var(--green-1), var(--green-3) 45%, rgba(0,0,0,0.95) 75%), radial-gradient(circle, var(--gold-1), transparent)',
+    border: '1px solid var(--gold-2)',
+    boxShadow: '0 0 14px rgba(120,218,96,0.32)',
+  },
+  userName: {
+    fontFamily: 'Georgia,"Times New Roman",serif',
+    fontSize: '0.72rem', letterSpacing: '0.1em',
+    color: 'var(--text-soft)',
+    textTransform: 'uppercase',
+    maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+  },
+  logoutBtn: {
+    background: 'transparent',
+    border: '1px solid rgba(234,199,94,0.3)',
+    color: 'var(--text-muted)',
+    fontFamily: 'Georgia,"Times New Roman",serif',
+    fontSize: '0.68rem', letterSpacing: '0.1em',
+    padding: '5px 13px', cursor: 'pointer',
+    textTransform: 'uppercase',
+    borderRadius: '6px',
+    transition: 'all 160ms ease',
+  },
+
+  /* Mobile */
+  mobileNav: {
+    position: 'fixed', bottom: 0, left: 0, right: 0,
+    background: 'rgba(3,3,2,0.97)',
+    borderTop: '1px solid rgba(234,199,94,0.15)',
+    display: 'flex', justifyContent: 'space-around',
+    padding: 'max(6px, env(safe-area-inset-bottom)) 0',
+    zIndex: 100,
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
+  },
+  mobileNavBtn: {
+    background: 'transparent', border: 'none',
+    color: 'var(--text-muted)',
+    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
+    padding: '5px 8px', cursor: 'pointer', transition: 'color 0.2s',
+    minWidth: 0,
+  },
+  mobileNavBtnActive: {
+    color: 'var(--gold-1)',
+  },
+};
