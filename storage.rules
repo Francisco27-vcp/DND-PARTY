@@ -1,0 +1,50 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isImageUpload() {
+      return request.resource != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    function isDM() {
+      return signedIn()
+        && firestore.exists(/databases/(default)/documents/profiles/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/profiles/$(request.auth.uid)).data.role
+          in ['Dungeon Master', 'Jugador / DM'];
+    }
+
+    match /portraits/profiles/{fileName} {
+      allow read: if signedIn();
+      allow write: if signedIn()
+        && fileName.matches(request.auth.uid + '_.*')
+        && isImageUpload();
+    }
+
+    match /portraits/characters/{fileName} {
+      allow read: if signedIn();
+      allow write: if signedIn()
+        && fileName.matches(request.auth.uid + '_.*')
+        && isImageUpload();
+    }
+
+    match /maps/{fileName} {
+      allow read: if signedIn();
+      allow write: if isDM() && isImageUpload();
+    }
+
+    match /tokens/{fileName} {
+      allow read: if signedIn();
+      allow write: if isDM() && isImageUpload();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

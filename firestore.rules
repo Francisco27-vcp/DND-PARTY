@@ -1,0 +1,106 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isDM() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/profiles/$(request.auth.uid))
+        && get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role
+          in ['Dungeon Master', 'Jugador / DM'];
+    }
+
+    function ownsCharacter(data) {
+      return signedIn() && request.auth.token.email != null
+        && data.ownerEmail == request.auth.token.email;
+    }
+
+    match /profiles/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isDM());
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.role == 'Jugador';
+      allow update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.role == resource.data.role;
+      allow delete: if false;
+    }
+
+    match /characters/{characterId} {
+      allow read: if signedIn();
+      allow create: if isDM() || ownsCharacter(request.resource.data);
+      allow update: if isDM() || (
+        ownsCharacter(resource.data)
+        && request.resource.data.ownerEmail == resource.data.ownerEmail
+      );
+      allow delete: if isDM() || ownsCharacter(resource.data);
+    }
+
+    match /notes/{noteId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 2000;
+      allow update, delete: if isDM() || (
+        signedIn() && resource.data.email == request.auth.token.email
+      );
+    }
+
+    match /sessions/{id} {
+      allow read: if isDM() || (signedIn() && resource.data.visibleToParty == true);
+      allow write: if isDM();
+    }
+
+    match /timeline/{id} {
+      allow read: if isDM() || (signedIn() && resource.data.visibleToParty == true);
+      allow write: if isDM();
+    }
+
+    match /npcs/{id} {
+      allow read: if isDM() || (signedIn() && resource.data.visibleToPlayers == true);
+      allow write: if isDM();
+    }
+
+    match /locations/{id} {
+      allow read: if isDM() || (signedIn() && resource.data.visibleToPlayers == true);
+      allow write: if isDM();
+    }
+
+    match /factions/{id} {
+      allow read: if isDM() || (signedIn() && resource.data.visibleToPlayers == true);
+      allow write: if isDM();
+    }
+
+    match /maps/{id} {
+      allow read: if isDM() || (signedIn() && resource.data.visibleToParty == true);
+      allow write: if isDM();
+    }
+
+    match /dm_notes/{id} {
+      allow read, write: if isDM();
+    }
+
+    match /combat/{id} {
+      allow read: if signedIn();
+      allow write: if isDM();
+    }
+
+    match /campaign_meta/{id} {
+      allow read: if signedIn();
+      allow write: if isDM();
+    }
+
+    match /missions/{id} {
+      allow read: if signedIn();
+      allow write: if isDM();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
