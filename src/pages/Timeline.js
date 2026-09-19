@@ -14,16 +14,22 @@ const CATEGORIES = [
 export default function Timeline({ user }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [filter, setFilter]   = useState('all');
 
   useEffect(() => {
     const load = async () => {
-      const q = query(collection(db, 'timeline'), orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
-      const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      // Solo mostrar eventos publicados por el DM
-      setEvents(all.filter(e => e.visibleToParty !== false));
-      setLoading(false);
+      try {
+        const q = query(collection(db, 'timeline'), orderBy('createdAt', 'desc'));
+        const snap = await getDocs(q);
+        const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setEvents(all.filter(e => e.visibleToParty !== false));
+      } catch (err) {
+        console.error('Error cargando historia:', err);
+        setError('No se pudo cargar la historia de la campaña.');
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, []);
@@ -55,6 +61,7 @@ export default function Timeline({ user }) {
         ))}
         <div style={s.hint}>Los eventos los publica el DM desde su panel</div>
       </div>
+      {error && <div style={{ color: 'var(--ember)', textAlign: 'center', marginBottom: '18px' }}>{error}</div>}
 
       {/* TIMELINE */}
       {loading

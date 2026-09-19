@@ -1,19 +1,35 @@
 // src/App.js
-import React, { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from './lib/firebase';
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { auth, db } from './lib/firebase';
 
-import Login from './pages/Login';
-import Home from './pages/Home';
-import CharacterSheet from './pages/CharacterSheet';
-import Campaign from './pages/Campaign';
-import Timeline from './pages/Timeline';
-import Notes from './pages/Notes';
-import Manual from './pages/Manual';
-import Profile from './pages/Profile';
-import DMPanel from './pages/DMPanel';
 import Nav from './components/Nav';
+
+const Login = lazy(() => import('./pages/Login'));
+const Home = lazy(() => import('./pages/Home'));
+const CharacterSheet = lazy(() => import('./pages/CharacterSheet'));
+const Campaign = lazy(() => import('./pages/Campaign'));
+const Timeline = lazy(() => import('./pages/Timeline'));
+const Notes = lazy(() => import('./pages/Notes'));
+const Manual = lazy(() => import('./pages/Manual'));
+const Profile = lazy(() => import('./pages/Profile'));
+const DMPanel = lazy(() => import('./pages/DMPanel'));
+
+async function ensureUserProfile(user) {
+  const profileRef = doc(db, 'profiles', user.uid);
+  const snapshot = await getDoc(profileRef);
+  if (snapshot.exists()) return;
+  await setDoc(profileRef, {
+    alias: user.email?.split('@')[0] || '',
+    role: 'Jugador',
+    bio: '',
+    avatar: '',
+    email: user.email || '',
+    createdAt: serverTimestamp(),
+  });
+}
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -23,6 +39,7 @@ export default function App() {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setLoading(false);
+      if (u) ensureUserProfile(u).catch(error => console.error('Error inicializando perfil:', error));
     });
     return unsub;
   }, []);
@@ -32,17 +49,19 @@ export default function App() {
   return (
     <BrowserRouter>
       {user && <Nav user={user} />}
-      <Routes>
-        <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-        <Route path="/" element={user ? <Home user={user} /> : <Navigate to="/login" />} />
-        <Route path="/personaje/:id" element={user ? <CharacterSheet user={user} /> : <Navigate to="/login" />} />
-        <Route path="/campana" element={user ? <Campaign user={user} /> : <Navigate to="/login" />} />
-        <Route path="/historia" element={user ? <Timeline user={user} /> : <Navigate to="/login" />} />
-        <Route path="/notas" element={user ? <Notes user={user} /> : <Navigate to="/login" />} />
-        <Route path="/manual" element={user ? <Manual /> : <Navigate to="/login" />} />
-        <Route path="/perfil" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
-        <Route path="/dm" element={user ? <DMPanel user={user} /> : <Navigate to="/login" />} />
-      </Routes>
+      <Suspense fallback={<Loader />}>
+        <Routes>
+          <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+          <Route path="/" element={user ? <Home user={user} /> : <Navigate to="/login" />} />
+          <Route path="/personaje/:id" element={user ? <CharacterSheet user={user} /> : <Navigate to="/login" />} />
+          <Route path="/campana" element={user ? <Campaign user={user} /> : <Navigate to="/login" />} />
+          <Route path="/historia" element={user ? <Timeline user={user} /> : <Navigate to="/login" />} />
+          <Route path="/notas" element={user ? <Notes user={user} /> : <Navigate to="/login" />} />
+          <Route path="/manual" element={user ? <Manual /> : <Navigate to="/login" />} />
+          <Route path="/perfil" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
+          <Route path="/dm" element={user ? <DMPanel user={user} /> : <Navigate to="/login" />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

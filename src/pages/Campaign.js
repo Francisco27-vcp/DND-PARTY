@@ -6,15 +6,20 @@ import { db } from '../lib/firebase';
 export default function Campaign({ user }) {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const load = async () => {
-    const q = query(collection(db, 'sessions'), orderBy('createdAt', 'desc'));
-    const snap = await getDocs(q);
-    // Solo mostrar sesiones publicadas por el DM (visibleToParty !== false)
-    // Las sesiones sin el campo (legacy) se consideran visibles
-    const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    setSessions(all.filter(s => s.visibleToParty !== false));
-    setLoading(false);
+    try {
+      const q = query(collection(db, 'sessions'), orderBy('createdAt', 'desc'));
+      const snap = await getDocs(q);
+      const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setSessions(all.filter(s => s.visibleToParty !== false));
+    } catch (err) {
+      console.error('Error cargando sesiones:', err);
+      setError('No se pudieron cargar las sesiones de la campaña.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
@@ -31,6 +36,7 @@ export default function Campaign({ user }) {
         <div style={s.count}>{sessions.length} sesiones registradas</div>
         <div style={s.dmHint}>Las sesiones las publica el DM desde su panel</div>
       </div>
+      {error && <div style={{ color: 'var(--ember)', textAlign: 'center', marginBottom: '18px' }}>{error}</div>}
 
       {/* SESSIONS LIST */}
       {loading

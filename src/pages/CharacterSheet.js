@@ -271,6 +271,7 @@ export default function CharacterSheet({ user }) {
   const [char, setChar]         = useState(null);
   const [editing, setEditing]   = useState(false);
   const [saving, setSaving]     = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [draft, setDraft]       = useState({});
   const [userRole, setUserRole] = useState('');
   const [activeTab, setActiveTab] = useState('ficha');
@@ -330,10 +331,17 @@ export default function CharacterSheet({ user }) {
 
   const save = async () => {
     setSaving(true);
-    await updateDoc(doc(db, 'characters', id), { ...draft, updatedAt: serverTimestamp() });
-    setChar(draft);
-    setEditing(false);
-    setSaving(false);
+    setSaveError('');
+    try {
+      await updateDoc(doc(db, 'characters', id), { ...draft, updatedAt: serverTimestamp() });
+      setChar(draft);
+      setEditing(false);
+    } catch (error) {
+      console.error('Error guardando personaje:', error);
+      setSaveError('No se pudieron guardar los cambios.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleLevelUpConfirm = async (changes) => {
@@ -358,7 +366,7 @@ export default function CharacterSheet({ user }) {
     if (!file) return;
     setSaving(true);
     try {
-      const url = await uploadImage(file, `portraits/characters/${id}_${Date.now()}`);
+      const url = await uploadImage(file, `portraits/characters/${user.uid}_${id}_${Date.now()}`);
       setDraft(d => ({ ...d, portrait: url }));
     } catch (err) {
       console.error('Error subiendo imagen:', err);
@@ -604,6 +612,7 @@ export default function CharacterSheet({ user }) {
             <button style={s.cancelBtn} onClick={() => { setEditing(false); setDraft(char); }}>Cancelar</button>
             <button style={s.saveBtn} onClick={save} disabled={saving}>{saving ? 'Guardando...' : '✓ Guardar'}</button>
           </>}
+          {saveError && <span style={{ color: 'var(--ember)', fontSize: '12px' }}>{saveError}</span>}
         </div>
       </div>
 

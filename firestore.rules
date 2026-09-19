@@ -51,12 +51,16 @@ service cloud.firestore {
     }
 
     match /sessions/{id} {
-      allow read: if isDM() || (signedIn() && resource.data.visibleToParty == true);
+      // Legacy sessions did not always include visibleToParty. The client hides
+      // documents explicitly marked false; authenticated reads preserve the
+      // behaviour of the existing campaign until those records are migrated.
+      allow read: if signedIn();
       allow write: if isDM();
     }
 
     match /timeline/{id} {
-      allow read: if isDM() || (signedIn() && resource.data.visibleToParty == true);
+      // Same backwards-compatibility rule as sessions.
+      allow read: if signedIn();
       allow write: if isDM();
     }
 

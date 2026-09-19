@@ -1,10 +1,21 @@
 // src/pages/dm/TabCombate.js
 import React, { useCallback, useEffect, useState } from 'react';
-import { collection, doc, getDocs, onSnapshot, setDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, onSnapshot, runTransaction, setDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 
 const DEFAULT_COMBAT = { active: false, round: 1, currentIndex: 0, participants: [] };
 const combatRef = () => doc(db, 'combat', 'current');
+
+async function mutateCombat(mutator) {
+  await runTransaction(db, async transaction => {
+    const ref = combatRef();
+    const snapshot = await transaction.get(ref);
+    const current = snapshot.exists()
+      ? { ...DEFAULT_COMBAT, ...snapshot.data() }
+      : DEFAULT_COMBAT;
+    transaction.set(ref, mutator(current), { merge: true });
+  });
+}
 
 function sortParticipants(p) {
   return [...(p || [])].sort((a, b) => (b.initiative - a.initiative) || (a.addedAt - b.addedAt));
@@ -119,37 +130,45 @@ export default function TabCombate() {
       addedAt: Date.now(),
       status: '',
     };
-    await setDoc(combatRef(), { participants: [...(combat.participants || []), full] }, { merge: true });
+    await mutateCombat(current => ({
+      participants: [...(current.participants || []), full],
+    }));
     setPartName(''); setPartInitiative(''); setPartHpMax('');
     setSelectedSource(null); setDbSearch('');
   };
 
   // ── Remove ─────────────────────────────────────────────────────────────────
   const removeParticipant = async (id) => {
-    const participants = (combat.participants || []).filter(p => p.id !== id);
-    const ci = Math.min(curIdx, Math.max(0, participants.length - 1));
-    await setDoc(combatRef(), { participants, currentIndex: ci }, { merge: true });
+    await mutateCombat(current => {
+      const participants = (current.participants || []).filter(p => p.id !== id);
+      const ci = Math.min(current.currentIndex || 0, Math.max(0, participants.length - 1));
+      return { participants, currentIndex: ci };
+    });
   };
 
   // ── HP change ─────────────────────────────────────────────────────────────
   const applyHP = async (id, type, amount) => {
     const n = parseInt(amount, 10);
     if (isNaN(n) || n <= 0) { setInlineInput(null); return; }
-    const participants = (combat.participants || []).map(p => {
-      if (p.id !== id) return p;
-      const delta     = type === 'damage' ? -n : n;
-      const hpCurrent = Math.min(p.hpMax || 0, Math.max(0, (p.hpCurrent ?? p.hpMax ?? 0) + delta));
-      return { ...p, hpCurrent };
-    });
-    await setDoc(combatRef(), { participants }, { merge: true });
+    await mutateCombat(current => ({
+      participants: (current.participants || []).map(p => {
+        if (p.id !== id) return p;
+        const delta = type === 'damage' ? -n : n;
+        const hpCurrent = Math.min(p.hpMax || 0, Math.max(0, (p.hpCurrent ?? p.hpMax ?? 0) + delta));
+        return { ...p, hpCurrent };
+      }),
+    }));
     setInlineInput(null);
   };
 
   // ── Status ────────────────────────────────────────────────────────────────
   const commitStatus = async (id) => {
     if (statusEdits[id] === undefined) return;
-    const participants = (combat.participants || []).map(p => p.id === id ? { ...p, status: statusEdits[id] } : p);
-    await setDoc(combatRef(), { participants }, { merge: true });
+    await mutateCombat(current => ({
+      participants: (current.participants || []).map(p =>
+        p.id === id ? { ...p, status: statusEdits[id] } : p
+      ),
+    }));
     setStatusEdits(prev => { const n = { ...prev }; delete n[id]; return n; });
   };
 
@@ -160,10 +179,14 @@ export default function TabCombate() {
 
   const nextTurn = async () => {
     if (!total) return;
-    let idx   = curIdx + 1;
-    let round = combat.round || 1;
-    if (idx >= total) { idx = 0; round += 1; }
-    await setDoc(combatRef(), { currentIndex: idx, round }, { merge: true });
+    await mutateCombat(current => {
+      const currentTotal = (current.participants || []).length;
+      if (!currentTotal) return {};
+      let idx = (current.currentIndex || 0) + 1;
+      let round = current.round || 1;
+      if (idx >= currentTotal) { idx = 0; round += 1; }
+      return { currentIndex: idx, round };
+    });
   };
 
   // ── DB search ─────────────────────────────────────────────────────────────

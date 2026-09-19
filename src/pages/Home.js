@@ -16,49 +16,6 @@ function sortParticipants(participants) {
   );
 }
 
-const INITIAL_CHARACTERS = [
-  {
-    id: 'aurelian',
-    name: 'Aurelian Lerathel',
-    class: 'Paladín',
-    subclass: 'Jur. de los Antiguos',
-    race: 'Aasimar',
-    level: 3,
-    hp: 19,
-    hpMax: 19,
-    ac: 18,
-    xp: 1520,
-    xpNext: 2700,
-    alignment: 'Neutral Bueno',
-    player: 'franr',
-    ownerEmail: 'sociosn5@gmail.com',
-    color: '#c9a84c',
-    icon: '⚔️',
-    portrait: '',
-    stats: { fue: 18, des: 10, con: 11, int: 13, sab: 10, car: 16 },
-  },
-  {
-    id: 'azrael',
-    name: 'Azrael',
-    class: 'Bardo',
-    subclass: 'Col. del Glamour',
-    race: 'Aasimar',
-    level: 3,
-    hp: 19,
-    hpMax: 19,
-    ac: 13,
-    xp: 0,
-    xpNext: 2700,
-    alignment: 'Caótico Bueno',
-    player: '—',
-    ownerEmail: '',
-    color: '#4a7fa5',
-    icon: '🎵',
-    portrait: '',
-    stats: { fue: 10, des: 14, con: 12, int: 13, sab: 12, car: 16 },
-  },
-];
-
 const EMPTY_CHAR = {
   name: '', class: 'Guerrero', subclass: '', race: 'Humano',
   level: 1, hp: 10, hpMax: 10, ac: 10, xp: 0, xpNext: 300,
@@ -106,6 +63,7 @@ export default function Home({ user }) {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [combat, setCombat] = useState(null);
+  const [dataError, setDataError] = useState('');
 
   // Party Hub state
   const [sessions, setSessions] = useState([]);
@@ -132,7 +90,10 @@ export default function Home({ user }) {
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'combat', 'current'), (snap) => {
       setCombat(snap.exists() ? snap.data() : null);
-    }, () => {});
+    }, (err) => {
+      console.error('Error cargando combate:', err);
+      setDataError('No se pudo acceder a parte de los datos de la campaña.');
+    });
     return unsub;
   }, []);
 
@@ -155,12 +116,7 @@ export default function Home({ user }) {
     try {
       const snap = await getDocs(collection(db, 'characters'));
       if (snap.empty) {
-        for (const char of INITIAL_CHARACTERS) {
-          await setDoc(doc(db, 'characters', char.id), {
-            ...char, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
-          });
-        }
-        setCharacters(INITIAL_CHARACTERS);
+        setCharacters([]);
       } else {
         setCharacters(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       }
@@ -171,10 +127,16 @@ export default function Home({ user }) {
 
   // Sessions (for activity feed)
   useEffect(() => {
-    const q = query(collection(db, 'sessions'), orderBy('createdAt', 'desc'), limit(8));
+    const q = query(collection(db, 'sessions'), orderBy('createdAt', 'desc'), limit(20));
     const unsub = onSnapshot(q, (snap) => {
-      setSessions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    }, () => {});
+      setSessions(snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(s => s.visibleToParty !== false)
+        .slice(0, 8));
+    }, (err) => {
+      console.error('Error cargando sesiones:', err);
+      setDataError('No se pudieron cargar las sesiones de la campaña.');
+    });
     return unsub;
   }, []);
 
@@ -184,10 +146,12 @@ export default function Home({ user }) {
       if (snap.exists()) {
         setMeta(snap.data());
       } else {
-        await setDoc(doc(db, 'campaign_meta', 'main'), DEFAULT_META);
         setMeta(DEFAULT_META);
       }
-    }, () => {});
+    }, (err) => {
+      console.error('Error cargando campaña:', err);
+      setDataError('No se pudo cargar la configuración de la campaña.');
+    });
     return unsub;
   }, []);
 
@@ -195,30 +159,33 @@ export default function Home({ user }) {
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'missions'), (snap) => {
       setMissions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    }, () => {});
+    }, (err) => {
+      console.error('Error cargando misiones:', err);
+      setDataError('No se pudieron cargar las misiones.');
+    });
     return unsub;
   }, []);
 
   // Shared world content (DM → party visibility)
   useEffect(() => {
     const q = query(collection(db, 'npcs'), where('visibleToPlayers', '==', true));
-    return onSnapshot(q, snap => setSharedNpcs(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => {});
+    return onSnapshot(q, snap => setSharedNpcs(snap.docs.map(d => ({ id: d.id, ...d.data() }))), err => console.error('Error cargando NPCs:', err));
   }, []);
   useEffect(() => {
     const q = query(collection(db, 'locations'), where('visibleToPlayers', '==', true));
-    return onSnapshot(q, snap => setSharedLocations(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => {});
+    return onSnapshot(q, snap => setSharedLocations(snap.docs.map(d => ({ id: d.id, ...d.data() }))), err => console.error('Error cargando ubicaciones:', err));
   }, []);
   useEffect(() => {
     const q = query(collection(db, 'factions'), where('visibleToPlayers', '==', true));
-    return onSnapshot(q, snap => setSharedFactions(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => {});
+    return onSnapshot(q, snap => setSharedFactions(snap.docs.map(d => ({ id: d.id, ...d.data() }))), err => console.error('Error cargando facciones:', err));
   }, []);
   useEffect(() => {
     const q = query(collection(db, 'timeline'), where('visibleToParty', '==', true));
-    return onSnapshot(q, snap => setSharedTimeline(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => {});
+    return onSnapshot(q, snap => setSharedTimeline(snap.docs.map(d => ({ id: d.id, ...d.data() }))), err => console.error('Error cargando historia:', err));
   }, []);
   useEffect(() => {
     const q = query(collection(db, 'maps'), where('visibleToParty', '==', true));
-    return onSnapshot(q, snap => setSharedMaps(snap.docs.map(d => ({ id: d.id, ...d.data() }))), () => {});
+    return onSnapshot(q, snap => setSharedMaps(snap.docs.map(d => ({ id: d.id, ...d.data() }))), err => console.error('Error cargando mapas:', err));
   }, []);
 
   // Computed
@@ -261,7 +228,7 @@ export default function Home({ user }) {
     if (!file) return;
     setSaving(true);
     try {
-      const url = await uploadImage(file, `portraits/characters/new_${Date.now()}`);
+      const url = await uploadImage(file, `portraits/characters/${user.uid}_new_${Date.now()}`);
       setForm(f => ({ ...f, portrait: url }));
     } catch (err) { console.error(err); }
     setSaving(false);
@@ -302,11 +269,11 @@ export default function Home({ user }) {
   // Handlers — Meta
   const saveMeta = async (e) => {
     e.preventDefault();
-    await updateDoc(doc(db, 'campaign_meta', 'main'), {
+    await setDoc(doc(db, 'campaign_meta', 'main'), {
       ...metaForm,
       objetivoProgreso: parseInt(metaForm.objetivoProgreso) || 0,
       worldLevel: parseInt(metaForm.worldLevel) || 4,
-    });
+    }, { merge: true });
     setEditingMeta(false);
   };
 
@@ -327,6 +294,11 @@ export default function Home({ user }) {
 
   return (
     <div style={s.page}>
+      {dataError && (
+        <div style={{ margin: '16px auto', maxWidth: '760px', padding: '10px 14px', color: 'var(--ember)', border: '1px solid rgba(224,80,80,0.35)', background: 'rgba(224,80,80,0.08)', textAlign: 'center' }}>
+          {dataError}
+        </div>
+      )}
 
       {/* ── CAMPAIGN HEADER ── */}
       <header style={s.campaignHeader} className="campaign-header-grid">

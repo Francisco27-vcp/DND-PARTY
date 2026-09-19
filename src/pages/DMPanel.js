@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { migrateLegacyCampaignVisibility } from '../lib/migrateLegacyCampaign';
 
 import TabResumen   from './dm/TabResumen';
 import TabSesiones  from './dm/TabSesiones';
@@ -35,7 +36,13 @@ export default function DMPanel({ user }) {
       try {
         const snap = await getDoc(doc(db, 'profiles', user.uid));
         const role = snap.exists() ? snap.data().role : null;
-        setIsDM(role === 'Dungeon Master' || role === 'Jugador / DM');
+        const hasDMRole = role === 'Dungeon Master' || role === 'Jugador / DM';
+        setIsDM(hasDMRole);
+        if (hasDMRole) {
+          migrateLegacyCampaignVisibility()
+            .then(count => count > 0 && console.info(`Se migraron ${count} documentos legacy.`))
+            .catch(error => console.error('Error migrando datos legacy:', error));
+        }
       } catch (err) {
         console.error('Error verificando permisos de DM:', err);
       }

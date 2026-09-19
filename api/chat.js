@@ -20,6 +20,24 @@ const STOPWORDS = new Set([
   'how','its','you','he','she','we',
 ]);
 
+const { requireDM } = require('./firebaseAuth');
+const { validateInput } = require('../src/lib/chatValidation.cjs');
+const rateLimits = new Map();
+const RATE_WINDOW_MS = 60_000;
+const RATE_LIMIT = 12;
+
+function consumeRateLimit(uid) {
+  const now = Date.now();
+  const current = rateLimits.get(uid);
+  if (!current || current.resetAt <= now) {
+    rateLimits.set(uid, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return true;
+  }
+  if (current.count >= RATE_LIMIT) return false;
+  current.count += 1;
+  return true;
+}
+
 // Module-level cache — persists across requests in a warm Lambda instance.
 let chunks = null;
 let normalizedTexts = null;
@@ -108,15 +126,29 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  let caller;
+  try {
+    caller = await requireDM(req);
+  } catch (error) {
+    return res.status(error.status || 401).json({ error: error.message });
+  }
+  if (!consumeRateLimit(caller.uid)) {
+    res.setHeader('Retry-After', '60');
+    return res.status(429).json({ error: 'Demasiadas solicitudes. Esperá un minuto.' });
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured on the server.' });
   }
 
-  const { messages, systemPrompt, skipRAG, maxTokens } = req.body || {};
-  if (!Array.isArray(messages) || messages.length === 0) {
-    return res.status(400).json({ error: 'messages array is required.' });
+  let input;
+  try {
+    input = validateInput(req.body);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
   }
+  const { messages, systemPrompt, skipRAG, maxTokens } = input;
 
   // Use the last user message for RAG retrieval.
   // Skip RAG when the caller doesn't need D&D manual context (e.g. generate-session mode).
@@ -157,7 +189,7 @@ Rules: ONLY data explicitly mentioned. Max 2 npcs. Max 3 timeline events. Short 
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: maxTokens || 2048,
+        max_tokens: maxTokens,
         stream: true,
         system: finalSystemPrompt,
         messages,

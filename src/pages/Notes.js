@@ -1,12 +1,13 @@
 // src/pages/Notes.js
 import React, { useEffect, useState, useRef } from 'react';
-import { collection, getDocs, addDoc, serverTimestamp, orderBy, query, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, orderBy, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 export default function Notes({ user }) {
   const [notes, setNotes] = useState([]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState('');
   const bottomRef = useRef(null);
   const username = user.email?.split('@')[0];
 
@@ -23,14 +24,21 @@ export default function Notes({ user }) {
     e.preventDefault();
     if (!text.trim()) return;
     setSending(true);
-    await addDoc(collection(db, 'notes'), {
-      text: text.trim(),
-      author: username,
-      email: user.email,
-      createdAt: serverTimestamp(),
-    });
-    setText('');
-    setSending(false);
+    setSendError('');
+    try {
+      await addDoc(collection(db, 'notes'), {
+        text: text.trim(),
+        author: username,
+        email: user.email,
+        createdAt: serverTimestamp(),
+      });
+      setText('');
+    } catch (error) {
+      console.error('Error enviando nota:', error);
+      setSendError('No se pudo enviar la nota.');
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -81,6 +89,7 @@ export default function Notes({ user }) {
           {sending ? '...' : '✦'}
         </button>
       </form>
+      {sendError && <div style={{ color: 'var(--ember)', fontSize: '12px', textAlign: 'center' }}>{sendError}</div>}
 
       <div style={{ height: '80px' }} />
     </div>

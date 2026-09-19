@@ -5,6 +5,7 @@ import {
   addDoc, serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { authorizedFetch } from '../../lib/authorizedFetch';
 import ReactMarkdown from 'react-markdown';
 import { jsonrepair } from 'jsonrepair';
 import './TabAsistente.css';
@@ -91,10 +92,10 @@ export default function TabAsistente({ user }) {
   const [sessions, setSessions]     = useState([]);
   const [mode, setMode]             = useState('chat'); // 'chat' | 'generar'
 
-  // Chat state — persisted in localStorage
+  // Chat state — scoped to this browser session to avoid retaining DM secrets.
   const [aiMessages, setAiMessages] = useState(() => {
     try {
-      const saved = localStorage.getItem('dm_chat_history');
+      const saved = sessionStorage.getItem('dm_chat_history');
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
@@ -104,7 +105,7 @@ export default function TabAsistente({ user }) {
 
   // Persist messages on every change
   useEffect(() => {
-    try { localStorage.setItem('dm_chat_history', JSON.stringify(aiMessages)); } catch {}
+    try { sessionStorage.setItem('dm_chat_history', JSON.stringify(aiMessages)); } catch {}
   }, [aiMessages]);
 
   // Generate state
@@ -147,7 +148,7 @@ export default function TabAsistente({ user }) {
     }));
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await authorizedFetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -220,7 +221,7 @@ export default function TabAsistente({ user }) {
       .replace(/"/g, "'");
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await authorizedFetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -371,7 +372,7 @@ export default function TabAsistente({ user }) {
         {mode === 'chat' && aiMessages.length > 0 && (
           <button
             style={s.clearBtn}
-            onClick={() => { setAiMessages([]); localStorage.removeItem('dm_chat_history'); }}
+            onClick={() => { setAiMessages([]); sessionStorage.removeItem('dm_chat_history'); }}
           >
             🗑 Limpiar
           </button>

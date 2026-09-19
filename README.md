@@ -2,6 +2,20 @@
 
 ## Setup en 4 pasos
 
+> Importante: este proyecto incluye reglas de seguridad para Firestore y Storage. No dejes Firebase en modo de prueba al publicar la aplicación.
+
+### Seguridad y despliegue de Firebase
+
+Desplegá las reglas e índices versionados junto con la aplicación:
+
+```sh
+firebase deploy --only firestore:rules,firestore:indexes,storage
+```
+
+Los usuarios nuevos se crean con rol `Jugador`. Para designar un DM, cambiá el campo `role` de su documento `profiles/{uid}` desde Firebase Console o mediante un entorno administrativo confiable. La app no permite que un usuario se asigne privilegios a sí mismo.
+
+La función `/api/chat` requiere `ANTHROPIC_API_KEY` y `FIREBASE_PROJECT_ID` como variables del servidor. `REACT_APP_FIREBASE_PROJECT_ID` se admite por compatibilidad, pero se recomienda configurar la variable de servidor explícitamente en Vercel.
+
 ---
 
 ### PASO 1 — Crear proyecto Firebase (5 min)
@@ -10,7 +24,7 @@
 2. Click **"Agregar proyecto"** → nombrar `rakets-party` → Continuar
 3. Desactivar Google Analytics (opcional) → Crear proyecto
 4. En el panel izquierdo: **Authentication** → Get started → **Email/Password** → Activar → Guardar
-5. En el panel izquierdo: **Firestore Database** → Create database → **Start in test mode** → Elegir región (us-east1) → Enable
+5. En el panel izquierdo: **Firestore Database** → Create database → **Start in production mode** → Elegir región → Enable
 6. Click en el ⚙️ arriba → **Project settings** → bajar hasta **"Your apps"** → click `</>` (Web)
 7. Registrar la app con el nombre `rakets-party` → **Register app**
 8. Copiar el objeto `firebaseConfig` que aparece (vas a necesitarlo en el siguiente paso)

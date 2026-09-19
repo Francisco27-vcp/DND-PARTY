@@ -5,14 +5,13 @@ import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs
 import { uploadImage } from '../lib/uploadImage';
 import { db } from '../lib/firebase';
 
-const ROLES = ['Jugador', 'Dungeon Master', 'Jugador / DM'];
-
 export default function Profile({ user }) {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [draft, setDraft] = useState({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [characters, setCharacters] = useState([]);
   const [loadingChars, setLoadingChars] = useState(true);
   const uid = user.uid;
@@ -57,15 +56,22 @@ export default function Profile({ user }) {
 
   const save = async () => {
     setSaving(true);
-    await setDoc(doc(db, 'profiles', uid), {
-      ...draft,
-      email: user.email,
-      updatedAt: serverTimestamp(),
-    });
-    setProfile(draft);
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setSaveError('');
+    try {
+      await setDoc(doc(db, 'profiles', uid), {
+        ...draft,
+        email: user.email,
+        updatedAt: serverTimestamp(),
+      });
+      setProfile(draft);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error('Error guardando perfil:', error);
+      setSaveError('No se pudo guardar el perfil. Revisá tu conexión e intentá de nuevo.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleAvatar = async (e) => {
@@ -136,20 +142,8 @@ export default function Profile({ user }) {
 
           <div style={s.field}>
             <label style={s.label}>Rol en la campaña</label>
-            <div style={s.roleGrid}>
-              {ROLES.map(r => (
-                <button
-                  key={r}
-                  onClick={() => setDraft(d => ({ ...d, role: r }))}
-                  style={{ ...s.roleBtn, ...(draft.role === r ? s.roleBtnActive : {}) }}
-                >
-                  {r === 'Jugador' && '⚔️ '}
-                  {r === 'Dungeon Master' && '👁️ '}
-                  {r === 'Jugador / DM' && '✦ '}
-                  {r}
-                </button>
-              ))}
-            </div>
+            <div style={s.emailReadOnly}>{draft.role || 'Jugador'}</div>
+            <div style={s.hint}>El rol lo asigna un administrador de la campaña.</div>
           </div>
 
           <div style={s.field}>
@@ -176,6 +170,7 @@ export default function Profile({ user }) {
         <button onClick={save} style={s.saveBtn} disabled={saving}>
           {saved ? '✓ Guardado' : saving ? 'Guardando...' : '✦ Guardar perfil'}
         </button>
+        {saveError && <div style={{ ...s.hint, color: 'var(--ember)', marginTop: '8px' }}>{saveError}</div>}
 
         <div style={s.divider} />
 
