@@ -4,20 +4,23 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
+import AppIcon from './AppIcon';
+import AppBrandMark from './AppBrandMark';
 
 const navItems = [
-  { path: '/',         label: 'Party',    icon: '⚔️' },
-  { path: '/campana',  label: 'Campaña',  icon: '📜' },
-  { path: '/historia', label: 'Historia', icon: '🗺️' },
-  { path: '/manual',   label: 'Manual',   icon: '📖' },
-  { path: '/notas',    label: 'Notas',    icon: '📝' },
-  { path: '/perfil',   label: 'Perfil',   icon: '👤' },
+  { path: '/',         label: 'Party',    icon: 'swords' },
+  { path: '/campana',  label: 'Campaña',  icon: 'scroll' },
+  { path: '/historia', label: 'Historia', icon: 'history' },
+  { path: '/manual',   label: 'Manual',   icon: 'book' },
+  { path: '/notas',    label: 'Notas',    icon: 'notes' },
+  { path: '/perfil',   label: 'Perfil',   icon: 'user' },
 ];
 
 export default function Nav({ user }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [alias, setAlias] = useState(user.email?.split('@')[0] || '');
+  const [avatar, setAvatar] = useState('');
   const [isDM, setIsDM] = useState(false);
 
   useEffect(() => {
@@ -25,6 +28,7 @@ export default function Nav({ user }) {
       if (snap.exists()) {
         const data = snap.data();
         if (data.alias) setAlias(data.alias);
+        setAvatar(data.avatar || '');
         setIsDM(data.role === 'Dungeon Master' || data.role === 'Jugador / DM');
       }
     }, (err) => {
@@ -34,7 +38,7 @@ export default function Nav({ user }) {
   }, [user.uid]);
 
   const items = isDM
-    ? [...navItems, { path: '/dm', label: 'Panel DM', icon: '🛠️' }]
+    ? [...navItems, { path: '/dm', label: 'Panel DM', icon: 'dm' }]
     : navItems;
 
   const handleLogout = async () => {
@@ -45,13 +49,13 @@ export default function Nav({ user }) {
   return (
     <>
       {/* ── Desktop topbar ── */}
-      <nav style={S.topbar}>
+      <nav style={S.topbar} className="app-topbar">
 
         {/* Brand */}
-        <div style={S.brand} onClick={() => navigate('/')} role="button" tabIndex={0}
+        <div style={S.brand} className="app-brand" onClick={() => navigate('/')} role="button" tabIndex={0} aria-label="D&D Party, ir a inicio"
           onKeyDown={e => e.key === 'Enter' && navigate('/')}>
-          <div style={S.brandMark}>⚔</div>
-          <div>
+          <AppBrandMark style={S.brandMark} />
+          <div className="app-brand-wordmark">
             <div style={S.brandTitle}>DND PARTY</div>
             <div style={S.brandSub}>Rakets Campaign</div>
           </div>
@@ -67,8 +71,10 @@ export default function Nav({ user }) {
                 onClick={() => navigate(item.path)}
                 className={active ? 'nav-btn nav-btn-active' : 'nav-btn'}
                 style={active ? S.navBtnActive : S.navBtn}
+                aria-label={item.label}
+                title={item.label}
               >
-                <span style={{ fontSize: '13px' }}>{item.icon}</span>
+                <AppIcon name={item.icon} size={15} strokeWidth={active ? 1.9 : 1.45} />
                 <span>{item.label}</span>
                 {active && <span className="nav-active-line" style={S.activeUnderline} />}
               </button>
@@ -78,12 +84,19 @@ export default function Nav({ user }) {
 
         {/* Right — profile orb + name + logout */}
         <div style={S.userArea} className="nav-user-area">
-          <div style={S.profileOrb} title={alias} />
-          <span style={S.userName}>{alias}</span>
-          <button style={S.logoutBtn} onClick={handleLogout}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(247,221,120,0.55)'; e.currentTarget.style.color = 'var(--gold-1)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(234,199,94,0.3)'; e.currentTarget.style.color = 'var(--text-muted)'; }}>
-            Salir
+          <button type="button" className="app-profile-card" title={`Perfil de ${alias}`} onClick={() => navigate('/perfil')}>
+            <span style={S.profileOrb} className="app-profile-seal">
+              {avatar
+                ? <img src={avatar} alt="" />
+                : <span>{alias.split(/[.\s_-]+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() || 'R'}</span>}
+            </span>
+            <span className="app-profile-copy">
+              <small>{isDM ? 'Dungeon Master' : 'Aventurero'}</small>
+              <span style={S.userName} className="app-profile-name">{alias}</span>
+            </span>
+          </button>
+          <button style={S.logoutBtn} className="app-logout-button" onClick={handleLogout} aria-label="Cerrar sesión">
+            <AppIcon name="logout" size={13} /> <span>Salir</span>
           </button>
         </div>
       </nav>
@@ -95,7 +108,7 @@ export default function Nav({ user }) {
           return (
             <button key={item.path} onClick={() => navigate(item.path)}
               style={active ? { ...S.mobileNavBtn, ...S.mobileNavBtnActive } : S.mobileNavBtn}>
-              <span style={{ fontSize: '16px' }}>{item.icon}</span>
+              <AppIcon name={item.icon} size={17} strokeWidth={active ? 2 : 1.5} />
               <span style={{ fontSize: '7px', fontFamily: 'Georgia,serif', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                 {item.label}
               </span>
@@ -201,9 +214,9 @@ const S = {
   },
   profileOrb: {
     width: '34px', height: '34px', borderRadius: '50%', flexShrink: 0,
-    background: 'radial-gradient(circle at 45% 35%, var(--green-1), var(--green-3) 45%, rgba(0,0,0,0.95) 75%), radial-gradient(circle, var(--gold-1), transparent)',
-    border: '1px solid var(--gold-2)',
-    boxShadow: '0 0 14px rgba(120,218,96,0.32)',
+    display: 'grid', placeItems: 'center', overflow: 'hidden',
+    background: 'rgba(5,7,5,0.9)', color: 'var(--gold-1)',
+    border: '1px solid var(--gold-2)', fontFamily: 'var(--font-title)', fontSize: '10px', fontWeight: 700,
   },
   userName: {
     fontFamily: 'Georgia,"Times New Roman",serif',

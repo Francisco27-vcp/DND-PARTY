@@ -1,6 +1,6 @@
 // src/pages/dm/TabCombate.js
 import React, { useCallback, useEffect, useState } from 'react';
-import { collection, doc, getDocs, onSnapshot, runTransaction, setDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, limit, onSnapshot, orderBy, query, runTransaction, setDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 
 const DEFAULT_COMBAT = { active: false, round: 1, currentIndex: 0, participants: [] };
@@ -72,6 +72,7 @@ export default function TabCombate() {
 
   // Local status edits (written on blur)
   const [statusEdits, setStatusEdits]   = useState({});
+  const [liveEvents, setLiveEvents]     = useState([]);
 
   // ── Firestore listeners ────────────────────────────────────────────────────
   useEffect(() => {
@@ -80,6 +81,11 @@ export default function TabCombate() {
     }, err => console.error(err));
     return unsub;
   }, []);
+
+  useEffect(() => onSnapshot(
+    query(collection(db, 'combat_events'), orderBy('createdAt', 'desc'), limit(8)),
+    snap => setLiveEvents(snap.docs.map(event => ({ id: event.id, ...event.data() }))),
+  ), []);
 
   const loadDB = useCallback(async () => {
     try {
@@ -173,7 +179,12 @@ export default function TabCombate() {
   };
 
   // ── Combat controls ────────────────────────────────────────────────────────
-  const startCombat = () => sorted.length && setDoc(combatRef(), { active: true, round: 1, currentIndex: 0 }, { merge: true });
+  const startCombat = () => sorted.length && setDoc(combatRef(), {
+    active: true,
+    round: 1,
+    currentIndex: 0,
+    encounterId: `${Date.now()}`,
+  }, { merge: true });
   const endCombat   = () => setDoc(combatRef(), { active: false, round: 1, currentIndex: 0 }, { merge: true });
   const clearAll    = () => setDoc(combatRef(), { ...DEFAULT_COMBAT, participants: [] });
 
@@ -209,6 +220,17 @@ export default function TabCombate() {
         </span>
         <span style={s.roundBadge}>Ronda {combat.round || 1}</span>
       </div>
+
+      {liveEvents.some(event => event.encounterId && event.encounterId === combat.encounterId) && (
+        <div style={{ ...s.addPanel, borderLeft: '3px solid var(--gold)' }}>
+          <div style={s.modeRow}><span style={s.statusLabel}>Acciones de la party</span></div>
+          {liveEvents.filter(event => event.encounterId === combat.encounterId).slice(0, 4).map(event => (
+            <div key={event.id} style={{ fontFamily: 'Crimson Pro,serif', fontSize: '13px', color: event.color || 'var(--parchment-dim)', padding: '4px 0' }}>
+              {event.text}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* ── Add form ── */}
       <div style={s.addPanel}>

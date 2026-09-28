@@ -7,6 +7,10 @@ import {
 } from 'firebase/firestore';
 import { uploadImage } from '../lib/uploadImage';
 import { db } from '../lib/firebase';
+import AppIcon from '../components/AppIcon';
+import GameIcon from '../components/GameIcon';
+import GAME_ICONS from '../data/gameicons';
+import { getTacticalVisual } from '../lib/tacticalTokens';
 
 const COMBAT_TYPE_COLORS = { pj: '#c9a84c', enemigo: '#8b1a1a' };
 
@@ -40,6 +44,11 @@ const DEFAULT_META = {
   objetivoProgreso: 60,
   loot: [],
 };
+
+const classIcon = character => GAME_ICONS[getTacticalVisual({
+  entityKind: 'character',
+  className: character.class,
+}).symbolKey] || GAME_ICONS.sword;
 
 function formatRelativeDate(ts) {
   if (!ts) return '';
@@ -127,12 +136,14 @@ export default function Home({ user }) {
 
   // Sessions (for activity feed)
   useEffect(() => {
-    const q = query(collection(db, 'sessions'), orderBy('createdAt', 'desc'), limit(20));
+    const q = query(
+      collection(db, 'sessions'),
+      where('visibleToParty', '==', true),
+      orderBy('createdAt', 'desc'),
+      limit(8),
+    );
     const unsub = onSnapshot(q, (snap) => {
-      setSessions(snap.docs
-        .map(d => ({ id: d.id, ...d.data() }))
-        .filter(s => s.visibleToParty !== false)
-        .slice(0, 8));
+      setSessions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     }, (err) => {
       console.error('Error cargando sesiones:', err);
       setDataError('No se pudieron cargar las sesiones de la campaña.');
@@ -184,7 +195,7 @@ export default function Home({ user }) {
     return onSnapshot(q, snap => setSharedTimeline(snap.docs.map(d => ({ id: d.id, ...d.data() }))), err => console.error('Error cargando historia:', err));
   }, []);
   useEffect(() => {
-    const q = query(collection(db, 'maps'), where('visibleToParty', '==', true));
+    const q = query(collection(db, 'public_maps'));
     return onSnapshot(q, snap => setSharedMaps(snap.docs.map(d => ({ id: d.id, ...d.data() }))), err => console.error('Error cargando mapas:', err));
   }, []);
 
@@ -293,7 +304,7 @@ export default function Home({ user }) {
   if (loading) return <div style={s.loading}>Cargando party...</div>;
 
   return (
-    <div style={s.page}>
+    <div style={s.page} className="app-page party-hub">
       {dataError && (
         <div style={{ margin: '16px auto', maxWidth: '760px', padding: '10px 14px', color: 'var(--ember)', border: '1px solid rgba(224,80,80,0.35)', background: 'rgba(224,80,80,0.08)', textAlign: 'center' }}>
           {dataError}
@@ -302,7 +313,7 @@ export default function Home({ user }) {
 
       {/* ── CAMPAIGN HEADER ── */}
       <header style={s.campaignHeader} className="campaign-header-grid">
-        <div style={s.campaignEmblem}>✦</div>
+        <div style={s.campaignEmblem}><AppIcon name="crown" size={26} strokeWidth={1.25} /></div>
         <div style={s.campaignInfo}>
 
           <div style={s.eyebrow}>Campaña activa · D&D 5e 2024</div>
@@ -324,30 +335,45 @@ export default function Home({ user }) {
                 objetivoProgreso: meta.objetivoProgreso,
               });
               setEditingMeta(true);
-            }}>✎ Editar campaña</button>
+            }}><AppIcon name="scroll" size={12} /> Editar campaña</button>
           </div>
         </div>
         <div style={s.campaignActions} className="campaign-actions-grid">
-          <button style={s.quickAction} onClick={() => navigate('/campana')}>
-            <span style={s.qaIcon}>✚</span><span style={s.qaLabel}>Nueva sesión</span>
+          <button style={s.quickAction} className="panel-action-button" onClick={() => navigate('/campana')}>
+            <span style={s.qaIcon}><AppIcon name="plus" size={21} /></span><span style={s.qaLabel}>Nueva sesión</span>
           </button>
-          <button style={s.quickAction} onClick={() => setLongDescanso(true)}>
-            <span style={s.qaIcon}>↻</span><span style={s.qaLabel}>Descanso largo</span>
+          <button style={s.quickAction} className="panel-action-button" onClick={() => setLongDescanso(true)}>
+            <span style={s.qaIcon}><AppIcon name="moon" size={21} /></span><span style={s.qaLabel}>Descanso largo</span>
           </button>
-          <button style={s.quickAction} onClick={() => navigate('/notas')}>
-            <span style={s.qaIcon}>💬</span><span style={s.qaLabel}>Notas</span>
+          <button style={s.quickAction} className="panel-action-button" onClick={() => navigate('/notas')}>
+            <span style={s.qaIcon}><AppIcon name="message" size={21} /></span><span style={s.qaLabel}>Notas</span>
           </button>
-          <button style={s.quickAction} onClick={() => navigate('/manual')}>
-            <span style={s.qaIcon}>📖</span><span style={s.qaLabel}>Manual</span>
+          <button style={s.quickAction} className="panel-action-button" onClick={() => navigate('/manual')}>
+            <span style={s.qaIcon}><AppIcon name="book" size={21} /></span><span style={s.qaLabel}>Manual</span>
           </button>
         </div>
       </header>
+
+      <div className="campaign-status-rail" aria-label="Estado de la expedición">
+        <div className="campaign-status-primary">
+          <span><AppIcon name="crosshair" size={17} /></span>
+          <div><small>Objetivo activo</small><strong>{meta.objetivo || 'Sin objetivo definido'}</strong></div>
+        </div>
+        <div>
+          <span><AppIcon name="swords" size={17} /></span>
+          <div><small>Estado</small><strong>{combat?.active ? `Combate · Ronda ${combat.round || 1}` : 'En exploración'}</strong></div>
+        </div>
+        <div>
+          <span><AppIcon name="user" size={17} /></span>
+          <div><small>Compañía</small><strong>{characters.length} aventureros · Nivel {avgLevel}</strong></div>
+        </div>
+      </div>
 
       {/* ── COMBAT BANNER ── */}
       {combat?.active && (
         <div style={s.combatBanner} className="fade-in">
           <div style={s.combatBannerHeader}>
-            <span style={s.combatBannerTitle}>⚔ Combate en curso</span>
+            <span style={s.combatBannerTitle}><AppIcon name="swords" size={15} /> Combate en curso</span>
             <span style={s.combatBannerRound}>Ronda {combat.round || 1}</span>
           </div>
           <div style={s.combatBannerList}>
@@ -374,7 +400,7 @@ export default function Home({ user }) {
         <main style={s.partyMain}>
 
           {/* PARTY ROSTER */}
-          <section style={s.section}>
+          <section style={s.section} className="party-roster-section">
             <div style={s.sectionHeader}>
               <span style={s.sectionTitle}>Party</span>
               <div style={s.sectionLine} />
@@ -453,7 +479,7 @@ export default function Home({ user }) {
           </section>
 
           {/* TABLÓN DE CAMPAÑA — shared by DM */}
-          <section style={s.section}>
+          <section style={s.section} className="campaign-board-section">
             <div style={s.sectionHeader}>
               <span style={s.sectionTitle}>📌 Tablón de campaña</span>
               <div style={s.sectionLine} />
@@ -461,11 +487,11 @@ export default function Home({ user }) {
             {(sharedNpcs.length === 0 && sharedLocations.length === 0 && sharedFactions.length === 0 && sharedTimeline.length === 0) ? (
               <p style={{ ...s.dashText, opacity: 0.5, fontStyle: 'italic' }}>El DM no ha compartido nada con la party todavía.</p>
             ) : (
-              <div style={s.tablon}>
+              <div style={s.tablon} className="campaign-board-grid">
 
                 {/* NPCs */}
                 {sharedNpcs.length > 0 && (
-                  <div style={s.tablonCard}>
+                  <div style={s.tablonCard} className="campaign-board-card">
                     <div style={s.tablonCardHeader}><span style={s.tablonCardIcon}>🧑‍🤝‍🧑</span> NPCs conocidos</div>
                     {sharedNpcs.map(npc => (
                       <div key={npc.id} style={s.tablonRow}>
@@ -480,7 +506,7 @@ export default function Home({ user }) {
 
                 {/* Locations */}
                 {sharedLocations.length > 0 && (
-                  <div style={s.tablonCard}>
+                  <div style={s.tablonCard} className="campaign-board-card">
                     <div style={s.tablonCardHeader}><span style={s.tablonCardIcon}>🗺</span> Ubicaciones</div>
                     {sharedLocations.map(loc => (
                       <div key={loc.id} style={s.tablonRow}>
@@ -494,7 +520,7 @@ export default function Home({ user }) {
 
                 {/* Factions */}
                 {sharedFactions.length > 0 && (
-                  <div style={s.tablonCard}>
+                  <div style={s.tablonCard} className="campaign-board-card">
                     <div style={s.tablonCardHeader}><span style={s.tablonCardIcon}>⚜️</span> Facciones</div>
                     {sharedFactions.map(fac => (
                       <div key={fac.id} style={s.tablonRow}>
@@ -508,7 +534,7 @@ export default function Home({ user }) {
 
                 {/* Timeline */}
                 {sharedTimeline.length > 0 && (
-                  <div style={s.tablonCard}>
+                  <div style={s.tablonCard} className="campaign-board-card">
                     <div style={s.tablonCardHeader}><span style={s.tablonCardIcon}>📜</span> Eventos conocidos</div>
                     {sharedTimeline.map(ev => (
                       <div key={ev.id} style={s.tablonRow}>
@@ -528,7 +554,7 @@ export default function Home({ user }) {
           <div style={s.dashboardGrid} className="dashboard-grid-2col">
 
             {/* Última sesión */}
-            <div style={s.dashCard}>
+            <div style={s.dashCard} className="campaign-dashboard-card campaign-dashboard-card--session">
               <div style={s.dashCardHeader}>
                 <span style={s.dashCardTitle}>Última sesión</span>
                 <button style={s.dashLinkBtn} onClick={() => navigate('/campana')}>Ver todas →</button>
@@ -552,7 +578,7 @@ export default function Home({ user }) {
             </div>
 
             {/* Próximo objetivo */}
-            <div style={s.dashCard}>
+            <div style={s.dashCard} className="campaign-dashboard-card campaign-dashboard-card--quest">
               <div style={s.dashCardHeader}>
                 <span style={s.dashCardTitle}>Próximo objetivo</span>
               </div>
@@ -567,7 +593,7 @@ export default function Home({ user }) {
             </div>
 
             {/* Misiones activas */}
-            <div style={s.dashCard}>
+            <div style={s.dashCard} className="campaign-dashboard-card campaign-dashboard-card--missions">
               <div style={s.dashCardHeader}>
                 <span style={s.dashCardTitle}>Misiones activas</span>
                 {isAdmin && (
@@ -616,7 +642,7 @@ export default function Home({ user }) {
             </div>
 
             {/* Botín compartido */}
-            <div style={s.dashCard}>
+            <div style={s.dashCard} className="campaign-dashboard-card campaign-dashboard-card--loot">
               <div style={s.dashCardHeader}>
                 <span style={s.dashCardTitle}>Botín compartido</span>
                 {isAdmin && (
@@ -868,39 +894,40 @@ function CharCard({ char, user, isAdmin, onClick, onDelete }) {
   const hpPct = Math.min(100, Math.round(((char.hp || 0) / (char.hpMax || 1)) * 100));
   const isOwner = char.ownerEmail === user.email || isAdmin;
   const hpColor = hpPct > 50 ? '#4a8a4a' : hpPct > 25 ? '#a07020' : '#8b1a1a';
+  const icon = classIcon(char);
 
   return (
-    <div style={{ ...s.card, borderTopColor: char.color || '#c9a84c' }} className="fade-in">
+    <div style={{ ...s.card, borderTopColor: char.color || '#c9a84c', '--character-color': char.color || '#c9a84c' }} className="fade-in party-character-card">
       {char.portrait && (
-        <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
+        <div className="party-character-portrait" style={{ position: 'relative', height: '210px', overflow: 'hidden' }}>
           <img src={char.portrait} alt={char.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '70px', background: 'linear-gradient(to top, rgba(5,5,4,1), transparent)' }} />
-          <div style={{ position: 'absolute', bottom: '8px', right: '10px', ...s.levelBadge, borderColor: char.color, color: char.color }}>{char.level}</div>
+          <div className="party-character-level" style={{ position: 'absolute', bottom: '10px', right: '12px', ...s.levelBadge, borderColor: char.color, color: char.color }}><small>NIV</small>{char.level}</div>
         </div>
       )}
-      <div style={s.cardBody} onClick={onClick}>
+      <div style={s.cardBody} className="party-character-body" onClick={onClick}>
         <div style={s.cardHeader}>
-          <span style={{ fontSize: '24px' }}>{char.icon}</span>
+          <span className="party-character-class-icon"><GameIcon {...icon} size={25} color="f7dd78" /></span>
           <div style={{ flex: 1 }}>
             <div style={s.cardName}>{char.name}</div>
-            <div style={s.cardSub}>{char.race} {char.class} · Lv{char.level}</div>
+            <div style={s.cardSub}>{char.race} · {char.class}</div>
           </div>
           {!char.portrait && (
-            <div style={{ ...s.levelBadge, borderColor: char.color, color: char.color }}>{char.level}</div>
+            <div className="party-character-level" style={{ ...s.levelBadge, borderColor: char.color, color: char.color }}><small>NIV</small>{char.level}</div>
           )}
         </div>
         <div style={{ height: '1px', background: `linear-gradient(to right, ${char.color}40, transparent)`, margin: '4px 0' }} />
-        <div style={s.cardStats}>
+        <div style={s.cardStats} className="party-character-stats">
           <MiniStat label="PG" value={`${char.hp}/${char.hpMax}`} />
           <MiniStat label="CA" value={char.ac} />
           <MiniStat label="CAR" value={`+${Math.floor(((char.stats?.car || 10) - 10) / 2)}`} />
           <MiniStat label="Jugador" value={char.player || '—'} small />
         </div>
-        <div style={s.barTrack}>
+        <div style={s.barTrack} className="party-vital-track">
           <div style={{ ...s.barFill, width: `${hpPct}%`, background: hpColor }} />
         </div>
         <div style={s.barLabel}><span style={{ color: 'var(--gold-dim)' }}>PG</span></div>
-        <div style={{ ...s.barTrack, marginTop: '6px' }}>
+        <div style={{ ...s.barTrack, marginTop: '6px' }} className="party-xp-track">
           <div style={{ ...s.barFill, width: `${xpPct}%`, background: `${char.color}80` }} />
         </div>
         <div style={s.barLabel}>
@@ -908,7 +935,7 @@ function CharCard({ char, user, isAdmin, onClick, onDelete }) {
           <span style={{ color: 'var(--gold-dim)' }}>{(char.xp || 0).toLocaleString()} / {(char.xpNext || 2700).toLocaleString()}</span>
         </div>
         <div style={{ ...s.subclassBadge, borderColor: `${char.color}40`, color: char.color }}>{char.subclass}</div>
-        <div style={s.cardCta}>Ver ficha completa →</div>
+        <div style={s.cardCta} className="party-character-cta">Abrir expediente <AppIcon name="scroll" size={12} /></div>
       </div>
       {isOwner && (
         <button style={s.deleteCharBtn} onClick={e => { e.stopPropagation(); onDelete(); }} title="Eliminar">✕</button>

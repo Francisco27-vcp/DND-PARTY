@@ -1,6 +1,6 @@
 // src/pages/Timeline.js
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 const CATEGORIES = [
@@ -20,10 +20,14 @@ export default function Timeline({ user }) {
   useEffect(() => {
     const load = async () => {
       try {
-        const q = query(collection(db, 'timeline'), orderBy('createdAt', 'desc'));
+        const q = query(
+          collection(db, 'timeline'),
+          where('visibleToParty', '==', true),
+          orderBy('createdAt', 'desc'),
+        );
         const snap = await getDocs(q);
         const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        setEvents(all.filter(e => e.visibleToParty !== false));
+        setEvents(all);
       } catch (err) {
         console.error('Error cargando historia:', err);
         setError('No se pudo cargar la historia de la campaña.');
@@ -38,7 +42,7 @@ export default function Timeline({ user }) {
   const cat = (id) => CATEGORIES.find(c => c.id === id) || CATEGORIES[0];
 
   return (
-    <div style={s.page}>
+    <div style={s.page} className="app-page timeline-page">
       <div style={s.hero}>
         <div style={s.heroLabel}>Lore de la Campaña</div>
         <h1 style={s.heroTitle}>HISTORIA</h1>

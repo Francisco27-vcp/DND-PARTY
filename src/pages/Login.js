@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../lib/firebase';
+import AppIcon from '../components/AppIcon';
+import AppBrandMark from '../components/AppBrandMark';
+import '../styles/Login.css';
 
 export default function Login() {
-  const [email, setEmail]       = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isNew, setIsNew]       = useState(false);
-  const [error, setError]       = useState('');
-  const [loading, setLoading]   = useState(false);
+  const [isNew, setIsNew] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handle = async (e) => {
-    e.preventDefault();
+  const handle = async (event) => {
+    event.preventDefault();
     setLoading(true);
     setError('');
+
     try {
       if (isNew) {
         await createUserWithEmailAndPassword(auth, email, password);
@@ -20,178 +24,105 @@ export default function Login() {
         await signInWithEmailAndPassword(auth, email, password);
       }
     } catch (err) {
-      const msgs = {
-        'auth/user-not-found':      'Usuario no encontrado.',
-        'auth/wrong-password':      'Contraseña incorrecta.',
-        'auth/email-already-in-use':'Ese email ya tiene cuenta.',
-        'auth/weak-password':       'Mínimo 6 caracteres.',
-        'auth/invalid-credential':  'Email o contraseña incorrectos.',
+      const messages = {
+        'auth/user-not-found': 'Usuario no encontrado.',
+        'auth/wrong-password': 'Contraseña incorrecta.',
+        'auth/email-already-in-use': 'Ese email ya tiene cuenta.',
+        'auth/weak-password': 'La contraseña necesita al menos 6 caracteres.',
+        'auth/invalid-credential': 'Email o contraseña incorrectos.',
       };
-      setError(msgs[err.code] || 'Error al ingresar.');
+      setError(messages[err.code] || 'No pudimos abrir la mesa. Intentá nuevamente.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div style={s.page}>
+    <main className="login-shell">
+      <div className="login-atmosphere" aria-hidden="true" />
 
-      {/* Ambient orb */}
-      <div style={s.orb} />
-
-      <div style={s.card} className="fade-in">
-
-        {/* Header */}
-        <div style={s.header}>
-          <div style={s.gemWrap}>
-            <span style={s.gem}>⚔</span>
-            <div style={s.gemGlow} />
+      <section className="login-story fade-in">
+        <div className="login-brand-lockup">
+          <AppBrandMark className="login-brand-mark" />
+          <div>
+            <p className="login-brand-kicker">Rakets Campaign</p>
+            <p className="login-brand-name">DND Party</p>
           </div>
-          <h1 style={s.title}>DND PARTY</h1>
-          <p style={s.subtitle}>Gestión de Campaña · D&D 5e · 2024</p>
         </div>
 
-        {/* Ornamental divider */}
-        <div style={s.ornament}>
-          <div style={s.ornamentLine} />
-          <span style={s.ornamentGlyph}>✦</span>
-          <div style={s.ornamentLine} />
+        <div className="login-story-copy">
+          <p className="login-eyebrow"><span /> Campaña activa · D&amp;D 5e 2024</p>
+          <h1>La mesa<br />está lista.</h1>
+          <p className="login-lead">
+            Una única sala de mando para narrar, explorar y mantener a toda la party
+            dentro de la misma historia.
+          </p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handle} style={s.form}>
-          <div style={s.field}>
-            <label style={s.label}>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              style={s.input}
-              placeholder="tu@email.com"
-              required
-            />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Contraseña</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              style={s.input}
-              placeholder="••••••••"
-              required
-            />
-          </div>
-          {error && <p style={s.error}>{error}</p>}
-          <button type="submit" style={s.btn} disabled={loading}>
-            {loading ? 'Cargando...' : isNew ? '✦ Crear cuenta' : '✦ Ingresar'}
+        <div className="login-status-row" aria-label="Funciones principales">
+          <div><b>01</b><span>Campaña viva</span></div>
+          <div><b>02</b><span>Mesa táctica</span></div>
+          <div><b>03</b><span>Party conectada</span></div>
+        </div>
+      </section>
+
+      <section className="login-access fade-in">
+        <div className="login-card">
+          <div className="login-card-seal" aria-hidden="true"><span><AppIcon name="swords" size={19} /></span></div>
+          <p className="login-card-kicker">Acceso a la campaña</p>
+          <h2>{isNew ? 'Unite a la party' : 'Volvé a la mesa'}</h2>
+          <p className="login-card-intro">
+            {isNew
+              ? 'Creá tus credenciales para entrar al mundo de Rakets.'
+              : 'Ingresá con tus credenciales para continuar la aventura.'}
+          </p>
+
+          <div className="login-divider"><span>✦</span></div>
+
+          <form onSubmit={handle} className="login-form">
+            <label className="login-field">
+              <span>Email</span>
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="tu@email.com"
+                autoComplete="email"
+                required
+              />
+            </label>
+
+            <label className="login-field">
+              <span>Contraseña</span>
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="••••••••"
+                autoComplete={isNew ? 'new-password' : 'current-password'}
+                required
+              />
+            </label>
+
+            {error && <p className="login-error" role="alert">{error}</p>}
+
+            <button className="login-primary" type="submit" disabled={loading}>
+              <span>{loading ? 'Abriendo la mesa…' : isNew ? 'Crear cuenta' : 'Ingresar a la campaña'}</span>
+              {!loading && <b aria-hidden="true">→</b>}
+            </button>
+          </form>
+
+          <button
+            className="login-toggle"
+            type="button"
+            onClick={() => { setIsNew(!isNew); setError(''); }}
+          >
+            {isNew ? 'Ya tengo una cuenta · Ingresar' : 'Primera vez · Crear una cuenta'}
           </button>
-        </form>
 
-        {/* Toggle */}
-        <div style={s.ornament}>
-          <div style={s.ornamentLine} />
+          <p className="login-footnote"><span /> Acceso administrado con Firebase</p>
         </div>
-
-        <button onClick={() => { setIsNew(!isNew); setError(''); }} style={s.toggle}>
-          {isNew ? '¿Ya tenés cuenta? · Ingresá' : '¿Primera vez? · Creá tu cuenta'}
-        </button>
-
-        <p style={s.hint}>Compartí la URL con tu party para que todos creen su cuenta</p>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
-
-const s = {
-  page: {
-    minHeight: '100vh',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: '20px', position: 'relative', overflow: 'hidden',
-  },
-  orb: {
-    position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)',
-    width: '600px', height: '600px', borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(201,168,76,0.04) 0%, transparent 70%)',
-    pointerEvents: 'none',
-  },
-  card: {
-    background: 'var(--panel)',
-    border: '1px solid var(--line)',
-    borderTop: '2px solid var(--gold)',
-    padding: '40px 36px',
-    width: '100%', maxWidth: '420px',
-    position: 'relative', zIndex: 1,
-    boxShadow: '0 0 60px rgba(201,168,76,0.06), 0 20px 40px rgba(0,0,0,0.4)',
-  },
-  header: { textAlign: 'center', marginBottom: '20px' },
-  gemWrap: { position: 'relative', display: 'inline-block', marginBottom: '14px' },
-  gem: {
-    fontSize: '30px', color: 'var(--gold)',
-    textShadow: '0 0 20px rgba(201,164,73,0.8)',
-    display: 'block',
-  },
-  gemGlow: {
-    position: 'absolute', inset: '-10px',
-    background: 'radial-gradient(circle, rgba(201,164,73,0.2) 0%, transparent 70%)',
-    pointerEvents: 'none',
-  },
-  title: {
-    fontFamily: 'Cinzel,serif', fontSize: '28px', fontWeight: '900',
-    letterSpacing: '6px', color: 'var(--gold-bright)',
-    textShadow: '0 0 30px rgba(227,200,120,0.3)',
-  },
-  subtitle: {
-    fontFamily: 'Crimson Pro,serif', fontStyle: 'italic',
-    fontSize: '13px', color: 'var(--gold-dim)', marginTop: '6px',
-  },
-  ornament: {
-    display: 'flex', alignItems: 'center', gap: '12px',
-    margin: '18px 0',
-  },
-  ornamentLine: {
-    flex: 1, height: '1px',
-    background: 'linear-gradient(to right, transparent, var(--line), transparent)',
-  },
-  ornamentGlyph: {
-    fontFamily: 'Cinzel,serif', fontSize: '10px',
-    color: 'var(--gold-dim)', letterSpacing: '2px',
-  },
-  form: { display: 'flex', flexDirection: 'column', gap: '16px' },
-  field: { display: 'flex', flexDirection: 'column', gap: '6px' },
-  label: {
-    fontFamily: 'Cinzel,serif', fontSize: '9px',
-    letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase',
-  },
-  input: {
-    background: 'var(--panel-raised)', border: '1px solid var(--line)',
-    color: 'var(--parchment)', fontFamily: 'Crimson Pro,serif',
-    fontSize: '15px', padding: '11px 14px', outline: 'none',
-    transition: 'border-color 0.2s',
-  },
-  error: {
-    fontFamily: 'Crimson Pro,serif', fontSize: '13px',
-    color: 'var(--ember)', textAlign: 'center',
-    padding: '8px', background: 'rgba(184,100,63,0.08)',
-    border: '1px solid rgba(184,100,63,0.2)',
-  },
-  btn: {
-    background: 'linear-gradient(135deg, var(--gold-bright), var(--gold))',
-    border: 'none', color: '#1a1206',
-    fontFamily: 'Cinzel,serif', fontSize: '11px', letterSpacing: '3px',
-    padding: '13px', cursor: 'pointer', textTransform: 'uppercase',
-    boxShadow: '0 4px 20px rgba(201,164,73,0.2)',
-    transition: 'all 0.2s',
-  },
-  toggle: {
-    background: 'transparent', border: 'none',
-    color: 'var(--gold-dim)', fontFamily: 'Crimson Pro,serif',
-    fontStyle: 'italic', fontSize: '13px',
-    cursor: 'pointer', width: '100%', textAlign: 'center',
-    padding: '8px', transition: 'color 0.2s',
-  },
-  hint: {
-    fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '1.5px',
-    color: 'var(--gold-dim)', textAlign: 'center',
-    marginTop: '12px', textTransform: 'uppercase', opacity: 0.6,
-  },
-};

@@ -90,7 +90,7 @@ export default function Profile({ user }) {
   if (!profile) return <div style={s.loading}>Cargando perfil...</div>;
 
   return (
-    <div style={s.page} className="fade-in">
+    <div style={s.page} className="app-page profile-page fade-in">
 
       <div style={s.hero}>
         <div style={s.heroLabel}>Tu cuenta</div>

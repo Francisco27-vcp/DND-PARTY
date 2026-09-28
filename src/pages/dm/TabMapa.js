@@ -2,17 +2,22 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
   collection, onSnapshot, addDoc, updateDoc, deleteDoc,
-  doc, serverTimestamp, query, orderBy,
+  doc, serverTimestamp, query, orderBy, writeBatch,
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import { uploadImage } from '../../lib/uploadImage';
+import { deleteImageByUrl, uploadImage } from '../../lib/uploadImage';
+import { createPublicMapSnapshot } from '../../lib/liveSession';
+import { createCharacterToken, getTacticalVisual, hydrateMapCharacters, withLocalTokenArtwork } from '../../lib/tacticalTokens';
+import AppIcon from '../../components/AppIcon';
+import GameIcon from '../../components/GameIcon';
+import GAME_ICONS from '../../data/gameicons';
 
 const CATS = [
-  { id: 'pj',       label: 'PJs',       icon: '🧙' },
-  { id: 'monstruo', label: 'Monstruos', icon: '👹' },
-  { id: 'trampa',   label: 'Trampas',   icon: '⚠' },
-  { id: 'objeto',   label: 'Objetos',   icon: '📦' },
-  { id: 'custom',   label: 'Custom',    icon: '⭐' },
+  { id: 'pj',       label: 'PJs',       icon: 'user' },
+  { id: 'monstruo', label: 'Monstruos', icon: 'swords' },
+  { id: 'trampa',   label: 'Trampas',   icon: 'shield' },
+  { id: 'objeto',   label: 'Objetos',   icon: 'crown' },
+  { id: 'custom',   label: 'Custom',    icon: 'sparkles' },
 ];
 
 const TOKENS = [
@@ -97,11 +102,18 @@ const SIZES = [
 ];
 
 const DEFAULT_VP = { t: 0, r: 0, b: 0, l: 0 };
+const FOG_COLS = 24;
+const FOG_ROWS = 16;
+
+function tokenMonogram(label = 'Token') {
+  return label.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase();
+}
 
 function uid() { return Math.random().toString(36).slice(2, 9); }
 
 export default function TabMapa() {
   const [maps, setMaps] = useState([]);
+  const [characters, setCharacters] = useState([]);
   const [activeMapId, setActiveMapId] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadTitle, setUploadTitle] = useState('');
@@ -111,10 +123,12 @@ export default function TabMapa() {
   const [mode, setMode] = useState('select');
   const [selCat, setSelCat] = useState('pj');
   const [selTokenId, setSelTokenId] = useState('guerrero');
+  const [selectedCharacterId, setSelectedCharacterId] = useState('');
   const [tokenLabel, setTokenLabel] = useState('');
   const [tokenSize, setTokenSize] = useState(3);
   const [customImg, setCustomImg] = useState(null);
   const [uploadingCustom, setUploadingCustom] = useState(false);
+  const [fogAction, setFogAction] = useState('hide');
 
   // Popover
   const [popover, setPopover] = useState(null);
@@ -128,11 +142,17 @@ export default function TabMapa() {
   const mapRef = useRef(null);
   const fileRef = useRef(null);
   const customFileRef = useRef(null);
+  const undoRef = useRef([]);
+  const redoRef = useRef([]);
+  const [, setHistoryVersion] = useState(0);
 
   const activeMap = maps.find(m => m.id === activeMapId) || null;
 
   useEffect(() => {
     setVp(activeMap?.viewport || DEFAULT_VP);
+    undoRef.current = [];
+    redoRef.current = [];
+    setHistoryVersion(value => value + 1);
   }, [activeMapId]); // eslint-disable-line
 
   useEffect(() => {
@@ -143,6 +163,16 @@ export default function TabMapa() {
       setActiveMapId(prev => prev || (list[0]?.id ?? null));
     }, () => {});
   }, []);
+
+  useEffect(() => onSnapshot(
+    collection(db, 'characters'),
+    snap => {
+      const list = snap.docs.map(item => ({ id: item.id, ...item.data() }));
+      setCharacters(list);
+      setSelectedCharacterId(previous => previous || list[0]?.id || '');
+    },
+    () => {},
+  ), []);
 
   const handleUpload = async (e) => {
     e.preventDefault();
@@ -163,14 +193,61 @@ export default function TabMapa() {
     setUploading(false);
   };
 
-  const toggleMapVisible = () => activeMap && updateDoc(doc(db, 'maps', activeMap.id), { visibleToParty: !activeMap.visibleToParty });
+  const toggleMapVisible = async () => {
+    if (!activeMap) return;
+    const nextVisibility = !activeMap.visibleToParty;
+    const batch = writeBatch(db);
+    batch.update(doc(db, 'maps', activeMap.id), { visibleToParty: nextVisibility });
+    const publicRef = doc(db, 'public_maps', activeMap.id);
+    if (nextVisibility) {
+      batch.set(publicRef, {
+        ...createPublicMapSnapshot(hydrateMapCharacters(activeMap, characters)),
+        publishedAt: serverTimestamp(),
+      });
+    } else {
+      batch.delete(publicRef);
+    }
+    await batch.commit();
+  };
+
+  const editableState = (map) => ({
+    tokens: map?.tokens || [],
+    fog: map?.fog || { enabled: false, cols: FOG_COLS, rows: FOG_ROWS, hidden: [] },
+    viewport: map?.viewport || DEFAULT_VP,
+  });
+
+  const commitMapPatch = async (patch) => {
+    if (!activeMap) return;
+    undoRef.current.push(editableState(activeMap));
+    if (undoRef.current.length > 40) undoRef.current.shift();
+    redoRef.current = [];
+    setHistoryVersion(value => value + 1);
+    await updateDoc(doc(db, 'maps', activeMap.id), patch);
+  };
+
+  const restoreHistory = async (direction) => {
+    if (!activeMap) return;
+    const source = direction === 'undo' ? undoRef : redoRef;
+    const target = direction === 'undo' ? redoRef : undoRef;
+    const state = source.current.pop();
+    if (!state) return;
+    target.current.push(editableState(activeMap));
+    setHistoryVersion(value => value + 1);
+    setVp(state.viewport || DEFAULT_VP);
+    await updateDoc(doc(db, 'maps', activeMap.id), state);
+  };
 
   const deleteMap = async (id) => {
+    const target = maps.find(map => map.id === id);
+    if (!window.confirm(`¿Eliminar el mapa "${target?.title || 'seleccionado'}" y sus imágenes?`)) return;
     await deleteDoc(doc(db, 'maps', id));
+    await deleteDoc(doc(db, 'public_maps', id)).catch(() => {});
+    const imageUrls = [target?.imageUrl, ...(target?.tokens || []).map(token => token.imageUrl)].filter(Boolean);
+    await Promise.allSettled([...new Set(imageUrls)].map(deleteImageByUrl));
     if (activeMapId === id) setActiveMapId(maps.find(m => m.id !== id)?.id ?? null);
   };
 
-  const saveVp = (newVp) => activeMap && updateDoc(doc(db, 'maps', activeMap.id), { viewport: newVp });
+  const saveVp = (newVp) => activeMap && commitMapPatch({ viewport: newVp });
 
   const handleCustomImg = async (e) => {
     const file = e.target.files[0];
@@ -182,20 +259,80 @@ export default function TabMapa() {
   };
 
   const handleMapClick = async (e) => {
-    if (mode !== 'place' || !activeMap || !mapRef.current) return;
+    if (!activeMap || !mapRef.current) return;
     const rect = mapRef.current.getBoundingClientRect();
     const x = parseFloat(((e.clientX - rect.left) / rect.width * 100).toFixed(2));
     const y = parseFloat(((e.clientY - rect.top) / rect.height * 100).toFixed(2));
+    if (mode === 'fog') {
+      const cellX = Math.max(0, Math.min(FOG_COLS - 1, Math.floor((x / 100) * FOG_COLS)));
+      const cellY = Math.max(0, Math.min(FOG_ROWS - 1, Math.floor((y / 100) * FOG_ROWS)));
+      const key = `${cellX}:${cellY}`;
+      const hidden = new Set(activeMap.fog?.hidden || []);
+      if (fogAction === 'hide') hidden.add(key); else hidden.delete(key);
+      await commitMapPatch({
+        fog: { enabled: true, cols: FOG_COLS, rows: FOG_ROWS, hidden: [...hidden] },
+      });
+      return;
+    }
+    if (mode !== 'place') return;
+    const selectedCharacter = selCat === 'pj'
+      ? characters.find(character => character.id === selectedCharacterId)
+      : null;
     const def = TOKENS.find(t => t.id === selTokenId) || TOKENS[0];
-    const newToken = {
-      id: uid(), x, y,
-      typeId: selTokenId, cat: def.cat,
-      emoji: def.emoji, label: tokenLabel.trim() || def.label,
-      color: def.color, size: tokenSize,
-      visibleToParty: def.cat !== 'trampa',
-      imageUrl: selCat === 'custom' ? customImg : null,
+    const visual = getTacticalVisual({ ...def, cat: selCat });
+    const baseToken = {
+      id: uid(), x, y, size: tokenSize,
+      label: tokenLabel.trim() || def.label,
     };
-    await updateDoc(doc(db, 'maps', activeMap.id), { tokens: [...(activeMap.tokens || []), newToken] });
+    const newToken = selectedCharacter
+      ? createCharacterToken(selectedCharacter, baseToken)
+      : {
+        ...baseToken,
+        typeId: selTokenId,
+        cat: selCat,
+        entityKind: visual.entityKind,
+        symbolKey: visual.symbolKey,
+        color: def.color || visual.color,
+        visibleToParty: selCat !== 'trampa',
+        imageUrl: selCat === 'custom' ? customImg : null,
+      };
+    await commitMapPatch({ tokens: [...(activeMap.tokens || []), newToken] });
+  };
+
+  const setAllFog = async (hidden) => {
+    if (!activeMap) return;
+    const cells = hidden
+      ? Array.from({ length: FOG_ROWS }, (_, y) => Array.from({ length: FOG_COLS }, (__, x) => `${x}:${y}`)).flat()
+      : [];
+    await commitMapPatch({
+      fog: { enabled: true, cols: FOG_COLS, rows: FOG_ROWS, hidden: cells },
+    });
+  };
+
+  const moveToken = async (event, token) => {
+    if (!activeMap || !mapRef.current || mode !== 'select') return;
+    const rect = mapRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
+    const tokens = (activeMap.tokens || []).map(item => item.id === token.id
+      ? { ...item, x: Number(x.toFixed(2)), y: Number(y.toFixed(2)) }
+      : item);
+    await commitMapPatch({ tokens });
+  };
+
+  const nudgeToken = async (event, token) => {
+    if (mode !== 'select' || !['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const step = event.shiftKey ? 2 : 0.5;
+    const dx = event.key === 'ArrowLeft' ? -step : event.key === 'ArrowRight' ? step : 0;
+    const dy = event.key === 'ArrowUp' ? -step : event.key === 'ArrowDown' ? step : 0;
+    const nextX = Math.max(0, Math.min(100, Number(token.x || 0) + dx));
+    const nextY = Math.max(0, Math.min(100, Number(token.y || 0) + dy));
+    const tokens = (activeMap.tokens || []).map(item => item.id === token.id
+      ? { ...item, x: Number(nextX.toFixed(2)), y: Number(nextY.toFixed(2)) }
+      : item);
+    await commitMapPatch({ tokens });
   };
 
   const openPopover = (e, token) => {
@@ -209,17 +346,19 @@ export default function TabMapa() {
   const saveTokenField = async (field, value) => {
     if (!activeMap || !popover) return;
     const updated = (activeMap.tokens || []).map(t => t.id === popover.id ? { ...t, [field]: value } : t);
-    await updateDoc(doc(db, 'maps', activeMap.id), { tokens: updated });
+    await commitMapPatch({ tokens: updated });
     setPopover(p => p ? { ...p, [field]: value } : null);
   };
 
   const deleteToken = async (id) => {
     if (!activeMap) return;
-    await updateDoc(doc(db, 'maps', activeMap.id), { tokens: (activeMap.tokens || []).filter(t => t.id !== id) });
+    await commitMapPatch({ tokens: (activeMap.tokens || []).filter(t => t.id !== id) });
     setPopover(null);
   };
 
   const catTokens = TOKENS.filter(t => t.cat === selCat);
+  const displayMap = hydrateMapCharacters(activeMap, characters);
+  const tacticalIcon = token => GAME_ICONS[getTacticalVisual(token).symbolKey] || GAME_ICONS.sword;
 
   return (
     <div style={s.wrap}>
@@ -245,7 +384,7 @@ export default function TabMapa() {
                 <span style={s.mapItemMeta}>
                   {(m.tokens || []).length} tokens ·{' '}
                   <span style={{ color: m.visibleToParty ? '#65c260' : 'var(--gold-dim)' }}>
-                    {m.visibleToParty ? '👁 Visible' : '🔒 Oculto'}
+                    <AppIcon name={m.visibleToParty ? 'eye' : 'lock'} size={10} /> {m.visibleToParty ? 'Visible' : 'Oculto'}
                   </span>
                 </span>
               </div>
@@ -259,7 +398,7 @@ export default function TabMapa() {
       <div style={s.main}>
         {!activeMap ? (
           <div style={s.emptyCanvas}>
-            <span style={{ fontSize: '48px', opacity: 0.3 }}>🗺</span>
+            <span style={{ opacity: 0.3 }}><AppIcon name="map" size={48} /></span>
             <p style={s.emptyMsg}>Seleccioná o subí un mapa</p>
           </div>
         ) : (
@@ -268,20 +407,34 @@ export default function TabMapa() {
             <div style={s.toolbar}>
               <span style={s.mapTitle}>{activeMap.title}</span>
               <div style={s.toolbarRight}>
+                <button type="button" title="Deshacer" aria-label="Deshacer" style={s.toolBtn}
+                  disabled={undoRef.current.length === 0} onClick={() => restoreHistory('undo')}>
+                  <AppIcon name="undo" size={14} />
+                </button>
+                <button type="button" title="Rehacer" aria-label="Rehacer" style={s.toolBtn}
+                  disabled={redoRef.current.length === 0} onClick={() => restoreHistory('redo')}>
+                  <AppIcon name="redo" size={14} />
+                </button>
                 <button style={{ ...s.toolBtn, ...(activeMap.visibleToParty ? s.toolBtnGreen : {}) }} onClick={toggleMapVisible}>
-                  {activeMap.visibleToParty ? '👁 Visible' : '🔒 Oculto'}
+                  <AppIcon name={activeMap.visibleToParty ? 'eye' : 'lock'} size={13} /> {activeMap.visibleToParty ? 'Visible' : 'Oculto'}
                 </button>
                 <button style={{ ...s.toolBtn, ...(showVp ? s.toolBtnGold : {}) }} onClick={() => setShowVp(v => !v)}>
-                  ✂ Revelar zona
+                  <AppIcon name="scissors" size={13} /> Revelar zona
                 </button>
                 <button style={{ ...s.toolBtn, ...(mode === 'place' ? s.toolBtnGold : {}) }}
                   onClick={() => { setMode(m => m === 'place' ? 'select' : 'place'); setPopover(null); }}>
-                  {mode === 'place' ? '✕ Cancelar' : '+ Token'}
+                  <AppIcon name={mode === 'place' ? 'close' : 'plus'} size={13} /> {mode === 'place' ? 'Cancelar' : 'Token'}
+                </button>
+                <button style={{ ...s.toolBtn, ...(mode === 'fog' ? s.toolBtnGold : {}) }}
+                  onClick={() => { setMode(m => m === 'fog' ? 'select' : 'fog'); setPopover(null); }}>
+                  <AppIcon name={mode === 'fog' ? 'close' : 'grid'} size={13} /> {mode === 'fog' ? 'Cerrar niebla' : 'Niebla por celdas'}
                 </button>
                 {(activeMap.tokens || []).length > 0 && (
                   <button style={{ ...s.toolBtn, color: 'rgba(224,80,80,0.7)', borderColor: 'rgba(224,80,80,0.3)' }}
-                    onClick={() => activeMap && updateDoc(doc(db, 'maps', activeMap.id), { tokens: [] })}>
-                    🗑
+                    onClick={() => {
+                      if (window.confirm('¿Eliminar todas las fichas de este mapa? Podés deshacer esta acción.')) commitMapPatch({ tokens: [] });
+                    }}>
+                    <AppIcon name="trash" size={14} />
                   </button>
                 )}
               </div>
@@ -313,6 +466,18 @@ export default function TabMapa() {
               </div>
             )}
 
+            {mode === 'fog' && (
+              <div style={s.vpPanel}>
+                <span style={s.vpTitle}>Niebla por celdas — cada clic modifica una sola zona y se sincroniza con el proyector</span>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <button style={{ ...s.toolBtn, ...(fogAction === 'hide' ? s.toolBtnGold : {}) }} onClick={() => setFogAction('hide')}>Ocultar</button>
+                  <button style={{ ...s.toolBtn, ...(fogAction === 'reveal' ? s.toolBtnGreen : {}) }} onClick={() => setFogAction('reveal')}>Revelar</button>
+                  <button style={s.toolBtn} onClick={() => setAllFog(true)}>Cubrir todo</button>
+                  <button style={s.toolBtn} onClick={() => setAllFog(false)}>Revelar todo</button>
+                </div>
+              </div>
+            )}
+
             {/* Placement palette */}
             {mode === 'place' && (
               <div style={s.palette}>
@@ -321,7 +486,7 @@ export default function TabMapa() {
                     <button key={c.id}
                       style={{ ...s.catTab, ...(selCat === c.id ? s.catTabActive : {}) }}
                       onClick={() => { setSelCat(c.id); const first = TOKENS.find(t => t.cat === c.id); if (first) setSelTokenId(first.id); }}>
-                      {c.icon} {c.label}
+                      <AppIcon name={c.icon} size={14} /> {c.label}
                     </button>
                   ))}
                 </div>
@@ -330,21 +495,47 @@ export default function TabMapa() {
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '4px 0' }}>
                     {customImg
                       ? <img src={customImg} alt="" style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--line)' }} />
-                      : <div style={{ width: '48px', height: '48px', background: 'rgba(0,0,0,0.3)', border: '1px dashed var(--line)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>⭐</div>
+                      : <div style={{ width: '48px', height: '48px', background: 'rgba(0,0,0,0.3)', border: '1px dashed var(--line)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><AppIcon name="sparkles" size={20} /></div>
                     }
                     <label style={{ ...s.catTab, cursor: 'pointer' }}>
-                      {uploadingCustom ? 'Subiendo...' : '📁 Subir imagen'}
+                      {uploadingCustom ? 'Subiendo...' : 'Subir imagen'}
                       <input ref={customFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleCustomImg} />
                     </label>
                     {customImg && <span style={{ fontFamily: 'Crimson Pro,serif', fontSize: '11px', color: '#65c260' }}>Lista. Clic en el mapa.</span>}
                   </div>
+                ) : selCat === 'pj' && characters.length > 0 ? (
+                  <div className="tactical-character-picker">
+                    {characters.map(character => {
+                      const preview = createCharacterToken(character);
+                      const icon = tacticalIcon(preview);
+                      const hpPct = Math.max(0, Math.min(100, (preview.hp / Math.max(1, preview.hpMax)) * 100));
+                      return (
+                        <button key={character.id} type="button"
+                          className={`tactical-character-pick${selectedCharacterId === character.id ? ' is-selected' : ''}`}
+                          style={{ '--token-color': preview.color }}
+                          onClick={() => setSelectedCharacterId(character.id)}>
+                          {preview.imageUrl
+                            ? <img src={preview.imageUrl} alt="" />
+                            : <span className="tactical-character-symbol"><GameIcon {...icon} size={25} color={preview.color} /></span>}
+                          <span className="tactical-character-copy">
+                            <strong>{preview.label}</strong>
+                            <small>{preview.className} · Nivel {preview.level}</small>
+                            <i><b style={{ width: `${hpPct}%` }} /></i>
+                            <small>{preview.hp}/{preview.hpMax} PG</small>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 ) : (
                   <div style={s.tokenGrid}>
                     {catTokens.map(t => (
-                      <button key={t.id}
+                      <button key={t.id} className={`token-pick-button token-pick-button--${t.cat}`}
                         style={{ ...s.tokenPickBtn, ...(selTokenId === t.id ? { borderColor: t.color, background: t.color + '22' } : {}) }}
                         onClick={() => setSelTokenId(t.id)}>
-                        <span style={{ fontSize: '18px', lineHeight: 1 }}>{t.emoji}</span>
+                        {withLocalTokenArtwork(t).imageUrl
+                          ? <img className="token-palette-art" style={{ '--token-color': t.color }} src={withLocalTokenArtwork(t).imageUrl} alt="" />
+                          : <span className="token-palette-monogram" style={{ '--token-color': t.color }}><GameIcon {...tacticalIcon(t)} size={18} color={t.color} /></span>}
                         <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', color: selTokenId === t.id ? t.color : 'var(--gold-dim)', textTransform: 'uppercase', marginTop: '2px' }}>{t.label}</span>
                       </button>
                     ))}
@@ -367,24 +558,47 @@ export default function TabMapa() {
 
             {/* Map */}
             <div style={s.mapWrap}>
-              <div ref={mapRef} style={{ ...s.mapCanvas, cursor: mode === 'place' ? 'crosshair' : 'default' }} onClick={handleMapClick}>
+              <div ref={mapRef} style={{ ...s.mapCanvas, cursor: ['place', 'fog'].includes(mode) ? 'crosshair' : 'default' }} onClick={handleMapClick}>
                 <img src={activeMap.imageUrl} alt={activeMap.title} style={s.mapImg} draggable={false} />
 
-                {vp.t > 0 && <div style={{ ...s.fog, top: 0, left: 0, right: 0, height: vp.t + '%' }} />}
-                {vp.b > 0 && <div style={{ ...s.fog, bottom: 0, left: 0, right: 0, height: vp.b + '%' }} />}
-                {vp.l > 0 && <div style={{ ...s.fog, top: vp.t + '%', bottom: vp.b + '%', left: 0, width: vp.l + '%' }} />}
-                {vp.r > 0 && <div style={{ ...s.fog, top: vp.t + '%', bottom: vp.b + '%', right: 0, width: vp.r + '%' }} />}
+                {activeMap.fog?.enabled ? (activeMap.fog.hidden || []).map(key => {
+                  const [x, y] = key.split(':').map(Number);
+                  return <div key={key} className="map-fog-cell" style={{ ...s.fog, left: `${x / FOG_COLS * 100}%`, top: `${y / FOG_ROWS * 100}%`, width: `${100 / FOG_COLS + 0.08}%`, height: `${100 / FOG_ROWS + 0.08}%`, opacity: 0.58 }} />;
+                }) : <>
+                  {vp.t > 0 && <div style={{ ...s.fog, top: 0, left: 0, right: 0, height: vp.t + '%' }} />}
+                  {vp.b > 0 && <div style={{ ...s.fog, bottom: 0, left: 0, right: 0, height: vp.b + '%' }} />}
+                  {vp.l > 0 && <div style={{ ...s.fog, top: vp.t + '%', bottom: vp.b + '%', left: 0, width: vp.l + '%' }} />}
+                  {vp.r > 0 && <div style={{ ...s.fog, top: vp.t + '%', bottom: vp.b + '%', right: 0, width: vp.r + '%' }} />}
+                </>}
 
-                {(activeMap.tokens || []).map(token => {
+                {(displayMap.tokens || []).map(token => {
                   const sz = SIZES.find(s => s.id === (token.size || 3)) || SIZES[2];
                   const isHidden = token.visibleToParty === false;
+                  const isCharacter = token.entityKind === 'character';
+                  const hasPortraitCard = isCharacter || Boolean(token.imageUrl);
+                  const icon = tacticalIcon(token);
+                  const hpPct = Math.max(0, Math.min(100, (Number(token.hp) / Math.max(1, Number(token.hpMax))) * 100));
                   return (
-                    <div key={token.id}
+                    <div key={token.id} className={`map-editor-token${isCharacter ? ' map-editor-token--character' : ''}${hasPortraitCard && !isCharacter ? ' map-editor-token--illustrated' : ''}${!isCharacter && token.cat ? ` map-editor-token--${token.cat}` : ''}`}
+                      data-token-id={token.typeId || 'custom'}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`${token.label || 'Ficha'}${isCharacter ? `, ${token.className || 'personaje'}, ${token.hp || 0} de ${token.hpMax || 0} puntos de golpe` : ''}${isHidden ? ', oculta para la party' : ''}. Enter para editar; flechas para mover.`}
+                      draggable={mode === 'select'}
+                      onDragEnd={event => moveToken(event, token)}
+                      onKeyDown={event => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          openPopover(event, token);
+                          return;
+                        }
+                        nudgeToken(event, token);
+                      }}
                       style={{
                         position: 'absolute', left: token.x + '%', top: token.y + '%',
-                        transform: 'translate(-50%, -50%)', width: sz.px + 'px',
+                        transform: 'translate(-50%, -50%)', width: (hasPortraitCard ? Math.max(94, sz.px * 1.9) : sz.px) + 'px', height: (hasPortraitCard ? Math.max(50, sz.px) : sz.px) + 'px',
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px',
-                        border: '2px solid ' + token.color, borderRadius: '8px',
+                        border: '2px solid ' + token.color, borderRadius: hasPortraitCard ? '11px' : '50%',
                         background: token.color + '33', backdropFilter: 'blur(4px)',
                         zIndex: popover && popover.id === token.id ? 30 : 10, cursor: 'pointer',
                         padding: '2px 3px', opacity: isHidden ? 0.55 : 1,
@@ -392,12 +606,22 @@ export default function TabMapa() {
                         outlineOffset: '2px',
                       }}
                       onClick={e => openPopover(e, token)}>
-                      {token.imageUrl
-                        ? <img src={token.imageUrl} alt={token.label} style={{ width: '100%', borderRadius: '4px', display: 'block' }} />
-                        : <span style={{ fontSize: Math.round(sz.px * 0.5) + 'px', lineHeight: 1 }}>{token.emoji}</span>
-                      }
-                      <span style={{ fontFamily: 'Cinzel,serif', fontSize: Math.max(6, Math.round(sz.px * 0.15)) + 'px', color: token.color, whiteSpace: 'nowrap' }}>{token.label}</span>
-                      {isHidden && <span style={{ position: 'absolute', top: '-7px', right: '-7px', fontSize: '11px' }}>🔒</span>}
+                      <span className="map-editor-token-portrait">
+                        {token.imageUrl
+                          ? <img className="map-editor-token-art" src={token.imageUrl} alt={token.label} />
+                          : <GameIcon {...icon} size={Math.max(18, sz.px * 0.42)} color={token.color || 'f7dd78'} />}
+                      </span>
+                      {hasPortraitCard ? (
+                        <span className="map-editor-token-card-copy">
+                          <strong>{token.label}</strong>
+                          {isCharacter ? <>
+                            <small><GameIcon {...icon} size={10} color={token.color || 'f7dd78'} /> {token.className} · N{token.level}</small>
+                            <i><b style={{ width: `${hpPct}%` }} /></i>
+                            <small>{token.hp}/{token.hpMax} PG · CA {token.armorClass || '—'}</small>
+                          </> : <small>{token.cat === 'monstruo' ? 'Criatura' : 'Ficha ilustrada'}</small>}
+                        </span>
+                      ) : <span className="map-editor-token-label" style={{ fontSize: Math.max(7, Math.round(sz.px * 0.15)) + 'px', color: token.color }}>{token.label}</span>}
+                      {isHidden && <span className="map-editor-token-lock"><AppIcon name="lock" size={10} /></span>}
                     </div>
                   );
                 })}
@@ -417,7 +641,7 @@ export default function TabMapa() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
                       {popover.imageUrl
                         ? <img src={popover.imageUrl} style={{ width: '26px', height: '26px', borderRadius: '4px', objectFit: 'cover' }} alt="" />
-                        : <span style={{ fontSize: '20px' }}>{popover.emoji}</span>}
+                        : <GameIcon {...tacticalIcon(popover)} size={22} color={popover.color || 'f7dd78'} />}
                       <span style={{ fontFamily: 'Cinzel,serif', fontSize: '11px', color: popover.color, flex: 1 }}>{popover.label}</span>
                       <button style={s.popClose} onClick={() => setPopover(null)}>x</button>
                     </div>
@@ -451,10 +675,10 @@ export default function TabMapa() {
 
             {(activeMap.tokens || []).length > 0 && (
               <div style={s.legend}>
-                {(activeMap.tokens || []).map(t => (
+                {(displayMap.tokens || []).map(t => (
                   <span key={t.id} style={{ ...s.legendItem, color: t.color, borderColor: t.color, opacity: t.visibleToParty === false ? 0.5 : 1 }}
                     onClick={() => { setPopover(t); setEditLabel(t.label); setEditSize(t.size || 3); }}>
-                    {t.imageUrl ? <img src={t.imageUrl} style={{ width: '12px', height: '12px', borderRadius: '2px', objectFit: 'cover' }} alt="" /> : t.emoji}
+                    {t.imageUrl ? <img src={t.imageUrl} style={{ width: '12px', height: '12px', borderRadius: '2px', objectFit: 'cover' }} alt="" /> : <GameIcon {...tacticalIcon(t)} size={12} color={t.color || 'f7dd78'} />}
                     {' '}{t.label}{t.visibleToParty === false ? ' (oculto)' : ''}
                   </span>
                 ))}

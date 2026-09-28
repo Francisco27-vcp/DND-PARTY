@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import spells from '../data/spells.json';
 import items  from '../data/items.json';
+import AppIcon from '../components/AppIcon';
 
 /* ══════════════════════════ DATOS ESTÁTICOS ══════════════════════════════ */
 
@@ -357,8 +358,13 @@ function ItemsTab({ itemList }) {
       </div>
       <div style={s.itemGrid}>
         {filtered.map(it => (
-          <div key={it.id} style={s.itemCard}>
-            <div style={s.itemName}>{it.nombre}</div>
+          <div key={it.id} className="manual-item-card" data-item-category={(it.tipo || 'reliquia').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-')} style={s.itemCard}>
+            <div className="manual-item-card-head">
+              <span className="manual-item-art" aria-hidden="true">
+                <AppIcon name={it.tipo === 'weapon' ? 'sword' : it.tipo === 'armor' ? 'shield' : it.tipo === 'potion' ? 'potion' : 'magic'} size={19} />
+              </span>
+              <div style={s.itemName}>{it.nombre}</div>
+            </div>
             <div style={s.itemMeta}>{it.tipo} · {it.slot}</div>
             <div style={s.itemDesc}>{it.descripcion}</div>
             {it.stats && (
@@ -389,6 +395,8 @@ function SectionsList({ sections, onSelect, loaded, activeTab }) {
       {sections.map(sec => (
         <button
           key={sec.title}
+          className="manual-section-card"
+          data-manual-source={activeTab}
           style={s.secCard}
           onClick={() => onSelect(sec)}
         >
@@ -521,7 +529,7 @@ export default function Manual() {
   }
 
   return (
-    <div style={s.page} className="fade-in">
+    <div style={s.page} className="app-page manual-page fade-in">
       <header style={s.hero}>
         <div style={s.heroEyebrow}>Compendio de reglas</div>
         <h1 style={s.heroTitle}>MANUAL</h1>

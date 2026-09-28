@@ -1,6 +1,6 @@
 // src/pages/Campaign.js
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 export default function Campaign({ user }) {
@@ -10,10 +10,14 @@ export default function Campaign({ user }) {
 
   const load = async () => {
     try {
-      const q = query(collection(db, 'sessions'), orderBy('createdAt', 'desc'));
+      const q = query(
+        collection(db, 'sessions'),
+        where('visibleToParty', '==', true),
+        orderBy('createdAt', 'desc'),
+      );
       const snap = await getDocs(q);
       const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setSessions(all.filter(s => s.visibleToParty !== false));
+      setSessions(all);
     } catch (err) {
       console.error('Error cargando sesiones:', err);
       setError('No se pudieron cargar las sesiones de la campaña.');
@@ -25,7 +29,7 @@ export default function Campaign({ user }) {
   useEffect(() => { load(); }, []);
 
   return (
-    <div style={s.page}>
+    <div style={s.page} className="app-page campaign-page">
       <div style={s.hero}>
         <div style={s.heroLabel}>Registro Oficial</div>
         <h1 style={s.heroTitle}>CAMPAÑA</h1>

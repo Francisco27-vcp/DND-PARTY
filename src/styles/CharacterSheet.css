@@ -14,8 +14,9 @@
   background:
     radial-gradient(circle at 18% 32%, var(--cs-glow, rgba(117,220,95,0.18)), transparent 27rem),
     radial-gradient(circle at 72% 10%, rgba(247,221,120,0.14), transparent 30rem),
-    linear-gradient(180deg, rgba(12, 10, 7, 0.9), rgba(4, 4, 3, 0.98));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+    linear-gradient(180deg, rgba(12, 10, 7, 0.9), rgba(4, 4, 3, 0.98)),
+    url('../assets/visuals/dark-leather-oak-atlas.png') center 12% / 900px auto;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 24px 60px rgba(0,0,0,.3);
 }
 
 /* Right column: stacks identity on top, tiles below */

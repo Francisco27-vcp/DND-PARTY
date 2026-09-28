@@ -21,26 +21,30 @@ service firebase.storage {
 
     match /portraits/profiles/{fileName} {
       allow read: if signedIn();
-      allow write: if signedIn()
+      allow create, update: if signedIn()
         && fileName.matches(request.auth.uid + '_.*')
         && isImageUpload();
+      allow delete: if signedIn() && fileName.matches(request.auth.uid + '_.*');
     }
 
     match /portraits/characters/{fileName} {
       allow read: if signedIn();
-      allow write: if signedIn()
+      allow create, update: if signedIn()
         && fileName.matches(request.auth.uid + '_.*')
         && isImageUpload();
+      allow delete: if signedIn() && fileName.matches(request.auth.uid + '_.*');
     }
 
     match /maps/{fileName} {
       allow read: if signedIn();
-      allow write: if isDM() && isImageUpload();
+      allow create, update: if isDM() && isImageUpload();
+      allow delete: if isDM();
     }
 
     match /tokens/{fileName} {
       allow read: if signedIn();
-      allow write: if isDM() && isImageUpload();
+      allow create, update: if isDM() && isImageUpload();
+      allow delete: if isDM();
     }
 
     match /{allPaths=**} {

@@ -51,17 +51,35 @@ service cloud.firestore {
     }
 
     match /sessions/{id} {
-      // Legacy sessions did not always include visibleToParty. The client hides
-      // documents explicitly marked false; authenticated reads preserve the
-      // behaviour of the existing campaign until those records are migrated.
-      allow read: if signedIn();
+      allow read: if isDM() || (signedIn() && resource.data.visibleToParty == true);
       allow write: if isDM();
     }
 
+    // Session secrets are intentionally stored outside the party-readable
+    // session document. Hiding fields in React is not a security boundary.
+    match /dm_session_notes/{sessionId} {
+      allow read, write: if isDM();
+    }
+
     match /timeline/{id} {
-      // Same backwards-compatibility rule as sessions.
-      allow read: if signedIn();
+      allow read: if isDM() || (signedIn() && resource.data.visibleToParty == true);
       allow write: if isDM();
+    }
+
+    match /live_sessions/{id} {
+      allow read: if signedIn();
+      allow create: if isDM()
+        && request.resource.data.revision == 1;
+      allow update: if isDM()
+        && (
+          (!('revision' in resource.data) && request.resource.data.revision == 1)
+          || request.resource.data.revision == resource.data.revision + 1
+        );
+      allow delete: if false;
+    }
+
+    match /schema_migrations/{id} {
+      allow read, write: if isDM();
     }
 
     match /npcs/{id} {
@@ -80,7 +98,12 @@ service cloud.firestore {
     }
 
     match /maps/{id} {
-      allow read: if isDM() || (signedIn() && resource.data.visibleToParty == true);
+      // Editable maps can contain hidden tokens and DM-only information.
+      allow read, write: if isDM();
+    }
+
+    match /public_maps/{id} {
+      allow read: if signedIn();
       allow write: if isDM();
     }
 
@@ -91,6 +114,15 @@ service cloud.firestore {
     match /combat/{id} {
       allow read: if signedIn();
       allow write: if isDM();
+    }
+
+    match /combat_events/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 500;
+      allow update, delete: if isDM();
     }
 
     match /campaign_meta/{id} {

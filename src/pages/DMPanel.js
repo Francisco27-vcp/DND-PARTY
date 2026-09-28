@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { migrateLegacyCampaignVisibility } from '../lib/migrateLegacyCampaign';
+import AppIcon from '../components/AppIcon';
 
 import TabResumen   from './dm/TabResumen';
 import TabSesiones  from './dm/TabSesiones';
@@ -13,16 +14,18 @@ import TabNotasDM   from './dm/TabNotasDM';
 import TabCombate   from './dm/TabCombate';
 import TabAsistente from './dm/TabAsistente';
 import TabMapa      from './dm/TabMapa';
+import TabMesaEnVivo from './dm/TabMesaEnVivo';
 
 const TABS = [
-  { id: 'resumen',   label: 'Resumen',      icon: '👁' },
-  { id: 'sesiones',  label: 'Sesiones',     icon: '📜' },
-  { id: 'historia',  label: 'Historia',     icon: '🗺' },
-  { id: 'mundo',     label: 'Mundo',        icon: '🌍' },
-  { id: 'mapa',      label: 'Mapas',        icon: '🗾' },
-  { id: 'notas',     label: 'Notas DM',     icon: '🔒' },
-  { id: 'combate',   label: 'Combate',      icon: '⚔' },
-  { id: 'asistente', label: 'Asistente IA', icon: '✦' },
+  { id: 'resumen',   label: 'Resumen',      icon: 'overview' },
+  { id: 'mesa',      label: 'Mesa en vivo', icon: 'radio' },
+  { id: 'sesiones',  label: 'Sesiones',     icon: 'scroll' },
+  { id: 'historia',  label: 'Historia',     icon: 'history' },
+  { id: 'mundo',     label: 'Mundo',        icon: 'globe' },
+  { id: 'mapa',      label: 'Mapas',        icon: 'map' },
+  { id: 'notas',     label: 'Notas DM',     icon: 'lock' },
+  { id: 'combate',   label: 'Combate',      icon: 'swords' },
+  { id: 'asistente', label: 'Asistente IA', icon: 'wand' },
 ];
 
 export default function DMPanel({ user }) {
@@ -58,7 +61,7 @@ export default function DMPanel({ user }) {
   if (!isDM) {
     return (
       <div style={s.deniedWrap} className="fade-in">
-        <div style={s.deniedGem}>🔒</div>
+        <div style={s.deniedGem}><AppIcon name="lock" size={32} /></div>
         <div style={s.deniedTitle}>Acceso restringido</div>
         <p style={s.deniedText}>Esta sección es solo para Dungeon Masters.</p>
         <button style={s.deniedBtn} onClick={() => navigate('/perfil')}>Ir a tu perfil</button>
@@ -67,9 +70,9 @@ export default function DMPanel({ user }) {
   }
 
   return (
-    <div style={s.page} className="fade-in">
+    <div style={s.page} className="app-page dm-command-center fade-in">
       {/* ── HEADER ── */}
-      <header style={s.header}>
+      <header style={s.header} className="dm-command-header">
         <div style={s.headerLeft}>
           <div style={s.eyebrow}>Solo para el ojo que todo ve</div>
           <h1 style={s.title}>PANEL DEL DM</h1>
@@ -82,22 +85,25 @@ export default function DMPanel({ user }) {
       </header>
 
       {/* ── TABS ── */}
-      <nav style={s.tabBar}>
+      <nav style={s.tabBar} className="dm-tab-bar" aria-label="Herramientas del Dungeon Master">
         {TABS.map(tab => (
           <button
             key={tab.id}
             style={{ ...s.tabBtn, ...(activeTab === tab.id ? s.tabActive : {}) }}
+            className="dm-tab-btn"
+            aria-selected={activeTab === tab.id}
             onClick={() => setActiveTab(tab.id)}
           >
-            <span style={s.tabIcon}>{tab.icon}</span>
+            <span style={s.tabIcon}><AppIcon name={tab.icon} size={15} /></span>
             <span>{tab.label}</span>
           </button>
         ))}
       </nav>
 
       {/* ── CONTENT ── */}
-      <div style={s.content}>
+      <div style={s.content} className="dm-content">
         {activeTab === 'resumen'   && <TabResumen   navigate={navigate} user={user} />}
+        {activeTab === 'mesa'      && <TabMesaEnVivo />}
         {activeTab === 'sesiones'  && <TabSesiones  user={user} />}
         {activeTab === 'historia'  && <TabHistoria  user={user} />}
         {activeTab === 'mundo'     && <TabMundo />}

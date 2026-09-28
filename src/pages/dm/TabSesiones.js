@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   collection, query, orderBy, onSnapshot,
-  addDoc, updateDoc, deleteDoc, doc, serverTimestamp,
+  addDoc, updateDoc, deleteDoc, doc, serverTimestamp, setDoc,
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 
@@ -22,6 +22,7 @@ export default function TabSesiones({ user }) {
   const [expanded, setExpanded] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [activeSection, setActiveSection] = useState('party'); // 'party' | 'dm'
+  const [privateNotes, setPrivateNotes] = useState({});
 
   useEffect(() => {
     const q = query(collection(db, 'sessions'), orderBy('createdAt', 'desc'));
@@ -29,6 +30,13 @@ export default function TabSesiones({ user }) {
       setSessions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       setLoading(false);
     }, () => setLoading(false));
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'dm_session_notes'), snap => {
+      setPrivateNotes(Object.fromEntries(snap.docs.map(note => [note.id, note.data()])));
+    });
     return unsub;
   }, []);
 
@@ -45,7 +53,7 @@ export default function TabSesiones({ user }) {
       xpEarned: sess.xpEarned || sess.xp || 0,
       summary: sess.summary || '',
       highlights: sess.highlights || '',
-      dmNotes: sess.dmNotes || '',
+      dmNotes: privateNotes[sess.id]?.text || sess.dmNotes || '',
       visibleToParty: sess.visibleToParty ?? true,
     });
     setEditing(sess.id);
@@ -60,18 +68,26 @@ export default function TabSesiones({ user }) {
     if (!form.title.trim()) return;
     setSaving(true);
     try {
+      const { dmNotes, ...publicForm } = form;
       const data = {
-        ...form,
+        ...publicForm,
         xpEarned: parseInt(form.xpEarned) || 0,
         xp: parseInt(form.xpEarned) || 0,
         author: user.email,
         updatedAt: serverTimestamp(),
       };
+      let sessionId = editing;
       if (editing) {
         await updateDoc(doc(db, 'sessions', editing), data);
       } else {
-        await addDoc(collection(db, 'sessions'), { ...data, createdAt: serverTimestamp() });
+        const created = await addDoc(collection(db, 'sessions'), { ...data, createdAt: serverTimestamp() });
+        sessionId = created.id;
       }
+      await setDoc(doc(db, 'dm_session_notes', sessionId), {
+        text: dmNotes.trim(),
+        updatedAt: serverTimestamp(),
+        authorUid: user.uid,
+      }, { merge: true });
       closeForm();
     } catch (err) { console.error(err); }
     setSaving(false);
@@ -85,7 +101,10 @@ export default function TabSesiones({ user }) {
   };
 
   const deleteSess = async (id) => {
-    await deleteDoc(doc(db, 'sessions', id));
+    await Promise.all([
+      deleteDoc(doc(db, 'sessions', id)),
+      deleteDoc(doc(db, 'dm_session_notes', id)),
+    ]);
     setDeleteConfirm(null);
     setExpanded(null);
   };
@@ -94,6 +113,10 @@ export default function TabSesiones({ user }) {
 
   const publishedCount = sessions.filter(s => s.visibleToParty !== false).length;
   const draftCount = sessions.filter(s => s.visibleToParty === false).length;
+  const hydratedSessions = sessions.map(session => ({
+    ...session,
+    dmNotes: privateNotes[session.id]?.text || session.dmNotes || '',
+  }));
 
   return (
     <div>
@@ -186,7 +209,7 @@ export default function TabSesiones({ user }) {
         <div style={s.empty}>No hay sesiones todavía. Creá la primera.</div>
       ) : (
         <div style={s.list}>
-          {sessions.map((sess, idx) => {
+          {hydratedSessions.map((sess, idx) => {
             const isExpanded = expanded === sess.id;
             const isPublished = sess.visibleToParty !== false;
             const sessionNum = sessions.length - idx;

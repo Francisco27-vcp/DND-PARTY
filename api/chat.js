@@ -24,7 +24,7 @@ const { requireDM } = require('./firebaseAuth');
 const { validateInput } = require('../src/lib/chatValidation.cjs');
 const rateLimits = new Map();
 const RATE_WINDOW_MS = 60_000;
-const RATE_LIMIT = 12;
+const RATE_LIMIT = Math.max(1, Number(process.env.AI_REQUESTS_PER_MINUTE || 6));
 
 function consumeRateLimit(uid) {
   const now = Date.now();
@@ -126,6 +126,12 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Paid AI is disabled by default. Enabling it is an explicit deployment
+  // decision, independent from Firebase or the rest of the application.
+  if (process.env.ENABLE_PAID_AI !== 'true') {
+    return res.status(503).json({ error: 'El asistente IA está desactivado para evitar consumos.' });
+  }
+
   let caller;
   try {
     caller = await requireDM(req);
@@ -149,6 +155,7 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: error.message });
   }
   const { messages, systemPrompt, skipRAG, maxTokens } = input;
+  const deploymentTokenCap = Math.max(256, Number(process.env.AI_MAX_OUTPUT_TOKENS || 1024));
 
   // Use the last user message for RAG retrieval.
   // Skip RAG when the caller doesn't need D&D manual context (e.g. generate-session mode).
@@ -189,7 +196,7 @@ Rules: ONLY data explicitly mentioned. Max 2 npcs. Max 3 timeline events. Short 
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: maxTokens,
+        max_tokens: Math.min(maxTokens, deploymentTokenCap),
         stream: true,
         system: finalSystemPrompt,
         messages,

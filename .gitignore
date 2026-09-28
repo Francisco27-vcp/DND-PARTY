@@ -3,3 +3,8 @@ build/
 .env.local
 .env
 .DS_Store
+.tools/
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log

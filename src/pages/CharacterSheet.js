@@ -1,7 +1,9 @@
 // src/pages/CharacterSheet.js
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import {
+  addDoc, collection, doc, getDoc, onSnapshot, serverTimestamp, updateDoc,
+} from 'firebase/firestore';
 import { uploadImage } from '../lib/uploadImage';
 import { db } from '../lib/firebase';
 import ALL_ITEMS from '../data/items.json';
@@ -291,16 +293,15 @@ export default function CharacterSheet({ user }) {
   // ── EFFECTS ──────────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    const load = async () => {
-      const snap = await getDoc(doc(db, 'characters', id));
+    const unsub = onSnapshot(doc(db, 'characters', id), snap => {
       if (snap.exists()) {
         const data = { id: snap.id, ...snap.data() };
         setChar(data);
-        setDraft(data);
+        if (!editing) setDraft(data);
       }
-    };
-    load();
-  }, [id]);
+    }, error => console.error('Error sincronizando personaje:', error));
+    return unsub;
+  }, [id, editing]);
 
   useEffect(() => {
     const loadRole = async () => {
@@ -569,7 +570,7 @@ export default function CharacterSheet({ user }) {
   // ── RENDER ────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ ...s.page, background: 'linear-gradient(180deg, #0d1a0d 0%, #050504 300px) var(--bg-main)', fontFamily: 'var(--font-ui)' }} className="fade-in">
+    <div style={{ ...s.page, background: 'linear-gradient(180deg, rgba(13,26,13,.9) 0%, rgba(5,5,4,.94) 300px)', fontFamily: 'var(--font-ui)' }} className="app-page character-page fade-in">
 
       {/* ── LEVEL UP MODAL ── */}
       {showLevelUp && (
@@ -769,7 +770,7 @@ export default function CharacterSheet({ user }) {
           draft={draft} prof={prof} accent={accent1} accentGlow={accentGlow}
           spellSlots={spellSlots} preparedSpells={preparedSpells}
           inventoryItems={inventoryItems} customItemsData={customItemsData}
-          isMobile={isMobile} charId={id}
+          isMobile={isMobile} charId={id} user={user}
         />
       )}
 
@@ -1354,7 +1355,7 @@ function LearnMode({ draft, prof, accent, skillVal, saveVal, fmtMod, isMobile })
 }
 
 // ── Play mode (Modo Jugar) ────────────────────────────────────────────────────
-function PlayMode({ draft, prof, accent, accentGlow, spellSlots, preparedSpells, inventoryItems, customItemsData, isMobile, charId }) {
+function PlayMode({ draft, prof, accent, accentGlow, spellSlots, preparedSpells, inventoryItems, customItemsData, isMobile, charId, user }) {
   const charClass = normalizeClass(draft.class);
   const desMod    = Math.floor(((draft.stats?.des || 10) - 10) / 2);
   const fueMod    = Math.floor(((draft.stats?.fue || 10) - 10) / 2);
@@ -1374,6 +1375,11 @@ function PlayMode({ draft, prof, accent, accentGlow, spellSlots, preparedSpells,
   const [addingCombatant, setAddingCombatant] = useState(false);
   const [newCbt, setNewCbt]       = useState({ name: '', init: '', isEnemy: false });
   const [expandLog, setExpandLog] = useState(false);
+  const [globalCombat, setGlobalCombat] = useState({ active: false, participants: [], currentIndex: 0, round: 1 });
+
+  useEffect(() => onSnapshot(doc(db, 'combat', 'current'), snap => {
+    if (snap.exists()) setGlobalCombat({ active: false, participants: [], currentIndex: 0, round: 1, ...snap.data() });
+  }), []);
 
   const customMap = Object.fromEntries((customItemsData || []).map(i => [i.id, i]));
   const getItem   = id => ITEMS_MAP[id] || customMap[id] || null;
@@ -1401,6 +1407,17 @@ function PlayMode({ draft, prof, accent, accentGlow, spellSlots, preparedSpells,
   const addLog = (text, color = 'var(--text-soft)') => {
     const entry = { id: Date.now(), text, color, time: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) };
     setCombatLog(prev => { const next = [entry, ...prev].slice(0, 40); localStorage.setItem(LOG_KEY, JSON.stringify(next)); return next; });
+    if (globalCombat.active) {
+      addDoc(collection(db, 'combat_events'), {
+        text,
+        color,
+        characterId: charId,
+        characterName: draft.name || 'Personaje',
+        encounterId: globalCombat.encounterId || '',
+        authorUid: user.uid,
+        createdAt: serverTimestamp(),
+      }).catch(error => console.error('No se pudo compartir la acción:', error));
+    }
   };
 
   const updateRes = (key) => {
@@ -1466,6 +1483,17 @@ function PlayMode({ draft, prof, accent, accentGlow, spellSlots, preparedSpells,
     setAddingCombatant(false);
   };
 
+  const initiativeList = globalCombat.active
+    ? [...(globalCombat.participants || [])]
+        .sort((a, b) => (b.initiative - a.initiative) || (a.addedAt - b.addedAt))
+        .map((participant, index) => ({
+          ...participant,
+          init: participant.initiative,
+          isEnemy: participant.sourceType !== 'character',
+          isCurrent: index === (globalCombat.currentIndex || 0),
+        }))
+    : initiative;
+
   const ACTIONS = [
     { id: 'ataque',   icon: ICONS.sword,     label: 'Ataque',          desc: 'Realiza un ataque con tu arma' },
     { id: 'conjuro',  icon: ICONS.spell,      label: 'Lanzar Conjuro',  desc: 'Usa un conjuro preparado' },
@@ -1530,10 +1558,10 @@ function PlayMode({ draft, prof, accent, accentGlow, spellSlots, preparedSpells,
             <GameIcon author={ICONS.initiative.author} name={ICONS.initiative.name} size={16} color="c7a242" />
             <h2 className="cs-card-title">Iniciativa</h2>
             <div className="cs-card-divider" />
-            <button onClick={() => setAddingCombatant(v => !v)}
+            {!globalCombat.active && <button onClick={() => setAddingCombatant(v => !v)}
               style={{ background: 'transparent', border: '1px solid rgba(234,199,94,0.25)', color: 'var(--gold-2)', fontFamily: 'var(--font-ui)', fontSize: '9px', padding: '3px 8px', cursor: 'pointer', borderRadius: '6px', whiteSpace: 'nowrap' }}>
               + Add
-            </button>
+            </button>}
           </div>
 
           {addingCombatant && (
@@ -1564,23 +1592,24 @@ function PlayMode({ draft, prof, accent, accentGlow, spellSlots, preparedSpells,
             </div>
           </div>
 
-          {initiative.length === 0 && !addingCombatant && (
+          {globalCombat.active && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', color: 'var(--green-1)', textAlign: 'center', padding: '5px', marginBottom: '5px' }}>● Combate del DM · Ronda {globalCombat.round || 1}</div>}
+          {initiativeList.length === 0 && !addingCombatant && (
             <div style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--text-dim)', fontStyle: 'italic', textAlign: 'center', padding: '16px 8px', lineHeight: '1.6' }}>
               Sin combatientes.<br /><span style={{ fontSize: '9px' }}>Presioná + Add para agregar.</span>
             </div>
           )}
 
-          {initiative.filter(c => !c.isEnemy).length > 0 && (
+          {initiativeList.filter(c => !c.isEnemy).length > 0 && (
             <div style={{ fontFamily: 'var(--font-ui)', fontSize: '8px', letterSpacing: '1.5px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '4px', marginTop: '8px' }}>Aliados</div>
           )}
-          {initiative.filter(c => !c.isEnemy).map(c => (
-            <CombatantRow key={c.id} c={c} isEnemy={false} onRemove={() => saveInitiative(initiative.filter(x => x.id !== c.id))} />
+          {initiativeList.filter(c => !c.isEnemy).map(c => (
+            <CombatantRow key={c.id} c={c} isEnemy={false} onRemove={globalCombat.active ? undefined : () => saveInitiative(initiative.filter(x => x.id !== c.id))} />
           ))}
-          {initiative.filter(c => c.isEnemy).length > 0 && (
+          {initiativeList.filter(c => c.isEnemy).length > 0 && (
             <div style={{ fontFamily: 'var(--font-ui)', fontSize: '8px', letterSpacing: '1.5px', color: 'var(--red-1)', textTransform: 'uppercase', marginBottom: '4px', marginTop: '8px', borderTop: '1px solid rgba(220,60,60,0.2)', paddingTop: '6px' }}>Enemigos</div>
           )}
-          {initiative.filter(c => c.isEnemy).map(c => (
-            <CombatantRow key={c.id} c={c} isEnemy={true} onRemove={() => saveInitiative(initiative.filter(x => x.id !== c.id))} />
+          {initiativeList.filter(c => c.isEnemy).map(c => (
+            <CombatantRow key={c.id} c={c} isEnemy={true} onRemove={globalCombat.active ? undefined : () => saveInitiative(initiative.filter(x => x.id !== c.id))} />
           ))}
         </div>
 
@@ -1777,10 +1806,10 @@ function PlayMode({ draft, prof, accent, accentGlow, spellSlots, preparedSpells,
 // ── Combatant row ─────────────────────────────────────────────────────────────
 function CombatantRow({ c, isEnemy, onRemove }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 6px', borderRadius: '6px', marginBottom: '2px', background: isEnemy ? 'rgba(220,60,60,0.06)' : 'rgba(0,0,0,0.18)' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 6px', borderRadius: '6px', marginBottom: '2px', background: c.isCurrent ? 'rgba(234,199,94,0.14)' : isEnemy ? 'rgba(220,60,60,0.06)' : 'rgba(0,0,0,0.18)', border: c.isCurrent ? '1px solid rgba(234,199,94,0.45)' : '1px solid transparent' }}>
       <span style={{ fontFamily: 'var(--font-title)', fontSize: '11px', color: isEnemy ? 'var(--red-1)' : 'var(--gold-2)', minWidth: '22px', textAlign: 'center', fontWeight: '700' }}>{c.init}</span>
       <span style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: isEnemy ? 'var(--red-1)' : 'var(--text-soft)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
-      <button onClick={onRemove} style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: '11px', padding: '0 2px', lineHeight: 1 }}>✕</button>
+      {onRemove && <button onClick={onRemove} style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: '11px', padding: '0 2px', lineHeight: 1 }}>✕</button>}
     </div>
   );
 }

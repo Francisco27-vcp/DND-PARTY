@@ -14,6 +14,12 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+html {
+  color-scheme: dark;
+  background: var(--bg-deep);
+  scroll-behavior: smooth;
+}
+
 body {
   background:
     radial-gradient(circle at 14% 6%, rgba(120, 218, 96, 0.14), transparent 32rem),
@@ -24,7 +30,13 @@ body {
   font-family: var(--font-ui);
   min-height: 100vh;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+
+#root { position: relative; min-height: 100vh; isolation: isolate; }
+
+::selection { color: #151006; background: var(--gold-1); }
 
 body::before {
   content: "";
@@ -69,6 +81,11 @@ select:focus {
   outline: none;
 }
 
+:where(button, a, input, textarea, select):focus-visible {
+  outline: 2px solid var(--green-1);
+  outline-offset: 3px;
+}
+
 /* ── Fantasy Card — blueprint corner ornaments ── */
 .fantasy-card {
   position: relative;
@@ -104,7 +121,7 @@ select:focus {
 }
 
 /* ── Utility ── */
-.cinzel { font-family: 'Cinzel', serif; }
+.cinzel { font-family: var(--font-title); }
 .gold   { color: var(--gold-1); }
 .dim    { color: var(--text-muted); }
 
@@ -177,6 +194,16 @@ button.quick-action-btn:hover {
 .nav-btn:hover {
   color: var(--gold-1) !important;
 }
+.app-topbar::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(166,238,129,.3), rgba(247,221,120,.45), transparent);
+  pointer-events: none;
+}
+.app-brand { transition: transform 180ms ease, filter 180ms ease; }
+.app-brand:hover { transform: translateY(-1px); filter: brightness(1.12); }
 .nav-btn-active .nav-active-line {
   position: absolute;
   left: 0.55rem; right: 0.55rem; bottom: 0;

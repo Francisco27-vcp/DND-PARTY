@@ -42,7 +42,7 @@ export default function Notes({ user }) {
   };
 
   return (
-    <div style={s.page}>
+    <div style={s.page} className="app-page notes-page">
       <div style={s.hero}>
         <div style={s.heroLabel}>Party Chat</div>
         <h1 style={s.heroTitle}>NOTAS</h1>

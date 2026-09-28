@@ -1,0 +1,192 @@
+.live-map-stage {
+  position: relative;
+  width: min(100%, 1600px);
+  max-height: calc(100vh - 112px);
+  margin: auto;
+  overflow: hidden;
+  background: #020403;
+  border: 1px solid rgba(247, 221, 120, 0.2);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.72);
+  line-height: 0;
+  user-select: none;
+}
+
+.pixi-map-stage {
+  position: relative;
+  width: min(100%, 1600px);
+  height: min(72vh, 860px);
+  min-height: 440px;
+  margin: auto;
+  overflow: hidden;
+  border: 1px solid rgba(247, 221, 120, 0.24);
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(38, 65, 39, .22), transparent 55%),
+    #020403;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, .72), inset 0 0 60px rgba(0, 0, 0, .3);
+}
+.pixi-map-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 80px rgba(0, 0, 0, .46);
+}
+.pixi-map-stage--compact { height: min(58vh, 650px); min-height: 390px; }
+.pixi-map-mount, .pixi-map-canvas { width: 100%; height: 100%; display: block; }
+.pixi-map-canvas { cursor: grab; touch-action: none; }
+.pixi-map-canvas.is-dragging { cursor: grabbing; }
+.pixi-map-loading,
+.pixi-map-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  text-align: center;
+  background: radial-gradient(circle, rgba(18, 29, 19, .82), rgba(2, 4, 3, .97));
+  color: var(--gold-dim);
+  font: 700 9px/1.4 Cinzel, serif;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.pixi-map-loading span { color: var(--gold-1); font-size: 26px; animation: pixi-pulse 1.5s ease-in-out infinite; }
+.pixi-map-fallback img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: .72; }
+.pixi-map-fallback span { position: relative; padding: 10px 14px; background: rgba(0, 0, 0, .82); }
+.pixi-map-tools {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  z-index: 5;
+  display: grid;
+  gap: 6px;
+}
+.pixi-map-tools button {
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(247, 221, 120, .28);
+  border-radius: 8px;
+  background: rgba(3, 6, 4, .82);
+  color: var(--gold-1);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  font: 500 18px/1 var(--font-ui);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .35);
+}
+.pixi-map-tools button:hover { border-color: var(--green-1); color: var(--green-1); transform: translateY(-1px); }
+.pixi-engine-badge {
+  position: absolute;
+  z-index: 5;
+  left: 14px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border: 1px solid rgba(166, 238, 129, .2);
+  border-radius: 999px;
+  background: rgba(2, 5, 3, .75);
+  color: rgba(212, 201, 167, .66);
+  font: 700 7px/1 var(--font-ui);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+.pixi-engine-badge i { width: 5px; height: 5px; border-radius: 50%; background: var(--green-2); box-shadow: 0 0 9px var(--green-1); }
+@keyframes pixi-pulse { 50% { opacity: .35; transform: scale(.9); } }
+
+.live-map-stage--compact { max-height: 58vh; }
+.live-map-image { display: block; width: 100%; height: auto; max-height: inherit; object-fit: contain; }
+.live-map-fog-cell { position: absolute; z-index: 5; background: #020303; pointer-events: none; }
+
+.live-map-token {
+  position: absolute;
+  z-index: 10;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.9));
+}
+
+.live-map-token--hidden { opacity: 0.42; outline: 1px dashed currentColor; }
+.live-map-token-art { width: 100%; aspect-ratio: 1; display: grid; place-items: center; }
+.live-map-token-art img { width: 100%; height: 100%; border-radius: 50%; border: 2px solid currentColor; object-fit: cover; }
+.live-map-token-label {
+  margin-top: 3px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: rgba(2, 3, 3, 0.88);
+  color: inherit;
+  font: 700 9px/1.1 Cinzel, serif;
+  white-space: nowrap;
+}
+
+.live-map-empty {
+  min-height: 55vh;
+  display: grid;
+  place-content: center;
+  gap: 14px;
+  text-align: center;
+  color: var(--gold-dim);
+  font: 700 12px/1.4 Cinzel, serif;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+.live-map-empty span { color: var(--gold-bright); font-size: 34px; }
+
+.projector-page {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 50% 20%, #10170f 0%, #030504 58%, #000 100%);
+  color: var(--parchment);
+  overflow: hidden;
+}
+
+.projector-header {
+  min-height: 72px;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid rgba(247, 221, 120, 0.14);
+  background: rgba(1, 3, 2, 0.9);
+}
+.projector-kicker { color: var(--gold-dim); font: 600 8px Cinzel, serif; letter-spacing: 3px; text-transform: uppercase; }
+.projector-title { margin: 4px 0 0; color: var(--gold-bright); font: 800 clamp(16px, 2.5vw, 30px) Cinzel, serif; letter-spacing: 2px; }
+.projector-message { color: var(--parchment-dim); font: italic clamp(14px, 1.5vw, 20px) Crimson Pro, serif; text-align: right; }
+.projector-map { flex: 1; min-height: 0; display: grid; place-items: center; padding: 14px; }
+
+.projector-combat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 54px;
+  padding: 8px 22px;
+  border-top: 1px solid rgba(239, 115, 104, 0.25);
+  background: rgba(36, 7, 7, 0.88);
+  overflow-x: auto;
+}
+.projector-round { color: #ef7368; font: 700 10px Cinzel, serif; letter-spacing: 2px; white-space: nowrap; }
+.projector-turn { padding: 6px 10px; border: 1px solid rgba(247, 221, 120, 0.15); color: var(--gold-dim); font: 600 10px Cinzel, serif; white-space: nowrap; }
+.projector-turn--active { border-color: var(--gold); color: var(--gold-bright); box-shadow: 0 0 16px rgba(247, 221, 120, 0.14); }
+
+@media (max-width: 700px) {
+  .live-control-layout { grid-template-columns: 1fr !important; }
+  .projector-header { min-height: 58px; padding: 8px 12px; }
+  .projector-message { display: none; }
+  .projector-map { padding: 4px; }
+  .live-map-token-label { font-size: 7px; }
+  .pixi-map-stage, .pixi-map-stage--compact { min-height: 330px; height: 52vh; }
+  .pixi-map-tools button { width: 34px; height: 34px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .projector-page *, .live-map-stage * { animation: none !important; transition: none !important; }
+}

@@ -1,11 +1,14 @@
 // src/App.js
 import React, { lazy, Suspense, useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db } from './lib/firebase';
 
 import Nav from './components/Nav';
+import ErrorBoundary from './components/ErrorBoundary';
+import AppIcon from './components/AppIcon';
+import './styles/AppVisual.css';
 
 const Login = lazy(() => import('./pages/Login'));
 const Home = lazy(() => import('./pages/Home'));
@@ -16,6 +19,7 @@ const Notes = lazy(() => import('./pages/Notes'));
 const Manual = lazy(() => import('./pages/Manual'));
 const Profile = lazy(() => import('./pages/Profile'));
 const DMPanel = lazy(() => import('./pages/DMPanel'));
+const Projector = lazy(() => import('./pages/Projector'));
 
 async function ensureUserProfile(user) {
   const profileRef = doc(db, 'profiles', user.uid);
@@ -48,9 +52,10 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      {user && <Nav user={user} />}
-      <Suspense fallback={<Loader />}>
-        <Routes>
+      {user && <ConditionalNav user={user} />}
+      <ErrorBoundary>
+        <Suspense fallback={<Loader />}>
+          <Routes>
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
           <Route path="/" element={user ? <Home user={user} /> : <Navigate to="/login" />} />
           <Route path="/personaje/:id" element={user ? <CharacterSheet user={user} /> : <Navigate to="/login" />} />
@@ -60,16 +65,24 @@ export default function App() {
           <Route path="/manual" element={user ? <Manual /> : <Navigate to="/login" />} />
           <Route path="/perfil" element={user ? <Profile user={user} /> : <Navigate to="/login" />} />
           <Route path="/dm" element={user ? <DMPanel user={user} /> : <Navigate to="/login" />} />
-        </Routes>
-      </Suspense>
+          <Route path="/proyector" element={user ? <Projector /> : <Navigate to="/login" />} />
+          <Route path="*" element={<Navigate to={user ? '/' : '/login'} replace />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
     </BrowserRouter>
   );
+}
+
+function ConditionalNav({ user }) {
+  const location = useLocation();
+  return location.pathname === '/proyector' ? null : <Nav user={user} />;
 }
 
 function Loader() {
   return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh', flexDirection:'column', gap:'16px' }}>
-      <div style={{ fontFamily:'Cinzel,serif', fontSize:'28px', fontWeight:'900', color:'var(--gold-bright)', letterSpacing:'4px', textShadow:'0 0 30px rgba(227,200,120,0.5)' }}>⚔</div>
+      <div style={{ color:'var(--gold-bright)', filter:'drop-shadow(0 0 12px rgba(227,200,120,0.5))' }}><AppIcon name="swords" size={30} strokeWidth={1.35} /></div>
       <div style={{ fontFamily:'Cinzel,serif', fontSize:'10px', letterSpacing:'4px', color:'var(--gold-dim)', textTransform:'uppercase' }}>Cargando campaña...</div>
     </div>
   );

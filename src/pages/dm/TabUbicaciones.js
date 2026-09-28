@@ -85,7 +85,7 @@ export default function TabUbicaciones() {
               {filtered.map(l => {
                 const st = statusInfo(l.status);
                 return (
-                  <div key={l.id} style={{ ...s.card, borderTopColor: st.color }} onClick={() => openDetail(l)}>
+                  <div key={l.id} className="location-gallery-card" data-location-type={(l.type || 'otro').toLowerCase()} style={{ ...s.card, borderTopColor: st.color }} onClick={() => openDetail(l)}>
                     <div style={s.cardTop}>
                       <span style={s.locName}>{l.name}</span>
                       {l.visibleToPlayers && <span style={s.visiBadge}>Visible</span>}

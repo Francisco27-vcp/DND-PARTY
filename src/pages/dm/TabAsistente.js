@@ -14,7 +14,7 @@ import './TabAsistente.css';
 function buildChatPrompt(characters, sessions) {
   const charList = characters.length
     ? characters.map(c =>
-        `- ${c.name} (${c.race} ${c.class}${c.subclass ? `/${c.subclass}` : ''}, Lv${c.level}): PG ${c.hp ?? '?'}/${c.hpMax ?? '?'}, CA ${c.ac ?? '?'}, XP ${(c.xp || 0).toLocaleString()}. Jugador: ${c.player || c.ownerEmail || 'desconocido'}. Condiciones: ${c.conditions || 'ninguna'}.`
+        `- ${c.name} (${c.race} ${c.class}${c.subclass ? `/${c.subclass}` : ''}, Lv${c.level}): PG ${c.hp ?? '?'}/${c.hpMax ?? '?'}, CA ${c.ac ?? '?'}, XP ${(c.xp || 0).toLocaleString()}. Condiciones: ${c.conditions || 'ninguna'}.`
       ).join('\n')
     : 'Sin personajes registrados.';
 
@@ -91,6 +91,7 @@ export default function TabAsistente({ user }) {
   const [characters, setCharacters] = useState([]);
   const [sessions, setSessions]     = useState([]);
   const [mode, setMode]             = useState('chat'); // 'chat' | 'generar'
+  const [includeCampaignContext, setIncludeCampaignContext] = useState(false);
 
   // Chat state — scoped to this browser session to avoid retaining DM secrets.
   const [aiMessages, setAiMessages] = useState(() => {
@@ -153,7 +154,10 @@ export default function TabAsistente({ user }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: apiMessages,
-          systemPrompt: buildChatPrompt(characters, sessions),
+          systemPrompt: buildChatPrompt(
+            includeCampaignContext ? characters : [],
+            includeCampaignContext ? sessions : [],
+          ),
         }),
       });
 
@@ -414,6 +418,10 @@ export default function TabAsistente({ user }) {
             })}
           </div>
           <form onSubmit={e => { e.preventDefault(); sendToAI(aiInput); }} style={s.footer}>
+            <label style={s.contextToggle} title="Envía nombres y estado de personajes y resúmenes recientes al proveedor de IA">
+              <input type="checkbox" checked={includeCampaignContext} onChange={e => setIncludeCampaignContext(e.target.checked)} />
+              Contexto de campaña
+            </label>
             <input
               value={aiInput} onChange={e => setAiInput(e.target.value)}
               className="ta-input" style={s.input}
@@ -628,6 +636,7 @@ const s = {
   thinking: { display: 'flex', alignItems: 'center' },
   thinkingText: { fontFamily: "'Crimson Pro', serif", fontStyle: 'italic', fontSize: '14px', color: '#a99d80' },
   footer: { display: 'flex', gap: '10px', alignItems: 'stretch', borderTop: '1px solid #332a1c', padding: '14px 18px', background: '#0b0906' },
+  contextToggle: { display: 'flex', alignItems: 'center', gap: '6px', color: '#a99d80', fontFamily: "'Crimson Pro', serif", fontSize: '12px', whiteSpace: 'nowrap' },
   input: { flex: 1, background: '#15110a', border: '1px solid #332a1c', borderRadius: '4px', color: '#e9ddc2', fontFamily: "'Crimson Pro', serif", fontSize: '14px', padding: '10px 14px', outline: 'none' },
   sendBtn: { background: 'linear-gradient(135deg, #e3c878, #c9a449)', border: 'none', borderRadius: '4px', color: '#1a1206', fontFamily: "'Cinzel', serif", fontSize: '11.5px', fontWeight: 600, letterSpacing: '0.1em', padding: '10px 20px', cursor: 'pointer', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' },
   sendIcon: { fontSize: '14px', lineHeight: 1 },

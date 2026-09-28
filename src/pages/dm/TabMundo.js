@@ -430,7 +430,7 @@ function UbicacionesSection() {
       )}
       <div style={s.itemList}>
         {items.map(item => (
-          <div key={item.id} style={{ ...s.itemRow, borderLeft: item.visibleToPlayers ? '3px solid #65c260' : '3px solid transparent' }}>
+          <div key={item.id} className="dm-location-record" data-location-type={(item.type || 'otro').toLowerCase()} style={{ ...s.itemRow, borderLeft: item.visibleToPlayers ? '3px solid #65c260' : '3px solid transparent' }}>
             <div style={{ flex: 1 }}>
               <div style={s.itemName}>
                 {item.name} {item.type && <span style={s.itemType}>{item.type}</span>}

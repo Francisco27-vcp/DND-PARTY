@@ -77,7 +77,25 @@ const DEFAULT_FILTER = COLOR_FILTERS['c7a242'];
 export default function GameIcon({ author, name, size = 24, color = 'c7a242', style = {} }) {
   const src = ICON_MAP[`${author}/${name}`];
   if (!src) return <span style={{ width: size, height: size, display: 'inline-block' }} />;
-  const filter = COLOR_FILTERS[color] || DEFAULT_FILTER;
+  const normalizedColor = String(color || '').replace(/^#/, '').toLowerCase();
+  const isHexColor = /^[0-9a-f]{6}$/.test(normalizedColor);
+  if (isHexColor && !COLOR_FILTERS[normalizedColor]) {
+    return (
+      <span
+        role="img"
+        aria-label={name}
+        style={{
+          display: 'inline-block', verticalAlign: 'middle', flexShrink: 0,
+          width: size, height: size, backgroundColor: `#${normalizedColor}`,
+          maskImage: `url("${src}")`, WebkitMaskImage: `url("${src}")`,
+          maskRepeat: 'no-repeat', WebkitMaskRepeat: 'no-repeat',
+          maskPosition: 'center', WebkitMaskPosition: 'center',
+          maskSize: 'contain', WebkitMaskSize: 'contain', ...style,
+        }}
+      />
+    );
+  }
+  const filter = COLOR_FILTERS[normalizedColor] || DEFAULT_FILTER;
   return (
     <img
       src={src}
