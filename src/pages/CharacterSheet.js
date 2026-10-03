@@ -8,6 +8,7 @@ import { uploadImage } from '../lib/uploadImage';
 import { db } from '../lib/firebase';
 import ALL_ITEMS from '../data/items.json';
 import ALL_SPELLS from '../data/spells.json';
+import ALL_FEATS from '../data/feats.json';
 import GameIcon from '../components/GameIcon';
 import ICONS from '../data/gameicons';
 import '../styles/CharacterSheet.css';
@@ -118,6 +119,19 @@ function normalizeClass(raw) {
   return null; // Guerrero, Bárbaro, Monje, Pícaro, Brujo, etc. — sin conjuros nativos
 }
 
+// Igual que normalizeClass pero también reconoce clases sin magia nativa (para dotes, dados de golpe, etc.)
+function normalizeClassFull(raw) {
+  const known = normalizeClass(raw);
+  if (known) return known;
+  const cls = (raw || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  if (cls.includes('guerrero') || cls.includes('fighter'))  return 'guerrero';
+  if (cls.includes('barbaro') || cls.includes('barbarian')) return 'barbaro';
+  if (cls.includes('monje') || cls.includes('monk'))        return 'monje';
+  if (cls.includes('picaro') || cls.includes('rogue'))      return 'picaro';
+  if (cls.includes('brujo') || cls.includes('warlock'))     return 'brujo';
+  return null;
+}
+
 const HALF_CASTER_SLOTS = {
   1:  { 1: 2 },  2:  { 1: 2 },  3:  { 1: 3 },  4:  { 1: 3 },
   5:  { 1: 4, 2: 2 },  6:  { 1: 4, 2: 2 },  7:  { 1: 4, 2: 3 },  8:  { 1: 4, 2: 3 },
@@ -188,6 +202,90 @@ const XP_THRESHOLDS = { 1:0, 2:300, 3:900, 4:2700, 5:6500, 6:14000, 7:23000, 8:3
 const CLASS_HIT_DIE = { paladin:10, mago:6, hechicero:6, bardo:8, clerigo:8, druida:8, explorador:10, guerrero:10, barbaro:12, monje:8, picaro:8, brujo:8 };
 
 const CLASS_PRIMARY_STAT = { paladin:'car', mago:'int', hechicero:'car', bardo:'car', clerigo:'sab', druida:'sab', explorador:'des', guerrero:'fue', barbaro:'fue', monje:'sab', picaro:'des', brujo:'car' };
+
+// ── RECURSOS DE CLASE (descanso corto/largo) ─────────────────────────────────
+// Tabla aproximada por clase/nivel de los recursos más comunes (Manual del Jugador 2024).
+function computeClassResourceDefs(charClass, level, stats) {
+  const key = normalizeClassFull(charClass);
+  const lvl = level || 1;
+  const carMod = Math.floor(((stats?.car || 10) - 10) / 2);
+  const defs = [];
+  if (key === 'bardo') {
+    defs.push({ id: 'inspiracion_bardo', nombre: 'Inspiración de Bardo', max: Math.max(1, carMod), recupera: lvl >= 5 ? 'corto' : 'largo' });
+  }
+  if (key === 'clerigo' && lvl >= 2) {
+    defs.push({ id: 'canal_divino', nombre: 'Canal Divino', max: lvl >= 6 ? 2 : 1, recupera: 'corto' });
+  }
+  if (key === 'paladin') {
+    defs.push({ id: 'imposicion_de_manos', nombre: 'Imposición de Manos (PG)', max: 5 * lvl, recupera: 'largo' });
+    if (lvl >= 3) defs.push({ id: 'canal_divino_paladin', nombre: 'Canal Divino', max: lvl >= 11 ? 2 : 1, recupera: 'corto' });
+  }
+  if (key === 'hechicero' && lvl >= 2) {
+    defs.push({ id: 'puntos_hechiceria', nombre: 'Puntos de Hechicería', max: lvl, recupera: 'largo' });
+  }
+  if (key === 'druida' && lvl >= 2) {
+    defs.push({ id: 'forma_salvaje', nombre: 'Forma Salvaje', max: profBonus(lvl), recupera: 'largo' });
+  }
+  if (key === 'guerrero' && lvl >= 2) {
+    defs.push({ id: 'oleada_accion', nombre: 'Oleada de Acción', max: lvl >= 17 ? 2 : 1, recupera: 'corto' });
+  }
+  if (key === 'mago') {
+    defs.push({ id: 'recuperacion_arcana', nombre: 'Recuperación Arcana', max: 1, recupera: 'largo' });
+  }
+  if (key === 'monje' && lvl >= 2) {
+    defs.push({ id: 'puntos_ki', nombre: 'Puntos de Ki', max: lvl, recupera: 'corto' });
+  }
+  if (key === 'barbaro') {
+    defs.push({ id: 'rabia', nombre: 'Rabia', max: lvl < 3 ? 2 : lvl < 6 ? 3 : lvl < 12 ? 4 : lvl < 17 ? 5 : 6, recupera: 'largo' });
+  }
+  return defs;
+}
+
+function mergeClassResources(existing, defs) {
+  return defs.map(def => {
+    const prev = (existing || []).find(e => e.id === def.id);
+    return { id: def.id, nombre: def.nombre, max: def.max, recupera: def.recupera, usados: Math.max(0, Math.min(prev?.usados || 0, def.max)) };
+  });
+}
+
+// ── DOTES ─────────────────────────────────────────────────────────────────────
+const FEATS_MAP = Object.fromEntries(ALL_FEATS.map(f => [f.id, f]));
+
+function checkFeatRequisito(feat, draft, levelAtPick) {
+  const req = feat.requisitoCheck || {};
+  const reasons = [];
+  if (req.nivel && (levelAtPick || 1) < req.nivel) reasons.push(`nivel ${req.nivel}+`);
+  if (req.statMinAny?.length) {
+    const ok = req.statMinAny.some(r => (draft.stats?.[r.stat] || 10) >= r.value);
+    if (!ok) reasons.push(req.statMinAny.map(r => `${STAT_ABBR[r.stat]} ${r.value}+`).join(' o '));
+  }
+  if (req.claseAny?.length) {
+    const cls = normalizeClassFull(draft.class);
+    if (!cls || !req.claseAny.includes(cls)) reasons.push('clase no compatible');
+  }
+  return { ok: reasons.length === 0, reasons };
+}
+
+// ── AYUDA PARA NOVATOS ────────────────────────────────────────────────────────
+function HelpTip({ text }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span style={{ position: 'relative', display: 'inline-flex', marginLeft: '5px' }}>
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setOpen(o => !o); }}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        style={{ width: '15px', height: '15px', borderRadius: '50%', border: '1px solid var(--gold-2)', background: 'rgba(0,0,0,0.3)', color: 'var(--gold-2)', fontSize: '9px', lineHeight: 1, cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-ui)' }}>
+        ?
+      </button>
+      {open && (
+        <span style={{ position: 'absolute', zIndex: 50, bottom: '20px', left: '0', width: '220px', background: 'rgba(10,10,8,0.97)', border: '1px solid rgba(234,199,94,0.35)', borderRadius: '8px', padding: '8px 10px', fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--text-soft)', lineHeight: '1.4', boxShadow: '0 4px 16px rgba(0,0,0,0.5)' }}>
+          {text}
+        </span>
+      )}
+    </span>
+  );
+}
 
 const CLASS_QUOTES = {
   paladin:'La luz no me eleva. Es mi deber sostenerla.',
@@ -284,6 +382,8 @@ export default function CharacterSheet({ user }) {
   const [showModal, setShowModal] = useState(false);
   const [showCustomModal, setShowCustomModal] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
+  const [showRestModal, setShowRestModal] = useState(null); // null | 'corto' | 'largo'
+  const [restSummary, setRestSummary] = useState(null);
   const portraitRef = useRef(null);
 
   const isAdmin = userRole === 'Dungeon Master' || userRole === 'Jugador / DM';
@@ -496,12 +596,73 @@ export default function CharacterSheet({ user }) {
     updateDoc(doc(db, 'characters', id), { spellSlots: newSlots });
   };
 
-  const longRest = () => {
+  // ── DESCANSOS Y RECURSOS DE CLASE ────────────────────────────────────────────
+
+  const conModCS      = Math.floor(((draft.stats?.con || 10) - 10) / 2);
+  const hitDieSize     = CLASS_HIT_DIE[normalizeClassFull(draft.class)] || 8;
+  const hitDiceTotal   = draft.level || 1;
+  const hitDiceUsed    = Math.min(draft.hitDiceUsed || 0, hitDiceTotal);
+  const classResourceDefs = computeClassResourceDefs(draft.class, draft.level, draft.stats);
+  const classResources    = mergeClassResources(draft.classResources, classResourceDefs);
+
+  const toggleClassResource = (resId, newUsados) => {
+    const res = classResources.find(r => r.id === resId);
+    if (!res) return;
+    const clamped = Math.max(0, Math.min(res.max, newUsados));
+    const next = classResources.map(r => r.id === resId ? { ...r, usados: clamped } : r);
+    setDraft(d => ({ ...d, classResources: next }));
+    updateDoc(doc(db, 'characters', id), { classResources: next });
+  };
+
+  const applyLongRest = () => {
     const newSlots = {};
     Object.entries(spellSlots).forEach(([lvl, data]) => { newSlots[lvl] = { ...data, used: 0 }; });
-    const updates = { spellSlots: newSlots, activeConcentration: null };
+    const diceRecovered = Math.max(1, Math.floor(hitDiceTotal / 2));
+    const newHitDiceUsed = Math.max(0, hitDiceUsed - diceRecovered);
+    const resetResources = classResources.map(r => r.recupera === 'largo' ? { ...r, usados: 0 } : r);
+    const updates = {
+      hp: draft.hpMax || draft.hp || 0,
+      spellSlots: newSlots,
+      activeConcentration: null,
+      hitDiceUsed: newHitDiceUsed,
+      hitDiceTotal,
+      classResources: resetResources,
+    };
     setDraft(d => ({ ...d, ...updates }));
     updateDoc(doc(db, 'characters', id), updates);
+    const slotsRecovered = Object.values(spellSlots).reduce((sum, s) => sum + (s.used || 0), 0);
+    setRestSummary({
+      titulo: 'Descanso Largo completado',
+      lineas: [
+        `❤ PG restaurados al máximo (${draft.hpMax ?? draft.hp ?? '—'}).`,
+        slotsRecovered > 0 ? `✦ Recuperaste ${slotsRecovered} espacio${slotsRecovered === 1 ? '' : 's'} de conjuro.` : null,
+        `🎲 Recuperaste ${Math.min(diceRecovered, hitDiceUsed)} dado${diceRecovered === 1 ? '' : 's'} de golpe.`,
+        resetResources.filter(r => r.recupera === 'largo').length > 0
+          ? `✦ Reiniciaste: ${resetResources.filter(r => r.recupera === 'largo').map(r => r.nombre).join(', ')}.`
+          : null,
+        draft.activeConcentration ? '◐ Tu concentración se interrumpió.' : null,
+      ].filter(Boolean),
+    });
+    setShowRestModal(null);
+  };
+
+  const applyShortRest = (diceSpent, healedTotal) => {
+    const newHp = Math.min(draft.hpMax || 0, (draft.hp || 0) + healedTotal);
+    const newHitDiceUsed = Math.min(hitDiceTotal, hitDiceUsed + diceSpent);
+    const resetResources = classResources.map(r => r.recupera === 'corto' ? { ...r, usados: 0 } : r);
+    const updates = { hp: newHp, hitDiceUsed: newHitDiceUsed, hitDiceTotal, classResources: resetResources };
+    setDraft(d => ({ ...d, ...updates }));
+    updateDoc(doc(db, 'characters', id), updates);
+    setRestSummary({
+      titulo: 'Descanso Corto completado',
+      lineas: [
+        diceSpent > 0 ? `❤ Recuperaste ${healedTotal} PG gastando ${diceSpent} dado${diceSpent === 1 ? '' : 's'} de golpe.` : '❤ No gastaste dados de golpe.',
+        resetResources.filter(r => r.recupera === 'corto').length > 0
+          ? `✦ Reiniciaste: ${resetResources.filter(r => r.recupera === 'corto').map(r => r.nombre).join(', ')}.`
+          : null,
+      ].filter(Boolean),
+    });
+    setShowRestModal(null);
   };
 
   const togglePreparedSpell = (spellId) => {
@@ -580,6 +741,28 @@ export default function CharacterSheet({ user }) {
           onClose={() => setShowLevelUp(false)}
           onConfirm={handleLevelUpConfirm}
         />
+      )}
+
+      {/* ── REST MODALS ── */}
+      {showRestModal === 'largo' && (
+        <LongRestModal
+          draft={draft} accent={accent1} hitDiceTotal={hitDiceTotal} hitDiceUsed={hitDiceUsed}
+          classResources={classResources}
+          onClose={() => setShowRestModal(null)}
+          onConfirm={applyLongRest}
+        />
+      )}
+      {showRestModal === 'corto' && (
+        <ShortRestModal
+          draft={draft} accent={accent1} hitDieSize={hitDieSize} conMod={conModCS}
+          hitDiceTotal={hitDiceTotal} hitDiceUsed={hitDiceUsed}
+          classResources={classResources}
+          onClose={() => setShowRestModal(null)}
+          onConfirm={applyShortRest}
+        />
+      )}
+      {restSummary && (
+        <RestSummaryModal summary={restSummary} accent={accent1} onClose={() => setRestSummary(null)} />
       )}
 
       {/* ── FULLSCREEN MODAL ── */}
@@ -891,16 +1074,61 @@ export default function CharacterSheet({ user }) {
 
             {/* Recursos */}
             <Section title="Recursos" iconEl={<GameIcon author={ICONS.dice.author} name={ICONS.dice.name} size={16} color="a6ee81" />}>
+              {/* Botones de Descanso */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                <button onClick={() => setShowRestModal('corto')} style={{ flex: 1, padding: '8px 6px', background: 'rgba(0,0,0,0.3)', border: `1px solid ${accent1}55`, borderRadius: '8px', color: accent1, fontFamily: 'var(--font-title)', fontSize: '11px', letterSpacing: '0.5px', cursor: 'pointer', textTransform: 'uppercase' }}>
+                  🔥 Descanso Corto
+                </button>
+                <HelpTip text="Permite gastar dados de golpe para curarte y reinicia los recursos de clase marcados como 'descanso corto' (como Canal Divino o Ki)." />
+                <button onClick={() => setShowRestModal('largo')} style={{ flex: 1, padding: '8px 6px', background: 'rgba(0,0,0,0.3)', border: `1px solid ${accent1}55`, borderRadius: '8px', color: accent1, fontFamily: 'var(--font-title)', fontSize: '11px', letterSpacing: '0.5px', cursor: 'pointer', textTransform: 'uppercase' }}>
+                  🌙 Descanso Largo
+                </button>
+                <HelpTip text="Restaura tus PG al máximo, todos tus espacios de conjuro, la mitad de tus dados de golpe y los recursos de clase de 'descanso largo'. Representa 8 horas de sueño." />
+              </div>
               {/* Dados de Golpe */}
               <div style={{ marginBottom: '10px' }}>
-                <div style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>Dados de Golpe</div>
+                <div style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px', display: 'flex', alignItems: 'center' }}>
+                  Dados de Golpe
+                  <HelpTip text="Podés gastarlos en un descanso corto para recuperar PG: tirás el dado y sumás tu modificador de Constitución. Recuperás la mitad (mínimo 1) tras un descanso largo." />
+                  <span style={{ marginLeft: 'auto', color: 'var(--text-dim)', fontFamily: 'var(--font-title)' }}>{hitDiceTotal - hitDiceUsed}/{hitDiceTotal}</span>
+                </div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-                  {Array.from({ length: draft.level || 1 }, (_, i) => (
-                    <div key={i} style={{ width: '13px', height: '13px', borderRadius: '3px', border: `1px solid ${accent1}88`, background: i < (draft.level || 1) ? `${accent1}30` : 'transparent', transform: 'rotate(45deg)' }} />
+                  {Array.from({ length: hitDiceTotal }, (_, i) => (
+                    <div key={i} style={{ width: '13px', height: '13px', borderRadius: '3px', border: `1px solid ${accent1}88`, background: i < (hitDiceTotal - hitDiceUsed) ? `${accent1}30` : 'transparent', transform: 'rotate(45deg)' }} />
                   ))}
-                  <span style={{ fontFamily: 'var(--font-title)', fontSize: '11px', color: 'var(--text-muted)', marginLeft: '4px' }}>d{normalizeClass(draft.class) === 'paladin' ? '10' : normalizeClass(draft.class) === 'mago' ? '6' : '8'}</span>
+                  <span style={{ fontFamily: 'var(--font-title)', fontSize: '11px', color: 'var(--text-muted)', marginLeft: '4px' }}>d{hitDieSize}</span>
                 </div>
               </div>
+              {/* Recursos de Clase */}
+              {classResources.length > 0 && (
+                <div style={{ marginBottom: '10px' }}>
+                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px', display: 'flex', alignItems: 'center' }}>
+                    Recursos de Clase
+                    <HelpTip text="Habilidades especiales de tu clase con usos limitados (ej. Canal Divino, Ki). Tocá un círculo para marcarlo como usado; se reinician con el tipo de descanso indicado." />
+                  </div>
+                  {classResources.map(res => {
+                    const avail = res.max - res.usados;
+                    return (
+                      <div key={res.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                        <span style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--text-soft)', width: '120px', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={res.nombre}>
+                          {res.nombre}
+                          <span style={{ fontFamily: 'var(--font-title)', fontSize: '7px', color: 'var(--text-dim)', marginLeft: '4px', textTransform: 'uppercase' }}>{res.recupera === 'largo' ? '· largo' : '· corto'}</span>
+                        </span>
+                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                          {Array.from({ length: res.max }, (_, i) => {
+                            const filled = i < avail;
+                            return (
+                              <div key={i} onClick={isOwner ? () => toggleClassResource(res.id, filled ? res.usados + 1 : res.usados - 1) : undefined}
+                                style={{ width: '12px', height: '12px', borderRadius: '50%', border: `2px solid ${filled ? '#a6ee81' : '#a6ee8155'}`, background: filled ? '#a6ee81' : 'transparent', cursor: isOwner ? 'pointer' : 'default', transition: 'all 0.15s' }} />
+                            );
+                          })}
+                        </div>
+                        <span style={{ fontFamily: 'var(--font-title)', fontSize: '9px', color: 'var(--text-dim)' }}>{avail}/{res.max}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
               {/* Espacios de Conjuro */}
               {Object.entries(spellSlots).filter(([, d]) => d.total > 0).sort(([a], [b]) => parseInt(a) - parseInt(b)).map(([lvl, data]) => {
                 const avail = data.total - data.used;
@@ -963,6 +1191,32 @@ export default function CharacterSheet({ user }) {
               </div>
             </Section>
           </div>
+
+          {/* ROW 3: Dotes */}
+          <div style={{ gridColumn: isMobile ? '1' : '1 / -1' }}>
+            <Section title="Dotes" iconEl={<GameIcon author={ICONS.levelup.author} name={ICONS.levelup.name} size={16} color="c7a242" />}
+              titleExtra={<HelpTip text="Las dotes son talentos especiales que elegís al subir de nivel (en lugar de, o además de, mejorar tus atributos). Se ven acá una vez que las conseguís." />}>
+              {(draft.feats || []).length === 0 && (
+                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--text-dim)', fontStyle: 'italic' }}>
+                  Sin dotes todavía. Se eligen al subir de nivel.
+                </span>
+              )}
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(220px, 1fr))', gap: '8px' }}>
+                {(draft.feats || []).map((f, i) => {
+                  const data = FEATS_MAP[f.id];
+                  return (
+                    <div key={i} style={{ background: 'rgba(0,0,0,0.3)', border: `1px solid ${accent1}33`, borderRadius: '8px', padding: '10px 12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '3px' }}>
+                        <span style={{ fontFamily: 'var(--font-title)', fontSize: '13px', color: accent1 }}>{f.nombre}</span>
+                        <span style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', color: 'var(--text-dim)' }}>Nv.{f.nivelObtenido}</span>
+                      </div>
+                      {data && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--text-soft)', lineHeight: '1.4' }}>{data.descripcion}</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            </Section>
+          </div>
         </div>
       )}
 
@@ -1003,7 +1257,8 @@ export default function CharacterSheet({ user }) {
           charStats={draft.stats}
           isMobile={isMobile}
           updateSpellSlot={updateSpellSlot}
-          longRest={longRest}
+          onOpenLongRest={() => setShowRestModal('largo')}
+          onOpenShortRest={() => setShowRestModal('corto')}
           togglePrepared={togglePreparedSpell}
           castSpell={castSpell}
           activeConcentration={draft.activeConcentration}
@@ -1054,12 +1309,13 @@ function Pip({ active, accent, editing, onClick }) {
 }
 
 // ── Section wrapper ───────────────────────────────────────────────────────────
-function Section({ title, iconEl, children }) {
+function Section({ title, iconEl, titleExtra, children }) {
   return (
     <div className="cs-fantasy-card">
       <div className="cs-card-header">
         {iconEl}
         <h2 className="cs-card-title">{title}</h2>
+        {titleExtra}
         <div className="cs-card-divider" />
       </div>
       {children}
@@ -2350,7 +2606,7 @@ function SpellCard({ spell, isOwner, accent, expanded, onToggle, onCast, onUnpre
 }
 
 // ── Spells tab ────────────────────────────────────────────────────────────────
-function SpellsTab({ spellSlots, preparedSpells, maxPrepared, isOwner, accent, charClass, charLevel, charStats, isMobile, updateSpellSlot, longRest, togglePrepared, castSpell, activeConcentration }) {
+function SpellsTab({ spellSlots, preparedSpells, maxPrepared, isOwner, accent, charClass, charLevel, charStats, isMobile, updateSpellSlot, onOpenLongRest, onOpenShortRest, togglePrepared, castSpell, activeConcentration }) {
   const [expanded, setExpanded]       = useState(null);
   const [spellSearch, setSpellSearch] = useState('');
 
@@ -2387,8 +2643,8 @@ function SpellsTab({ spellSlots, preparedSpells, maxPrepared, isOwner, accent, c
       {/* Botones descanso */}
       {isOwner && (
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          <button style={sp.restBtn} onClick={longRest}>☽ Descanso Largo</button>
-          <button style={{ ...sp.restBtn, opacity: 0.35, cursor: 'not-allowed' }} disabled>☀ Descanso Corto</button>
+          <button style={sp.restBtn} onClick={onOpenLongRest}>☽ Descanso Largo</button>
+          <button style={sp.restBtn} onClick={onOpenShortRest}>☀ Descanso Corto</button>
         </div>
       )}
 
@@ -2594,7 +2850,7 @@ const pBtn = { background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(234,199,94
 
 function LevelUpModal({ draft, accent, onClose, onConfirm }) {
   const newLevel     = (parseInt(draft.level) || 1) + 1;
-  const charClass    = normalizeClass(draft.class);
+  const charClass    = normalizeClassFull(draft.class);
   const hitDie       = CLASS_HIT_DIE[charClass] || 8;
   const primaryStat  = CLASS_PRIMARY_STAT[charClass] || 'fue';
   const conMod       = Math.floor(((draft.stats?.con || 10) - 10) / 2);
@@ -2608,10 +2864,20 @@ function LevelUpModal({ draft, accent, onClose, onConfirm }) {
   const [diceDisplay, setDiceDisplay] = useState(null);
   const [rolling, setRolling]     = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [featSearch, setFeatSearch]     = useState('');
+  const [selectedFeatId, setSelectedFeatId] = useState(null);
+  const [featAsiStat, setFeatAsiStat]   = useState(null);
+
+  const selectedFeat = selectedFeatId ? FEATS_MAP[selectedFeatId] : null;
+  const selectableFeats = ALL_FEATS.filter(f => f.id !== 'mejora_caracteristica');
+  const featCheck = selectedFeat ? checkFeatRequisito(selectedFeat, draft, newLevel) : null;
 
   const newStats = (() => {
     const s = { ...draft.stats };
-    if (asiMode === 'feat') return s;
+    if (asiMode === 'feat') {
+      if (selectedFeat?.asi && featAsiStat) s[featAsiStat] = Math.min(20, (s[featAsiStat] || 10) + (selectedFeat.asi.amount || 1));
+      return s;
+    }
     const delta = asiMode === '+2' ? 2 : 1;
     asiStats.forEach(st => { s[st] = Math.min(20, (s[st] || 10) + delta); });
     return s;
@@ -2627,7 +2893,11 @@ function LevelUpModal({ draft, accent, onClose, onConfirm }) {
 
   const canProceed = () => {
     if (step === 1) {
-      if (asiMode === 'feat') return true;
+      if (asiMode === 'feat') {
+        if (!selectedFeat || !featCheck?.ok) return false;
+        if (selectedFeat.asi && !featAsiStat) return false;
+        return true;
+      }
       if (asiMode === '+2')   return asiStats.length === 1;
       if (asiMode === '+1+1') return asiStats.length === 2;
     }
@@ -2676,14 +2946,17 @@ function LevelUpModal({ draft, accent, onClose, onConfirm }) {
     const changes = {
       level: newLevel,
       hpMax: newHpMax,
-      stats: asiMode !== 'feat' ? newStats : draft.stats,
+      stats: newStats,
       spellSlots: newSlots,
     };
+    if (asiMode === 'feat' && selectedFeat) {
+      changes.feats = [...(draft.feats || []), { id: selectedFeat.id, nombre: selectedFeat.nombre, nivelObtenido: newLevel }];
+    }
     setTimeout(() => onConfirm(changes), 1400);
   };
 
   const STEPS = ['Características', 'Puntos de Golpe', 'Nuevos Recursos', 'Resumen'];
-  const changedStats = asiMode !== 'feat' ? asiStats : [];
+  const changedStats = asiMode === 'feat' ? (selectedFeat?.asi && featAsiStat ? [featAsiStat] : []) : asiStats;
 
   return (
     <div className="lu-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -2781,8 +3054,59 @@ function LevelUpModal({ draft, accent, onClose, onConfirm }) {
                 </div>
 
                 {asiMode === 'feat' && (
-                  <div style={{ padding:'12px', background:'rgba(0,0,0,0.3)', borderRadius:'8px', fontFamily:'var(--font-ui)', fontSize:'12px', color:'var(--text-dim)', fontStyle:'italic' }}>
-                    Sistema de Dotes — próximamente. Elegí +2 o +1+1 por ahora.
+                  <div>
+                    <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'10px' }}>
+                      <input
+                        value={featSearch}
+                        onChange={e => setFeatSearch(e.target.value)}
+                        placeholder="Buscar dote..."
+                        style={{ flex:1, padding:'8px 10px', background:'rgba(0,0,0,0.3)', border:'1px solid rgba(234,199,94,0.25)', borderRadius:'8px', color:'var(--text-main)', fontFamily:'var(--font-ui)', fontSize:'12px' }}
+                      />
+                      <HelpTip text="Una dote es un talento especial. Podés elegir una en vez de mejorar tus atributos. Las que no cumplís siguen en la lista, marcadas con el requisito que te falta." />
+                    </div>
+                    <div style={{ maxHeight:'220px', overflowY:'auto', display:'flex', flexDirection:'column', gap:'6px', marginBottom:'12px', paddingRight:'4px' }}>
+                      {selectableFeats
+                        .filter(f => !featSearch || f.nombre.toLowerCase().includes(featSearch.toLowerCase()) || f.descripcion.toLowerCase().includes(featSearch.toLowerCase()))
+                        .sort((a, b) => a.nombre.localeCompare(b.nombre))
+                        .map(f => {
+                          const check = checkFeatRequisito(f, draft, newLevel);
+                          const sel = selectedFeatId === f.id;
+                          return (
+                            <button key={f.id}
+                              onClick={() => { setSelectedFeatId(f.id); setFeatAsiStat(f.asi ? f.asi.stats[0] : null); }}
+                              style={{ textAlign:'left', padding:'8px 10px', background:sel?`${accent}1a`:'rgba(0,0,0,0.25)', border:`1px solid ${sel?accent:'rgba(234,199,94,0.15)'}`, borderRadius:'8px', cursor:'pointer', opacity: check.ok ? 1 : 0.75 }}>
+                              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', gap:'8px' }}>
+                                <span style={{ fontFamily:'var(--font-title)', fontSize:'12px', color:sel?accent:'var(--text-main)' }}>{f.nombre}</span>
+                                <span style={{ fontFamily:'var(--font-ui)', fontSize:'8px', color:'var(--text-dim)', textTransform:'uppercase', whiteSpace:'nowrap' }}>{f.categoria.replace('_',' ')}</span>
+                              </div>
+                              <div style={{ fontFamily:'var(--font-ui)', fontSize:'10px', color:'var(--text-dim)', marginTop:'2px' }}>{f.requisito}</div>
+                              {!check.ok && <div style={{ fontFamily:'var(--font-ui)', fontSize:'10px', color:'var(--ember)', marginTop:'3px' }}>✗ No cumplís: {check.reasons.join('; ')}</div>}
+                            </button>
+                          );
+                        })}
+                    </div>
+
+                    {selectedFeat && (
+                      <div style={{ background:'rgba(0,0,0,0.3)', border:`1px solid ${featCheck?.ok ? accent + '55' : 'rgba(220,90,90,0.4)'}`, borderRadius:'8px', padding:'10px 12px' }}>
+                        <div style={{ fontFamily:'var(--font-title)', fontSize:'13px', color:accent, marginBottom:'4px' }}>{selectedFeat.nombre}</div>
+                        <div style={{ fontFamily:'var(--font-ui)', fontSize:'9px', color:'var(--text-dim)', marginBottom:'6px' }}>{selectedFeat.requisito}</div>
+                        <div style={{ fontFamily:'var(--font-ui)', fontSize:'12px', color:'var(--text-soft)', lineHeight:'1.4' }}>{selectedFeat.descripcion}</div>
+                        {!featCheck.ok && <div style={{ fontFamily:'var(--font-ui)', fontSize:'11px', color:'var(--ember)', marginTop:'8px' }}>✗ No cumplís: {featCheck.reasons.join('; ')}</div>}
+                        {featCheck.ok && selectedFeat.asi && (
+                          <div style={{ marginTop:'10px', paddingTop:'10px', borderTop:'1px solid rgba(234,199,94,0.12)' }}>
+                            <div style={{ fontFamily:'var(--font-ui)', fontSize:'9px', letterSpacing:'1px', color:'var(--text-dim)', textTransform:'uppercase', marginBottom:'6px' }}>Elegí +{selectedFeat.asi.amount} a:</div>
+                            <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
+                              {selectedFeat.asi.stats.map(stat => (
+                                <button key={stat} onClick={() => setFeatAsiStat(stat)}
+                                  style={{ padding:'6px 12px', background:featAsiStat===stat?`${accent}25`:'rgba(0,0,0,0.3)', border:`1px solid ${featAsiStat===stat?accent:'rgba(234,199,94,0.2)'}`, borderRadius:'8px', cursor:'pointer', fontFamily:'var(--font-title)', fontSize:'11px', color:featAsiStat===stat?accent:'var(--text-main)' }}>
+                                  {STAT_ABBR[stat]}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -2981,6 +3305,13 @@ function LevelUpModal({ draft, accent, onClose, onConfirm }) {
                   ))}
                 </div>
 
+                {asiMode === 'feat' && selectedFeat && (
+                  <div style={{ marginBottom:'16px', padding:'10px 12px', background:'rgba(0,0,0,0.3)', border:`1px solid ${accent}55`, borderRadius:'8px' }}>
+                    <div style={{ fontFamily:'var(--font-ui)', fontSize:'9px', letterSpacing:'1.5px', color:'var(--text-dim)', textTransform:'uppercase', marginBottom:'4px' }}>Dote obtenida</div>
+                    <div style={{ fontFamily:'var(--font-title)', fontSize:'14px', color:accent }}>{selectedFeat.nombre}</div>
+                  </div>
+                )}
+
                 <button onClick={handleConfirm} disabled={confirmed} className="lu-confirm-btn"
                   style={{ borderColor:confirmed?'rgba(234,199,94,0.3)':accent, color:confirmed?'var(--text-dim)':accent, background:confirmed?'rgba(0,0,0,0.2)':`${accent}20` }}>
                   {confirmed ? '✓ Guardando...' : '✦ Confirmar Evolución'}
@@ -3004,6 +3335,144 @@ function LevelUpModal({ draft, accent, onClose, onConfirm }) {
           )}
         </div>
 
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// REST MODALS
+// ══════════════════════════════════════════════════════════════════════════════
+
+function LongRestModal({ draft, accent, hitDiceTotal, hitDiceUsed, classResources, onClose, onConfirm }) {
+  const diceRecovered = Math.min(hitDiceUsed, Math.max(1, Math.floor(hitDiceTotal / 2)));
+  const resourcesLargo = classResources.filter(r => r.recupera === 'largo');
+  return (
+    <div className="lu-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="lu-container" style={{ maxWidth: '480px' }}>
+        <div className="cs-fantasy-card">
+          <div className="cs-card-header">
+            <GameIcon author={ICONS.levelup.author} name={ICONS.levelup.name} size={16} color="c7a242" />
+            <h2 className="cs-card-title">🌙 Descanso Largo</h2>
+            <div className="cs-card-divider" />
+          </div>
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: '13px', color: 'var(--text-soft)', lineHeight: '1.6', marginBottom: '16px' }}>
+            Representa unas 8 horas de sueño. Recuperás tus <strong style={{ color: 'var(--green-1)' }}>PG al máximo</strong>, todos tus <strong style={{ color: accent }}>espacios de conjuro</strong>, {diceRecovered > 0 ? <strong>{diceRecovered} dado{diceRecovered === 1 ? '' : 's'} de golpe</strong> : 'tus dados de golpe'}, perdés la <strong>concentración</strong> activa
+            {resourcesLargo.length > 0 && <> y reiniciás: <strong style={{ color: accent }}>{resourcesLargo.map(r => r.nombre).join(', ')}</strong></>}.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <button onClick={onClose} style={{ background: 'transparent', border: '1px solid rgba(234,199,94,0.2)', color: 'var(--text-muted)', fontFamily: 'var(--font-ui)', fontSize: '12px', padding: '9px 18px', cursor: 'pointer', borderRadius: '8px' }}>Cancelar</button>
+            <button onClick={onConfirm} style={{ background: `${accent}22`, border: `1px solid ${accent}`, color: accent, fontFamily: 'var(--font-title)', fontSize: '0.8rem', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '9px 20px', cursor: 'pointer', borderRadius: '8px' }}>🌙 Descansar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ShortRestModal({ draft, accent, hitDieSize, conMod, hitDiceTotal, hitDiceUsed, classResources, onClose, onConfirm }) {
+  const fmtModLocal = (n) => (n >= 0 ? `+${n}` : `${n}`);
+  const [spent, setSpent]       = useState(0);
+  const [healed, setHealed]     = useState(0);
+  const [diceDisplay, setDice]  = useState(null);
+  const [rolling, setRolling]   = useState(false);
+
+  const available   = hitDiceTotal - hitDiceUsed - spent;
+  const hpMax        = draft.hpMax || 0;
+  const hpNow         = draft.hp || 0;
+  const projectedHp  = Math.min(hpMax, hpNow + healed);
+  const atFullHp      = projectedHp >= hpMax;
+  const resourcesCorto = classResources.filter(r => r.recupera === 'corto');
+
+  const spendDie = () => {
+    if (rolling || available <= 0 || atFullHp) return;
+    setRolling(true);
+    let ticks = 0;
+    const iv = setInterval(() => {
+      setDice(Math.ceil(Math.random() * hitDieSize));
+      ticks++;
+      if (ticks >= 8) {
+        clearInterval(iv);
+        const roll = Math.ceil(Math.random() * hitDieSize);
+        const gain = Math.max(1, roll + conMod);
+        setDice(roll);
+        setSpent(s => s + 1);
+        setHealed(h => h + gain);
+        setRolling(false);
+      }
+    }, 70);
+  };
+
+  return (
+    <div className="lu-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="lu-container" style={{ maxWidth: '480px' }}>
+        <div className="cs-fantasy-card">
+          <div className="cs-card-header">
+            <GameIcon author={ICONS.heart.author} name={ICONS.heart.name} size={16} color="a6ee81" />
+            <h2 className="cs-card-title">🔥 Descanso Corto</h2>
+            <div className="cs-card-divider" />
+          </div>
+          <p style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '12px' }}>
+            Gastá dados de golpe para curarte: tirás d{hitDieSize} y sumás {fmtModLocal(conMod)} de Constitución por cada uno. Tenés {available} disponible{available === 1 ? '' : 's'}.
+          </p>
+          <div style={{ textAlign: 'center', marginBottom: '14px' }}>
+            <div className={`lu-dice${rolling ? ' lu-dice-rolling' : ''}`} style={{ borderColor: accent, color: diceDisplay ? 'var(--green-1)' : 'var(--text-dim)' }}>
+              {diceDisplay ?? `d${hitDieSize}`}
+            </div>
+          </div>
+          <div style={{ marginBottom: '14px' }}>
+            <button onClick={spendDie} disabled={rolling || available <= 0 || atFullHp}
+              style={{ width: '100%', padding: '12px', background: 'rgba(0,0,0,0.3)', border: `1px solid ${accent}55`, borderRadius: '10px', color: (available <= 0 || atFullHp) ? 'var(--text-dim)' : accent, fontFamily: 'var(--font-title)', fontSize: '0.8rem', letterSpacing: '1px', textTransform: 'uppercase', cursor: (rolling || available <= 0 || atFullHp) ? 'not-allowed' : 'pointer' }}>
+              {rolling ? 'Tirando...' : atFullHp ? 'PG al máximo' : available <= 0 ? 'Sin dados disponibles' : '🎲 Gastar un dado de golpe'}
+            </button>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(166,238,129,0.2)', borderRadius: '8px', marginBottom: '14px' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>PG Actuales</div>
+              <div style={{ fontFamily: 'var(--font-title)', fontSize: '1.4rem', color: 'var(--text-main)' }}>{hpNow}</div>
+            </div>
+            <div style={{ fontFamily: 'var(--font-title)', fontSize: '1.2rem', color: accent }}>→</div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>PG Proyectados</div>
+              <div style={{ fontFamily: 'var(--font-title)', fontSize: '1.4rem', color: 'var(--green-1)', fontWeight: '700' }}>{projectedHp}</div>
+            </div>
+            <div style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--text-dim)', flex: 1 }}>
+              {spent} dado{spent === 1 ? '' : 's'} gastado{spent === 1 ? '' : 's'}
+            </div>
+          </div>
+          {resourcesCorto.length > 0 && (
+            <p style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--text-dim)', marginBottom: '14px' }}>
+              También reiniciás: <strong style={{ color: accent }}>{resourcesCorto.map(r => r.nombre).join(', ')}</strong>.
+            </p>
+          )}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <button onClick={onClose} style={{ background: 'transparent', border: '1px solid rgba(234,199,94,0.2)', color: 'var(--text-muted)', fontFamily: 'var(--font-ui)', fontSize: '12px', padding: '9px 18px', cursor: 'pointer', borderRadius: '8px' }}>Cancelar</button>
+            <button onClick={() => onConfirm(spent, healed)} disabled={rolling}
+              style={{ background: `${accent}22`, border: `1px solid ${accent}`, color: accent, fontFamily: 'var(--font-title)', fontSize: '0.8rem', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '9px 20px', cursor: rolling ? 'not-allowed' : 'pointer', borderRadius: '8px' }}>✓ Terminar descanso</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RestSummaryModal({ summary, accent, onClose }) {
+  return (
+    <div className="lu-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="lu-container" style={{ maxWidth: '420px' }}>
+        <div className="cs-fantasy-card" style={{ position: 'relative', overflow: 'hidden' }}>
+          <div className="lu-particles" />
+          <div className="cs-card-header" style={{ position: 'relative', zIndex: 1 }}>
+            <h2 className="cs-card-title">✦ {summary.titulo}</h2>
+            <div className="cs-card-divider" />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px', position: 'relative', zIndex: 1 }}>
+            {summary.lineas.map((l, i) => (
+              <div key={i} style={{ fontFamily: 'var(--font-ui)', fontSize: '13px', color: 'var(--text-soft)', lineHeight: '1.4' }}>{l}</div>
+            ))}
+          </div>
+          <button onClick={onClose} className="lu-confirm-btn" style={{ borderColor: accent, color: accent, background: `${accent}20`, position: 'relative', zIndex: 1 }}>Cerrar</button>
+        </div>
       </div>
     </div>
   );
