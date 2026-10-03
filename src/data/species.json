@@ -1,0 +1,130 @@
+[
+  {
+    "id": "aasimar",
+    "nombre": "Aasimar",
+    "tamano": "Mediano o Pequeño (a elección)",
+    "velocidad": 9,
+    "paraQuienEs": "Portás una chispa celestial: luz, curación y, si querés, furia divina.",
+    "rasgos": [
+      { "nombre": "Portador de Luz", "descripcion": "Conocés el truco Luz. El Carisma es tu aptitud mágica para lanzarlo." },
+      { "nombre": "Resistencia Celestial", "descripcion": "Tenés resistencia al daño necrótico y al radiante." },
+      { "nombre": "Visión en la Oscuridad", "descripcion": "Ves en la oscuridad hasta 18 metros." },
+      { "nombre": "Manos Curativas", "descripcion": "Como acción, tocás a una criatura y la curás 1d4 por tu bonificador de competencia. Una vez por descanso largo." },
+      { "nombre": "Revelación Celestial", "descripcion": "Desde nivel 3, podés transformarte brevemente (1 minuto) en Alas Celestiales (volar), Fulgor Interior (luz + daño radiante) o Mortaja Necrótica (asustar enemigos cercanos). Una vez por descanso largo." }
+    ]
+  },
+  {
+    "id": "draconido",
+    "nombre": "Dracónido",
+    "tamano": "Mediano",
+    "velocidad": 9,
+    "paraQuienEs": "Sos descendiente de dragones: tenés aliento elemental y escamas resistentes.",
+    "rasgos": [
+      { "nombre": "Linaje Dracónico", "descripcion": "Elegís un tipo de dragón ancestral (Negro/ácido, Azul/relámpago, Blanco/frío, Bronce/relámpago, Cobre/ácido, Dorado/fuego, Esmeralda/veneno, Oropel/fuego, Plata/frío, Rojo/fuego); define el daño de tu aliento y tu resistencia." },
+      { "nombre": "Ataque de Aliento", "descripcion": "En vez de un ataque, exhalás un cono o línea de energía; las criaturas ahí salvan con Constitución o reciben 1d10 de daño del tipo de tu linaje (sube con el nivel). Usos = bonificador de competencia, se recuperan en descanso largo." },
+      { "nombre": "Resistencia al Daño", "descripcion": "Resistencia al tipo de daño de tu linaje dracónico." },
+      { "nombre": "Visión en la Oscuridad", "descripcion": "Ves en la oscuridad hasta 18 metros." },
+      { "nombre": "Vuelo Dracónico", "descripcion": "Desde nivel 5, podés hacer crecer alas espectrales y volar durante 10 minutos. Una vez por descanso largo." }
+    ]
+  },
+  {
+    "id": "elfo",
+    "nombre": "Elfo",
+    "tamano": "Mediano (1,5-1,8 m)",
+    "velocidad": 9,
+    "paraQuienEs": "Sos ágil, longevo y con un vínculo mágico natural; no necesitás dormir del todo.",
+    "rasgos": [
+      { "nombre": "Linaje Feérico", "descripcion": "Tenés ventaja en salvaciones para evitar o terminar el estado hechizado." },
+      { "nombre": "Sentidos Agudos", "descripcion": "Competencia en Percepción, Perspicacia o Supervivencia (a elegir)." },
+      { "nombre": "Trance", "descripcion": "No necesitás dormir; descansás 4 horas en un trance consciente en vez de 8." },
+      { "nombre": "Visión en la Oscuridad", "descripcion": "Ves en la oscuridad hasta 18 metros." },
+      { "nombre": "Linaje Élfico", "descripcion": "Elegís un linaje: Alto Elfo (truco Prestidigitación + conjuros de mago extra), Drow (visión en la oscuridad 36m + Luces Danzantes) o Elfo del Bosque (+1,5m de velocidad + Saber Druídico), cada uno con más magia a niveles 3 y 5." }
+    ]
+  },
+  {
+    "id": "enano",
+    "nombre": "Enano",
+    "tamano": "Mediano (1,2-1,5 m)",
+    "velocidad": 9,
+    "paraQuienEs": "Sos resistente y duro de matar, con afinidad por la piedra y el metal.",
+    "rasgos": [
+      { "nombre": "Afinidad con la Piedra", "descripcion": "Como acción adicional, sentís vibraciones a 18m durante 10 minutos (necesitás tocar piedra)." },
+      { "nombre": "Aguante Enano", "descripcion": "+1 PG máximo, y +1 más cada vez que subís de nivel." },
+      { "nombre": "Resistencia Enana", "descripcion": "Resistencia al daño de veneno y ventaja en salvaciones contra el estado envenenado." },
+      { "nombre": "Visión en la Oscuridad", "descripcion": "Ves en la oscuridad hasta 36 metros." }
+    ]
+  },
+  {
+    "id": "gnomo",
+    "nombre": "Gnomo",
+    "tamano": "Pequeño (90 cm-1,2 m)",
+    "velocidad": 9,
+    "paraQuienEs": "Sos pequeño, muy astuto y con una conexión natural a trucos mágicos.",
+    "rasgos": [
+      { "nombre": "Astucia Gnoma", "descripcion": "Ventaja en salvaciones de Inteligencia, Sabiduría y Carisma." },
+      { "nombre": "Visión en la Oscuridad", "descripcion": "Ves en la oscuridad hasta 18 metros." },
+      { "nombre": "Linaje Gnomo", "descripcion": "Elegís Gnomo de las Rocas (trucos Prestidigitación y Reparar, podés crear un dispositivo mecánico pequeño) o Gnomo del Bosque (truco Ilusión Menor y el conjuro Hablar con los Animales siempre preparado)." }
+    ]
+  },
+  {
+    "id": "goliat",
+    "nombre": "Goliat",
+    "tamano": "Mediano (2,1-2,4 m)",
+    "velocidad": 10.5,
+    "paraQuienEs": "Sos enorme y fuerte, descendiente lejano de los gigantes, con el doble de velocidad extra.",
+    "rasgos": [
+      { "nombre": "Constitución Poderosa", "descripcion": "Ventaja para liberarte del estado agarrado; contás como una categoría de tamaño más grande para la capacidad de carga." },
+      { "nombre": "Linaje Gigante", "descripcion": "Elegís un beneficio de un tipo de gigante (fuego, colinas, nubes, escarcha, piedra o tormentas), usable con tu bonificador de competencia por descanso largo: por ejemplo daño de fuego extra, derribar, teletransportarte, o reducir daño recibido." },
+      { "nombre": "Forma Grande", "descripcion": "Desde nivel 5, podés crecer a tamaño Grande durante 10 minutos, con ventaja en pruebas de Fuerza. Una vez por descanso largo." }
+    ]
+  },
+  {
+    "id": "humano",
+    "nombre": "Humano",
+    "tamano": "Mediano o Pequeño (a elección)",
+    "velocidad": 9,
+    "paraQuienEs": "Sos flexible y versátil: la mejor opción si no sabés qué especie elegir.",
+    "rasgos": [
+      { "nombre": "Diestro", "descripcion": "Ganás competencia en una habilidad de tu elección." },
+      { "nombre": "Ingenioso", "descripcion": "Obtenés Inspiración Heroica al terminar un descanso largo." },
+      { "nombre": "Versátil", "descripcion": "Obtenés una dote de origen de tu elección (se recomienda Habilidoso)." }
+    ]
+  },
+  {
+    "id": "mediano",
+    "nombre": "Mediano",
+    "tamano": "Pequeño (60-90 cm)",
+    "velocidad": 9,
+    "paraQuienEs": "Sos pequeño, afortunado y difícil de asustar o de atrapar.",
+    "rasgos": [
+      { "nombre": "Agilidad de Mediano", "descripcion": "Podés moverte a través del espacio de una criatura más grande que vos (sin quedarte ahí)." },
+      { "nombre": "Fortuna", "descripcion": "Cuando sacás un 1 en una prueba con d20, podés repetir la tirada." },
+      { "nombre": "Sigiloso por Naturaleza", "descripcion": "Podés esconderte incluso detrás de una criatura una categoría más grande que vos." },
+      { "nombre": "Valiente", "descripcion": "Ventaja en salvaciones contra el estado asustado." }
+    ]
+  },
+  {
+    "id": "orco",
+    "nombre": "Orco",
+    "tamano": "Mediano (1,8-2,1 m)",
+    "velocidad": 9,
+    "paraQuienEs": "Sos resistente y feroz, con una determinación que te permite seguir en pie.",
+    "rasgos": [
+      { "nombre": "Aguante Incansable", "descripcion": "Cuando llegarías a 0 PG sin morir directamente, te quedás con 1 PG en su lugar. Una vez por descanso largo." },
+      { "nombre": "Descarga de Adrenalina", "descripcion": "Podés correr como acción adicional y ganar PG temporales igual a tu bonificador de competencia. Usos = bonificador de competencia, se recuperan en descanso corto o largo." },
+      { "nombre": "Visión en la Oscuridad", "descripcion": "Ves en la oscuridad hasta 36 metros." }
+    ]
+  },
+  {
+    "id": "tiefling",
+    "nombre": "Tiefling",
+    "tamano": "Mediano o Pequeño (a elección)",
+    "velocidad": 9,
+    "paraQuienEs": "Tenés sangre infernal: un legado que te da magia y resistencia a un tipo de daño.",
+    "rasgos": [
+      { "nombre": "Presencia Sobrenatural", "descripcion": "Conocés el truco Taumaturgia." },
+      { "nombre": "Legado Infernal", "descripcion": "Elegís Abisal (resistencia a veneno + Rociada Venenosa), Ctónico (resistencia a necrótico + Toque Helado) o Infernal (resistencia a fuego + Descarga de Fuego), con más magia en niveles 3 y 5." },
+      { "nombre": "Visión en la Oscuridad", "descripcion": "Ves en la oscuridad hasta 18 metros." }
+    ]
+  }
+]

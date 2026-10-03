@@ -32,13 +32,13 @@ const TYPE_LABEL = { weapon: 'Arma', armor: 'Armadura', potion: 'Poción', magic
 const TYPE_COLOR = { weapon: 'var(--ember)', armor: 'var(--gold)', potion: '#6aaa6a', magic: '#a07ad0' };
 const TYPE_ICON  = { weapon: '⚔️', armor: '🛡️', potion: '⚗️', magic: '✨' };
 
-const STAT_KEYS = ['fue', 'des', 'con', 'int', 'sab', 'car'];
-const STAT_ABBR = { fue: 'FUE', des: 'DES', con: 'CON', int: 'INT', sab: 'SAB', car: 'CAR' };
+export const STAT_KEYS = ['fue', 'des', 'con', 'int', 'sab', 'car'];
+export const STAT_ABBR = { fue: 'FUE', des: 'DES', con: 'CON', int: 'INT', sab: 'SAB', car: 'CAR' };
 const STAT_ICON_KEYS = { fue: 'strength', des: 'dexterity', con: 'constitution', int: 'intelligence', sab: 'wisdom', car: 'charisma' };
 const SLOT_ICON_KEYS = { mainhand: 'broadsword', offhand: 'shield', chest: 'armor', head: 'helmet', cloak: 'cloak', hands: 'strength', feet: 'boots', neck: 'lore', ring1: 'ring', ring2: 'ring' };
 const TYPE_ICON_KEY  = { weapon: 'broadsword', armor: 'armor', potion: 'potion', magic: 'magic' };
 
-const SKILLS = [
+export const SKILLS = [
   { id: 'atletismo',       nombre: 'Atletismo',          stat: 'fue' },
   { id: 'acrobacias',      nombre: 'Acrobacias',         stat: 'des' },
   { id: 'juego_de_manos',  nombre: 'Juego de Manos',     stat: 'des' },
@@ -87,7 +87,7 @@ const LEARN_DATA = {
   save_car:        { nombre: 'Salvación de Carisma',     stat: 'car', tipo: 'save', descripcion: 'Mantener tu identidad y esencia frente a efectos que alteran tu alma o te destierran a otro plano.', cuandoUsarla: 'Resistir el exilio a otro plano, mantener tu identidad ante un hechizo de posesión o resistir efectos que intentan borrar tu voluntad.' },
 };
 
-const profBonus = (level) => Math.ceil((level || 1) / 4) + 1;
+export const profBonus = (level) => Math.ceil((level || 1) / 4) + 1;
 
 const SLOT_INFO = {
   mainhand: { label: 'Mano Principal', icon: '⚔️' },
@@ -120,7 +120,7 @@ function normalizeClass(raw) {
 }
 
 // Igual que normalizeClass pero también reconoce clases sin magia nativa (para dotes, dados de golpe, etc.)
-function normalizeClassFull(raw) {
+export function normalizeClassFull(raw) {
   const known = normalizeClass(raw);
   if (known) return known;
   const cls = (raw || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -187,7 +187,7 @@ const WARLOCK_PACT_SLOTS = {
   19: { nivel: 5, total: 4 }, 20: { nivel: 5, total: 4 },
 };
 
-function computeDefaultSlots(level, charClass) {
+export function computeDefaultSlots(level, charClass) {
   const key = normalizeClass(charClass);
   const lvl = Math.min(20, Math.max(1, level || 1));
   if (key === 'brujo' || (!key && normalizeClassFull(charClass) === 'brujo')) {
@@ -244,7 +244,7 @@ function maxSlotLevel(level, charClass) {
   return levels.length ? Math.max(...levels) : 0;
 }
 
-function computeCastingInfo(charClass, level, stats) {
+export function computeCastingInfo(charClass, level, stats) {
   const key = normalizeClassFull(charClass);
   const rules = key && CASTING_RULES[key];
   if (!rules) return { modo: null, caracteristica: null, trucosMax: 0, conjurosMax: 0, maxSpellLevel: 0 };
@@ -275,15 +275,15 @@ function getTargetSlot(itemId, currentInventory, extraMap = {}) {
 
 // ── LEVEL UP CONSTANTS ────────────────────────────────────────────────────────
 
-const XP_THRESHOLDS = { 1:0, 2:300, 3:900, 4:2700, 5:6500, 6:14000, 7:23000, 8:34000, 9:48000, 10:64000, 11:85000, 12:100000, 13:120000, 14:140000, 15:165000, 16:195000, 17:225000, 18:265000, 19:305000, 20:355000 };
+export const XP_THRESHOLDS = { 1:0, 2:300, 3:900, 4:2700, 5:6500, 6:14000, 7:23000, 8:34000, 9:48000, 10:64000, 11:85000, 12:100000, 13:120000, 14:140000, 15:165000, 16:195000, 17:225000, 18:265000, 19:305000, 20:355000 };
 
-const CLASS_HIT_DIE = { paladin:10, mago:6, hechicero:6, bardo:8, clerigo:8, druida:8, explorador:10, guerrero:10, barbaro:12, monje:8, picaro:8, brujo:8 };
+export const CLASS_HIT_DIE = { paladin:10, mago:6, hechicero:6, bardo:8, clerigo:8, druida:8, explorador:10, guerrero:10, barbaro:12, monje:8, picaro:8, brujo:8 };
 
 const CLASS_PRIMARY_STAT = { paladin:'car', mago:'int', hechicero:'car', bardo:'car', clerigo:'sab', druida:'sab', explorador:'des', guerrero:'fue', barbaro:'fue', monje:'sab', picaro:'des', brujo:'car' };
 
 // ── RECURSOS DE CLASE (descanso corto/largo) ─────────────────────────────────
 // Tabla aproximada por clase/nivel de los recursos más comunes (Manual del Jugador 2024).
-function computeClassResourceDefs(charClass, level, stats) {
+export function computeClassResourceDefs(charClass, level, stats) {
   const key = normalizeClassFull(charClass);
   const lvl = level || 1;
   const carMod = Math.floor(((stats?.car || 10) - 10) / 2);
@@ -319,7 +319,7 @@ function computeClassResourceDefs(charClass, level, stats) {
   return defs;
 }
 
-function mergeClassResources(existing, defs) {
+export function mergeClassResources(existing, defs) {
   return defs.map(def => {
     const prev = (existing || []).find(e => e.id === def.id);
     return { id: def.id, nombre: def.nombre, max: def.max, recupera: def.recupera, usados: Math.max(0, Math.min(prev?.usados || 0, def.max)) };
@@ -345,7 +345,7 @@ function checkFeatRequisito(feat, draft, levelAtPick) {
 }
 
 // ── AYUDA PARA NOVATOS ────────────────────────────────────────────────────────
-function HelpTip({ text }) {
+export function HelpTip({ text }) {
   const [open, setOpen] = useState(false);
   return (
     <span style={{ position: 'relative', display: 'inline-flex', marginLeft: '5px' }}>
@@ -3655,7 +3655,7 @@ function RestSummaryModal({ summary, accent, onClose }) {
 // SELECTOR GUIADO DE CONJUROS
 // ══════════════════════════════════════════════════════════════════════════════
 
-function SpellPickerModal({ charClass, accent, castingInfo, initialCantrips, initialSpells, onClose, onConfirm }) {
+export function SpellPickerModal({ charClass, accent, castingInfo, initialCantrips, initialSpells, onClose, onConfirm }) {
   const normalizedClass = normalizeClassFull(charClass);
   const [cantrips, setCantrips] = useState(initialCantrips || []);
   const [spells, setSpells]     = useState(initialSpells || []);

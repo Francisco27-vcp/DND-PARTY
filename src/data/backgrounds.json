@@ -1,0 +1,227 @@
+[
+  {
+    "id": "acolito",
+    "nombre": "Acólito",
+    "atributos": ["int", "sab", "car"],
+    "dote": "iniciado_en_la_magia",
+    "doteNota": "Iniciado en la Magia (lista de clérigo)",
+    "habilidades": ["perspicacia", "religion"],
+    "herramienta": "Suministros de calígrafo",
+    "equipo": {
+      "a": { "items": ["Suministros de calígrafo", "Libro de oraciones", "Pergamino (10 hojas)", "Símbolo sagrado", "Túnica"], "oro": 8 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Dedicaste tu vida al servicio de un templo, realizando ceremonias y aprendiendo a canalizar poder divino."
+  },
+  {
+    "id": "animador",
+    "nombre": "Animador",
+    "atributos": ["fue", "des", "car"],
+    "dote": "musico",
+    "doteNota": "Músico",
+    "habilidades": ["acrobacias", "interpretacion"],
+    "herramienta": "Un instrumento musical (a elección)",
+    "equipo": {
+      "a": { "items": ["Instrumento musical", "2 disfraces", "Espejo", "Perfume", "Ropas de viaje"], "oro": 11 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Recorriste ferias y festivales haciendo de todo un poco para músicos y acróbatas a cambio de que te formaran."
+  },
+  {
+    "id": "artesano",
+    "nombre": "Artesano",
+    "atributos": ["fue", "des", "int"],
+    "dote": "fabricante",
+    "doteNota": "Fabricante",
+    "habilidades": ["investigacion", "persuasion"],
+    "herramienta": "Herramientas de artesano (a elección)",
+    "equipo": {
+      "a": { "items": ["Herramientas de artesano", "2 bolsas", "Ropas de viaje"], "oro": 32 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Empezaste barriendo el taller de un artesano hasta convertirte en aprendiz y luego en su propio oficio.",
+    "revisar": true
+  },
+  {
+    "id": "campesino",
+    "nombre": "Campesino",
+    "atributos": ["fue", "con", "sab"],
+    "dote": "duro",
+    "doteNota": "Duro",
+    "habilidades": ["naturaleza", "trato_animales"],
+    "herramienta": "Herramientas de carpintero",
+    "equipo": {
+      "a": { "items": ["Hoz", "Herramientas de carpintero", "Útiles de sanador", "Olla de hierro", "Pala", "Ropas de viaje"], "oro": 30 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Te criaste en el campo, cuidando animales y cultivando la tierra."
+  },
+  {
+    "id": "charlatan",
+    "nombre": "Charlatán",
+    "atributos": ["des", "con", "car"],
+    "dote": "habilidoso",
+    "doteNota": "Habilidoso",
+    "habilidades": ["engano", "juego_de_manos"],
+    "herramienta": "Útiles para falsificar",
+    "equipo": {
+      "a": { "items": ["Útiles para falsificar", "Disfraz", "Ropas de calidad"], "oro": 15 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Aprendiste a aprovecharte de los desafortunados con mentiras reconfortantes y pociones falsas."
+  },
+  {
+    "id": "comerciante",
+    "nombre": "Comerciante",
+    "atributos": ["con", "int", "car"],
+    "dote": "afortunado",
+    "doteNota": "Afortunado",
+    "habilidades": ["persuasion", "trato_animales"],
+    "herramienta": "Herramientas de navegante",
+    "equipo": {
+      "a": { "items": ["Herramientas de navegante", "2 bolsas", "Ropas de viaje"], "oro": 22 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Fuiste aprendiz de un comerciante o caravanero, comprando y vendiendo mercancías."
+  },
+  {
+    "id": "criminal",
+    "nombre": "Criminal",
+    "atributos": ["des", "con", "int"],
+    "dote": "alerta",
+    "doteNota": "Alerta",
+    "habilidades": ["juego_de_manos", "sigilo"],
+    "herramienta": "Herramientas de ladrón",
+    "equipo": {
+      "a": { "items": ["2 dagas", "Herramientas de ladrón", "2 bolsas", "Palanqueta", "Ropas de viaje"], "oro": 16 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Te buscabas la vida en los callejones, birlando carteras o robando en comercios."
+  },
+  {
+    "id": "ermitano",
+    "nombre": "Ermitaño",
+    "atributos": ["con", "sab", "car"],
+    "dote": "sanador",
+    "doteNota": "Sanador",
+    "habilidades": ["medicina", "religion"],
+    "herramienta": "Útiles de herborista",
+    "equipo": {
+      "a": { "items": ["Bastón", "Útiles de herborista", "Aceite (3 frascos)", "Lámpara", "Libro de filosofía", "Petate", "Ropas de viaje"], "oro": 16 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Pasaste tus años de juventud en un refugio apartado, con la soledad como única compañía."
+  },
+  {
+    "id": "erudito",
+    "nombre": "Erudito",
+    "atributos": ["con", "int", "sab"],
+    "dote": "iniciado_en_la_magia",
+    "doteNota": "Iniciado en la Magia (lista de mago)",
+    "habilidades": ["arcanos", "historia"],
+    "herramienta": "Suministros de calígrafo",
+    "equipo": {
+      "a": { "items": ["Bastón", "Suministros de calígrafo", "Libro de historia", "Pergamino (3 hojas)", "Túnica"], "oro": 8 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Viajaste entre palacetes y monasterios estudiando libros y pergaminos para adquirir conocimiento."
+  },
+  {
+    "id": "escriba",
+    "nombre": "Escriba",
+    "atributos": ["des", "int", "sab"],
+    "dote": "habilidoso",
+    "doteNota": "Habilidoso",
+    "habilidades": ["investigacion", "percepcion"],
+    "herramienta": "Suministros de calígrafo",
+    "equipo": {
+      "a": { "items": ["Suministros de calígrafo", "Aceite (3 frascos)", "Lámpara", "Pergamino (12 hojas)", "Ropas de calidad"], "oro": 23 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Pasaste tus años de formación copiando tomos y documentos con letra clara y prestando mucha atención a los detalles."
+  },
+  {
+    "id": "guardia",
+    "nombre": "Guardia",
+    "atributos": ["fue", "int", "sab"],
+    "dote": "alerta",
+    "doteNota": "Alerta",
+    "habilidades": ["atletismo", "percepcion"],
+    "herramienta": "Un tipo de juego (a elección)",
+    "equipo": {
+      "a": { "items": ["Lanza", "Ballesta ligera", "20 virotes", "Juego", "Aljaba", "Esposas", "Linterna sorda", "Ropas de viaje"], "oro": 12 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Te entrenaron para vigilar desde la torre, atento a merodeadores y pendencieros."
+  },
+  {
+    "id": "guia",
+    "nombre": "Guía",
+    "atributos": ["des", "con", "sab"],
+    "dote": "iniciado_en_la_magia",
+    "doteNota": "Iniciado en la Magia (lista de druida)",
+    "habilidades": ["sigilo", "supervivencia"],
+    "herramienta": "Herramientas de cartógrafo",
+    "equipo": {
+      "a": { "items": ["Arco corto", "20 flechas", "Herramientas de cartógrafo", "Aljaba", "Petate", "Tienda", "Ropas de viaje"], "oro": 3 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Alcanzaste la mayoría de edad en plena naturaleza, lejos de tierras pobladas."
+  },
+  {
+    "id": "marinero",
+    "nombre": "Marinero",
+    "atributos": ["fue", "des", "sab"],
+    "dote": "maton_de_taberna",
+    "doteNota": "Matón de Taberna",
+    "habilidades": ["acrobacias", "percepcion"],
+    "herramienta": "Herramientas de navegante",
+    "equipo": {
+      "a": { "items": ["Daga", "Herramientas de navegante", "Cuerda", "Ropas de viaje"], "oro": 20 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Llevaste una vida en el mar, con el viento en popa y grandes tormentas de por medio."
+  },
+  {
+    "id": "noble",
+    "nombre": "Noble",
+    "atributos": ["fue", "int", "car"],
+    "dote": "habilidoso",
+    "doteNota": "Habilidoso",
+    "habilidades": ["historia", "persuasion"],
+    "herramienta": "Un tipo de juego (a elección)",
+    "equipo": {
+      "a": { "items": ["Juego", "Perfume", "Ropas de calidad"], "oro": 29 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Te criaste entre riqueza, poder y privilegios, observando a tu familia en la corte."
+  },
+  {
+    "id": "soldado",
+    "nombre": "Soldado",
+    "atributos": ["fue", "des", "con"],
+    "dote": "atacante_salvaje",
+    "doteNota": "Atacante Salvaje",
+    "habilidades": ["atletismo", "intimidacion"],
+    "herramienta": "Un tipo de juego (a elección)",
+    "equipo": {
+      "a": { "items": ["Lanza", "Arco corto", "20 flechas", "Aljaba", "Juego", "Útiles de sanador", "Ropas de viaje"], "oro": 14 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Empezaste a entrenarte para la guerra apenas llegaste a la edad adulta."
+  },
+  {
+    "id": "vagabundo",
+    "nombre": "Vagabundo",
+    "atributos": ["des", "sab", "car"],
+    "dote": "afortunado",
+    "doteNota": "Afortunado",
+    "habilidades": ["perspicacia", "sigilo"],
+    "herramienta": "Herramientas de ladrón",
+    "equipo": {
+      "a": { "items": ["2 dagas", "Herramientas de ladrón", "Juego", "2 bolsas", "Petate", "Ropas de viaje"], "oro": 16 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "descripcion": "Creciste en las calles, durmiendo donde podías y haciendo encargos a cambio de comida."
+  }
+]

@@ -11,6 +11,7 @@ import AppIcon from '../components/AppIcon';
 import GameIcon from '../components/GameIcon';
 import GAME_ICONS from '../data/gameicons';
 import { getTacticalVisual } from '../lib/tacticalTokens';
+import CharacterWizard from '../components/CharacterWizard';
 
 const COMBAT_TYPE_COLORS = { pj: '#c9a84c', enemigo: '#8b1a1a' };
 
@@ -28,8 +29,8 @@ const EMPTY_CHAR = {
   stats: { fue: 10, des: 10, con: 10, int: 10, sab: 10, car: 10 },
 };
 
-const CLASSES = ['Bárbaro','Bardo','Clérigo','Druida','Explorador','Guerrero','Hechicero','Mago','Monje','Paladín','Pícaro','Warlock'];
-const RACES = ['Humano','Elfo','Enano','Mediano','Gnomo','Semielfo','Semiorco','Tiefling','Aasimar','Draconido'];
+const CLASSES = ['Bárbaro','Bardo','Brujo','Clérigo','Druida','Explorador','Guerrero','Hechicero','Mago','Monje','Paladín','Pícaro'];
+const RACES = ['Humano','Elfo','Enano','Mediano','Gnomo','Goliat','Orco','Tiefling','Aasimar','Dracónido'];
 const ICONS = ['⚔️','🎵','🔮','🏹','🛡️','⚡','🌿','🔥','❄️','☠️','✨','🐉'];
 const COLORS = ['#c9a84c','#4a7fa5','#8b1a1a','#5a8a5a','#7a5a9a','#4a7a7a','#a57a4a','#6a4a8a'];
 
@@ -67,6 +68,7 @@ export default function Home({ user }) {
   const [characters, setCharacters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
   const [form, setForm] = useState({ ...EMPTY_CHAR });
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -404,9 +406,14 @@ export default function Home({ user }) {
             <div style={s.sectionHeader}>
               <span style={s.sectionTitle}>Party</span>
               <div style={s.sectionLine} />
-              <button style={s.addBtn} onClick={() => { setAdding(!adding); setForm({ ...EMPTY_CHAR }); }}>
-                {adding ? '✕ Cancelar' : '+ Agregar PJ'}
+              <button style={s.addBtn} onClick={() => setShowWizard(true)}>
+                + Agregar PJ
               </button>
+              {isAdmin && (
+                <button style={{ ...s.addBtn, background: 'transparent', marginLeft: '8px' }} onClick={() => { setAdding(!adding); setForm({ ...EMPTY_CHAR }); }}>
+                  {adding ? '✕ Cancelar' : 'Modo rápido'}
+                </button>
+              )}
             </div>
 
             {/* ADD FORM */}
@@ -820,6 +827,16 @@ export default function Home({ user }) {
       </div>{/* END partyLayout */}
 
       {/* ── MODALS ── */}
+
+      {/* Character creation wizard */}
+      {showWizard && (
+        <CharacterWizard
+          user={user}
+          isAdmin={isAdmin}
+          onClose={() => setShowWizard(false)}
+          onCreated={() => { setShowWizard(false); load(); }}
+        />
+      )}
 
       {/* Delete confirm */}
       {deleteConfirm && (

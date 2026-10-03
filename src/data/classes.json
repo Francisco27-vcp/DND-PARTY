@@ -1,0 +1,244 @@
+[
+  {
+    "id": "barbaro",
+    "nombre": "Bárbaro",
+    "dadoDeGolpe": 12,
+    "caracteristicaPrincipal": ["fue"],
+    "dificultad": "Fácil",
+    "rol": "Daño cuerpo a cuerpo y aguante",
+    "paraQuienEs": "Querés pegar fuerte y aguantar golpes, sin preocuparte por gestionar magia.",
+    "salvacionesCompetentes": ["fue", "con"],
+    "habilidadesElegir": 2,
+    "habilidadesOpciones": ["atletismo", "intimidacion", "naturaleza", "percepcion", "supervivencia", "trato_animales"],
+    "competenciaArmas": "Armas sencillas y marciales",
+    "competenciaArmaduras": "Armaduras ligeras y medias, y escudos",
+    "competenciaHerramientas": null,
+    "equipoInicial": {
+      "a": { "items": ["Hacha a dos manos", "4 hachas de mano", "Paquete de explorador"], "oro": 15 },
+      "b": { "items": [], "oro": 75 }
+    },
+    "lanzadora": false
+  },
+  {
+    "id": "guerrero",
+    "nombre": "Guerrero",
+    "dadoDeGolpe": 10,
+    "caracteristicaPrincipal": ["fue", "des"],
+    "dificultad": "Fácil",
+    "rol": "Combate versátil con cualquier arma",
+    "paraQuienEs": "Querés ser bueno peleando con cualquier arma o armadura, sin magia que gestionar.",
+    "salvacionesCompetentes": ["fue", "con"],
+    "habilidadesElegir": 2,
+    "habilidadesOpciones": ["acrobacias", "trato_animales", "atletismo", "historia", "perspicacia", "intimidacion", "percepcion", "supervivencia"],
+    "competenciaArmas": "Armas sencillas y marciales",
+    "competenciaArmaduras": "Todas las armaduras y escudos",
+    "competenciaHerramientas": null,
+    "equipoInicial": {
+      "a": { "items": ["Cota de malla", "Espada larga", "Escudo", "Arco corto", "20 flechas", "Aljaba", "Paquete de explorador"], "oro": 0 },
+      "b": { "items": [], "oro": 155 }
+    },
+    "lanzadora": false
+  },
+  {
+    "id": "explorador",
+    "nombre": "Explorador",
+    "dadoDeGolpe": 10,
+    "caracteristicaPrincipal": ["des", "sab"],
+    "dificultad": "Media",
+    "rol": "Combate a distancia y rastreo, con algo de magia",
+    "paraQuienEs": "Te gusta la naturaleza, rastrear enemigos y pelear a distancia, con un toque de magia simple.",
+    "salvacionesCompetentes": ["fue", "des"],
+    "habilidadesElegir": 3,
+    "habilidadesOpciones": ["trato_animales", "atletismo", "perspicacia", "investigacion", "naturaleza", "percepcion", "sigilo", "supervivencia"],
+    "competenciaArmas": "Armas sencillas y marciales",
+    "competenciaArmaduras": "Armaduras ligeras y medias, y escudos",
+    "competenciaHerramientas": null,
+    "equipoInicial": {
+      "a": { "items": ["Armadura de cuero tachonado", "2 espadas cortas", "Arco largo", "20 flechas", "Aljaba", "Paquete de explorador"], "oro": 0 },
+      "b": { "items": [], "oro": 150 }
+    },
+    "lanzadora": true
+  },
+  {
+    "id": "picaro",
+    "nombre": "Pícaro",
+    "dadoDeGolpe": 8,
+    "caracteristicaPrincipal": ["des"],
+    "dificultad": "Media",
+    "rol": "Sigilo, astucia y golpes precisos",
+    "paraQuienEs": "Te gusta ser sigiloso, resolver problemas con astucia, y golpear fuerte con precisión una vez por turno.",
+    "salvacionesCompetentes": ["des", "int"],
+    "habilidadesElegir": 4,
+    "habilidadesOpciones": ["acrobacias", "atletismo", "engano", "intimidacion", "investigacion", "juego_de_manos", "percepcion", "perspicacia", "persuasion", "sigilo"],
+    "competenciaArmas": "Armas sencillas, y marciales con la propiedad ligera o sutil",
+    "competenciaArmaduras": "Armaduras ligeras",
+    "competenciaHerramientas": "Herramientas de ladrón",
+    "equipoInicial": {
+      "a": { "items": ["Armadura de cuero", "2 dagas", "Espada corta", "Arco corto", "20 flechas", "Aljaba", "Herramientas de ladrón", "Paquete de ladrón"], "oro": 3 },
+      "b": { "items": [], "oro": 100 }
+    },
+    "lanzadora": false
+  },
+  {
+    "id": "monje",
+    "nombre": "Monje",
+    "dadoDeGolpe": 8,
+    "caracteristicaPrincipal": ["des", "sab"],
+    "dificultad": "Compleja",
+    "rol": "Combate marcial con técnicas especiales (Ki)",
+    "paraQuienEs": "Te gusta pelear con tu cuerpo usando técnicas especiales, pero tiene bastantes reglas para aprender de entrada.",
+    "salvacionesCompetentes": ["fue", "des"],
+    "habilidadesElegir": 2,
+    "habilidadesOpciones": ["acrobacias", "atletismo", "historia", "perspicacia", "religion", "sigilo"],
+    "competenciaArmas": "Armas sencillas y espadas cortas",
+    "competenciaArmaduras": "Ninguna",
+    "competenciaHerramientas": "Un tipo de instrumento musical o herramientas de artesano (a elección)",
+    "equipoInicial": {
+      "a": { "items": ["Espada corta", "5 dardos", "Paquete de explorador"], "oro": 0 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "lanzadora": false
+  },
+  {
+    "id": "bardo",
+    "nombre": "Bardo",
+    "dadoDeGolpe": 8,
+    "caracteristicaPrincipal": ["car"],
+    "dificultad": "Media",
+    "rol": "Magia de apoyo flexible con música",
+    "paraQuienEs": "Te gusta la música y la magia de apoyo; es muy flexible, pero tenés que elegir bastantes conjuros.",
+    "salvacionesCompetentes": ["des", "car"],
+    "habilidadesElegir": 3,
+    "habilidadesOpciones": ["atletismo", "acrobacias", "juego_de_manos", "sigilo", "arcanos", "historia", "investigacion", "naturaleza", "religion", "perspicacia", "medicina", "percepcion", "supervivencia", "trato_animales", "engano", "intimidacion", "interpretacion", "persuasion"],
+    "habilidadesNota": "Podés elegir cualquiera 3 de las 18 habilidades del juego.",
+    "competenciaArmas": "Armas sencillas, ballestas de mano, espadas cortas, estoques y espadas largas",
+    "competenciaArmaduras": "Armaduras ligeras",
+    "competenciaHerramientas": "3 instrumentos musicales (a elección)",
+    "equipoInicial": {
+      "a": { "items": ["Estoque", "Instrumento musical", "Paquete de entretenimiento", "Armadura de cuero", "Daga"], "oro": 0 },
+      "b": { "items": [], "oro": 110 }
+    },
+    "lanzadora": true
+  },
+  {
+    "id": "clerigo",
+    "nombre": "Clérigo",
+    "dadoDeGolpe": 8,
+    "caracteristicaPrincipal": ["sab"],
+    "dificultad": "Media",
+    "rol": "Magia divina de curación y apoyo",
+    "paraQuienEs": "Querés curar y apoyar a tu grupo con magia divina, y aguantar bien en combate.",
+    "salvacionesCompetentes": ["sab", "car"],
+    "habilidadesElegir": 2,
+    "habilidadesOpciones": ["historia", "perspicacia", "medicina", "persuasion", "religion"],
+    "competenciaArmas": "Armas sencillas",
+    "competenciaArmaduras": "Armaduras ligeras y medias, y escudos",
+    "competenciaHerramientas": null,
+    "equipoInicial": {
+      "a": { "items": ["Cota de malla", "Símbolo sagrado", "Maza", "Escudo", "Paquete de sacerdote"], "oro": 0 },
+      "b": { "items": [], "oro": 110 }
+    },
+    "lanzadora": true
+  },
+  {
+    "id": "druida",
+    "nombre": "Druida",
+    "dadoDeGolpe": 8,
+    "caracteristicaPrincipal": ["sab"],
+    "dificultad": "Media",
+    "rol": "Magia de la naturaleza y transformación en bestias",
+    "paraQuienEs": "Te gusta la naturaleza y transformarte en animales, con mucha magia para aprender.",
+    "salvacionesCompetentes": ["int", "sab"],
+    "habilidadesElegir": 2,
+    "habilidadesOpciones": ["arcanos", "trato_animales", "perspicacia", "medicina", "naturaleza", "percepcion", "religion", "supervivencia"],
+    "competenciaArmas": "Armas sencillas",
+    "competenciaArmaduras": "Armaduras ligeras y medias, y escudos (sin metal)",
+    "competenciaHerramientas": "Útiles de herborista",
+    "equipoInicial": {
+      "a": { "items": ["Escudo de madera", "Cimitarra", "Útiles de herborista", "Paquete de erudito"], "oro": 0 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "lanzadora": true
+  },
+  {
+    "id": "hechicero",
+    "nombre": "Hechicero",
+    "dadoDeGolpe": 6,
+    "caracteristicaPrincipal": ["car"],
+    "dificultad": "Media",
+    "rol": "Magia innata y flexible con Metamagia",
+    "paraQuienEs": "Tenés pocos conjuros pero muy flexibles gracias a la Metamagia: buena opción si querés magia poderosa sin gestionar demasiado.",
+    "salvacionesCompetentes": ["con", "car"],
+    "habilidadesElegir": 2,
+    "habilidadesOpciones": ["arcanos", "engano", "perspicacia", "intimidacion", "persuasion", "religion"],
+    "competenciaArmas": "Armas sencillas",
+    "competenciaArmaduras": "Ninguna",
+    "competenciaHerramientas": null,
+    "equipoInicial": {
+      "a": { "items": ["Bastón", "Componente arcano", "2 dagas", "Paquete de erudito"], "oro": 0 },
+      "b": { "items": [], "oro": 50 }
+    },
+    "lanzadora": true
+  },
+  {
+    "id": "mago",
+    "nombre": "Mago",
+    "dadoDeGolpe": 6,
+    "caracteristicaPrincipal": ["int"],
+    "dificultad": "Compleja",
+    "rol": "La mayor variedad de magia arcana",
+    "paraQuienEs": "Querés la mayor variedad de conjuros del juego, pero hay que llevar un libro de conjuros y planificar bastante.",
+    "salvacionesCompetentes": ["int", "sab"],
+    "habilidadesElegir": 2,
+    "habilidadesOpciones": ["arcanos", "historia", "investigacion", "medicina", "naturaleza", "perspicacia", "religion"],
+    "competenciaArmas": "Armas sencillas",
+    "competenciaArmaduras": "Ninguna",
+    "competenciaHerramientas": null,
+    "equipoInicial": {
+      "a": { "items": ["2 dagas", "Canalizador arcano (bastón)", "Libro de conjuros", "Paquete de erudito", "Túnica"], "oro": 5 },
+      "b": { "items": [], "oro": 55 }
+    },
+    "lanzadora": true,
+    "libroDeConjuros": true
+  },
+  {
+    "id": "brujo",
+    "nombre": "Brujo",
+    "dadoDeGolpe": 8,
+    "caracteristicaPrincipal": ["car"],
+    "dificultad": "Media",
+    "rol": "Magia de pacto, pocos espacios que se recuperan rápido",
+    "paraQuienEs": "Tenés pocos espacios de conjuro pero se recuperan en un descanso corto: buena opción si querés magia con menos que gestionar.",
+    "salvacionesCompetentes": ["sab", "car"],
+    "habilidadesElegir": 2,
+    "habilidadesOpciones": ["arcanos", "engano", "historia", "intimidacion", "investigacion", "naturaleza", "religion"],
+    "competenciaArmas": "Armas sencillas",
+    "competenciaArmaduras": "Armaduras ligeras",
+    "competenciaHerramientas": null,
+    "equipoInicial": {
+      "a": { "items": ["Ballesta ligera", "20 virotes", "Componente arcano", "Paquete de erudito", "Armadura de cuero", "Daga"], "oro": 0 },
+      "b": { "items": [], "oro": 100 }
+    },
+    "lanzadora": true
+  },
+  {
+    "id": "paladin",
+    "nombre": "Paladín",
+    "dadoDeGolpe": 10,
+    "caracteristicaPrincipal": ["fue", "car"],
+    "dificultad": "Fácil",
+    "rol": "Combate fuerte con magia de apoyo y curación",
+    "paraQuienEs": "Combinás pegar fuerte con magia de apoyo y curación; fácil de jugar porque tenés pocos conjuros para elegir.",
+    "salvacionesCompetentes": ["sab", "car"],
+    "habilidadesElegir": 2,
+    "habilidadesOpciones": ["atletismo", "perspicacia", "intimidacion", "medicina", "persuasion", "religion"],
+    "competenciaArmas": "Armas sencillas y marciales",
+    "competenciaArmaduras": "Todas las armaduras y escudos",
+    "competenciaHerramientas": null,
+    "equipoInicial": {
+      "a": { "items": ["Cota de malla", "Espada larga", "Escudo", "6 jabalinas", "Paquete de sacerdote"], "oro": 0 },
+      "b": { "items": [], "oro": 150 }
+    },
+    "lanzadora": true
+  }
+]
