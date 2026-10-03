@@ -212,7 +212,7 @@ export default function Home({ user }) {
     setSaving(true);
     const data = {
       ...form,
-      ownerEmail: form.ownerEmail || user.email,
+      ownerEmail: isAdmin ? (form.ownerEmail || user.email) : user.email,
       player: form.player || user.email.split('@')[0],
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -404,11 +404,9 @@ export default function Home({ user }) {
             <div style={s.sectionHeader}>
               <span style={s.sectionTitle}>Party</span>
               <div style={s.sectionLine} />
-              {isAdmin && (
-                <button style={s.addBtn} onClick={() => { setAdding(!adding); setForm({ ...EMPTY_CHAR }); }}>
-                  {adding ? '✕ Cancelar' : '+ Agregar PJ'}
-                </button>
-              )}
+              <button style={s.addBtn} onClick={() => { setAdding(!adding); setForm({ ...EMPTY_CHAR }); }}>
+                {adding ? '✕ Cancelar' : '+ Agregar PJ'}
+              </button>
             </div>
 
             {/* ADD FORM */}
@@ -427,7 +425,9 @@ export default function Home({ user }) {
                 </div>
                 <div style={s.formGrid}>
                   <Field label="Nombre"><input style={s.input} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Nombre del personaje" required /></Field>
-                  <Field label="Email del jugador"><input style={s.input} value={form.ownerEmail} onChange={e => setForm(f => ({ ...f, ownerEmail: e.target.value }))} placeholder="jugador@email.com" /></Field>
+                  {isAdmin && (
+                    <Field label="Email del jugador"><input style={s.input} value={form.ownerEmail} onChange={e => setForm(f => ({ ...f, ownerEmail: e.target.value }))} placeholder="jugador@email.com" /></Field>
+                  )}
                   <Field label="Clase"><select style={s.input} value={form.class} onChange={e => setForm(f => ({ ...f, class: e.target.value }))}>{CLASSES.map(c => <option key={c}>{c}</option>)}</select></Field>
                   <Field label="Subclase"><input style={s.input} value={form.subclass} onChange={e => setForm(f => ({ ...f, subclass: e.target.value }))} placeholder="Ej: Colegio del Glamour" /></Field>
                   <Field label="Raza"><select style={s.input} value={form.race} onChange={e => setForm(f => ({ ...f, race: e.target.value }))}>{RACES.map(r => <option key={r}>{r}</option>)}</select></Field>
