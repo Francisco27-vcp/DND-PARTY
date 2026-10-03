@@ -176,13 +176,91 @@ const CLASS_SLOT_TABLES = {
   druida:     FULL_CASTER_SLOTS,
 };
 
+// Magia de Pacto del Brujo: todos sus espacios son del mismo nivel y se recuperan en descanso corto.
+const WARLOCK_PACT_SLOTS = {
+  1: { nivel: 1, total: 1 },  2: { nivel: 1, total: 2 },  3: { nivel: 2, total: 2 },
+  4: { nivel: 2, total: 2 },  5: { nivel: 3, total: 2 },  6: { nivel: 3, total: 2 },
+  7: { nivel: 4, total: 2 },  8: { nivel: 4, total: 2 },  9: { nivel: 5, total: 2 },
+  10: { nivel: 5, total: 2 }, 11: { nivel: 5, total: 3 }, 12: { nivel: 5, total: 3 },
+  13: { nivel: 5, total: 3 }, 14: { nivel: 5, total: 3 }, 15: { nivel: 5, total: 3 },
+  16: { nivel: 5, total: 3 }, 17: { nivel: 5, total: 4 }, 18: { nivel: 5, total: 4 },
+  19: { nivel: 5, total: 4 }, 20: { nivel: 5, total: 4 },
+};
+
 function computeDefaultSlots(level, charClass) {
   const key = normalizeClass(charClass);
+  const lvl = Math.min(20, Math.max(1, level || 1));
+  if (key === 'brujo' || (!key && normalizeClassFull(charClass) === 'brujo')) {
+    const pact = WARLOCK_PACT_SLOTS[lvl];
+    return pact ? { [pact.nivel]: { total: pact.total, used: 0 } } : {};
+  }
   if (!key || !CLASS_SLOT_TABLES[key]) return {};
-  const table = CLASS_SLOT_TABLES[key][Math.min(20, Math.max(1, level || 1))] || {};
+  const table = CLASS_SLOT_TABLES[key][lvl] || {};
   const result = {};
-  Object.entries(table).forEach(([lvl, total]) => { result[lvl] = { total, used: 0 }; });
+  Object.entries(table).forEach(([l, total]) => { result[l] = { total, used: 0 }; });
   return result;
+}
+
+// ── REGLAS DE LANZAMIENTO POR CLASE ──────────────────────────────────────────
+// Tabla aproximada (Manual del Jugador 2024): trucos/conjuros conocidos o preparados,
+// característica de lanzamiento y si la clase "prepara" o "conoce" sus conjuros.
+const CANTRIPS_KNOWN_TABLE = {
+  clerigo:   lvl => lvl >= 10 ? 5 : lvl >= 4 ? 4 : 3,
+  druida:    lvl => lvl >= 10 ? 4 : lvl >= 4 ? 3 : 2,
+  mago:      lvl => lvl >= 10 ? 5 : lvl >= 4 ? 4 : 3,
+  bardo:     lvl => lvl >= 10 ? 4 : lvl >= 4 ? 3 : 2,
+  brujo:     lvl => lvl >= 10 ? 4 : lvl >= 4 ? 3 : 2,
+  hechicero: lvl => lvl >= 10 ? 6 : lvl >= 4 ? 5 : 4,
+};
+
+// Conjuros conocidos (clases que "conocen", no "preparan")
+const SPELLS_KNOWN_TABLE = {
+  bardo:      [4,5,6,7,9,10,11,12,14,15,15,15,16,18,19,19,20,22,22,22],
+  brujo:      [2,3,4,5,6,7,8,9,10,10,11,11,12,12,13,13,14,14,15,15],
+  explorador: [2,3,4,5,6,6,7,7,9,9,10,10,11,11,12,12,13,13,14,14],
+  hechicero:  [2,3,4,5,6,7,8,9,10,11,11,12,12,13,13,14,14,15,15,15],
+};
+
+const CASTING_RULES = {
+  clerigo:    { modo: 'prepara', caracteristica: 'sab' },
+  druida:     { modo: 'prepara', caracteristica: 'sab' },
+  mago:       { modo: 'prepara', caracteristica: 'int', libroDeConjuros: true },
+  paladin:    { modo: 'prepara', caracteristica: 'car' },
+  bardo:      { modo: 'conoce', caracteristica: 'car' },
+  brujo:      { modo: 'conoce', caracteristica: 'car', pacto: true },
+  explorador: { modo: 'conoce', caracteristica: 'sab' },
+  hechicero:  { modo: 'conoce', caracteristica: 'car' },
+};
+
+function maxSlotLevel(level, charClass) {
+  const key = normalizeClass(charClass);
+  const lvl = Math.min(20, Math.max(1, level || 1));
+  if (key === 'brujo' || (!key && normalizeClassFull(charClass) === 'brujo')) {
+    return WARLOCK_PACT_SLOTS[lvl]?.nivel || 0;
+  }
+  if (!key || !CLASS_SLOT_TABLES[key]) return 0;
+  const table = CLASS_SLOT_TABLES[key][lvl] || {};
+  const levels = Object.keys(table).map(Number).filter(l => table[l] > 0);
+  return levels.length ? Math.max(...levels) : 0;
+}
+
+function computeCastingInfo(charClass, level, stats) {
+  const key = normalizeClassFull(charClass);
+  const rules = key && CASTING_RULES[key];
+  if (!rules) return { modo: null, caracteristica: null, trucosMax: 0, conjurosMax: 0, maxSpellLevel: 0 };
+  const lvl = Math.max(1, level || 1);
+  const mod = Math.floor(((stats?.[rules.caracteristica] || 10) - 10) / 2);
+  const trucosMax = CANTRIPS_KNOWN_TABLE[key] ? CANTRIPS_KNOWN_TABLE[key](lvl) : 0;
+  let conjurosMax;
+  if (rules.modo === 'conoce') {
+    const table = SPELLS_KNOWN_TABLE[key] || [];
+    conjurosMax = table[Math.min(lvl, table.length) - 1] || 0;
+  } else if (key === 'paladin') {
+    conjurosMax = Math.max(1, Math.floor(lvl / 2) + mod);
+  } else {
+    conjurosMax = Math.max(1, lvl + mod);
+  }
+  return { modo: rules.modo, caracteristica: rules.caracteristica, trucosMax, conjurosMax, maxSpellLevel: maxSlotLevel(lvl, charClass), libroDeConjuros: !!rules.libroDeConjuros, pacto: !!rules.pacto };
 }
 
 function getTargetSlot(itemId, currentInventory, extraMap = {}) {
@@ -384,6 +462,7 @@ export default function CharacterSheet({ user }) {
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [showRestModal, setShowRestModal] = useState(null); // null | 'corto' | 'largo'
   const [restSummary, setRestSummary] = useState(null);
+  const [showSpellPicker, setShowSpellPicker] = useState(false);
   const portraitRef = useRef(null);
 
   const isAdmin = userRole === 'Dungeon Master' || userRole === 'Jugador / DM';
@@ -582,10 +661,11 @@ export default function CharacterSheet({ user }) {
 
   // ── SPELLS ───────────────────────────────────────────────────────────────────
 
-  const spellSlots    = draft.spellSlots    || computeDefaultSlots(draft.level, draft.class);
+  const spellSlots     = draft.spellSlots     || computeDefaultSlots(draft.level, draft.class);
   const preparedSpells = draft.preparedSpells || [];
-  const carMod        = Math.floor(((draft.stats?.car || 10) - 10) / 2);
-  const maxPrepared   = Math.max(1, carMod + (draft.level || 1));
+  const knownCantrips  = draft.knownCantrips  || [];
+  const castingInfo    = computeCastingInfo(draft.class, draft.level, draft.stats);
+  const maxPrepared    = castingInfo.conjurosMax;
 
   const updateSpellSlot = (level, newUsed) => {
     const slot = spellSlots[level];
@@ -594,6 +674,12 @@ export default function CharacterSheet({ user }) {
     const newSlots = { ...spellSlots, [level]: { ...slot, used: clamped } };
     setDraft(d => ({ ...d, spellSlots: newSlots }));
     updateDoc(doc(db, 'characters', id), { spellSlots: newSlots });
+  };
+
+  const saveSpellSelection = (newCantrips, newSpells) => {
+    const updates = { knownCantrips: newCantrips, preparedSpells: newSpells };
+    setDraft(d => ({ ...d, ...updates }));
+    updateDoc(doc(db, 'characters', id), updates);
   };
 
   // ── DESCANSOS Y RECURSOS DE CLASE ────────────────────────────────────────────
@@ -651,6 +737,11 @@ export default function CharacterSheet({ user }) {
     const newHitDiceUsed = Math.min(hitDiceTotal, hitDiceUsed + diceSpent);
     const resetResources = classResources.map(r => r.recupera === 'corto' ? { ...r, usados: 0 } : r);
     const updates = { hp: newHp, hitDiceUsed: newHitDiceUsed, hitDiceTotal, classResources: resetResources };
+    if (castingInfo.pacto) {
+      const newSlots = {};
+      Object.entries(spellSlots).forEach(([lvl, data]) => { newSlots[lvl] = { ...data, used: 0 }; });
+      updates.spellSlots = newSlots;
+    }
     setDraft(d => ({ ...d, ...updates }));
     updateDoc(doc(db, 'characters', id), updates);
     setRestSummary({
@@ -763,6 +854,17 @@ export default function CharacterSheet({ user }) {
       )}
       {restSummary && (
         <RestSummaryModal summary={restSummary} accent={accent1} onClose={() => setRestSummary(null)} />
+      )}
+
+      {/* ── SPELL PICKER MODAL ── */}
+      {showSpellPicker && (
+        <SpellPickerModal
+          charClass={draft.class} accent={accent1}
+          castingInfo={castingInfo}
+          initialCantrips={knownCantrips} initialSpells={preparedSpells}
+          onClose={() => setShowSpellPicker(false)}
+          onConfirm={(cantrips, spells) => { saveSpellSelection(cantrips, spells); setShowSpellPicker(false); }}
+        />
       )}
 
       {/* ── FULLSCREEN MODAL ── */}
@@ -951,7 +1053,7 @@ export default function CharacterSheet({ user }) {
       {viewMode === 'jugar' && (
         <PlayMode
           draft={draft} prof={prof} accent={accent1} accentGlow={accentGlow}
-          spellSlots={spellSlots} preparedSpells={preparedSpells}
+          spellSlots={spellSlots} preparedSpells={preparedSpells} knownCantrips={knownCantrips}
           inventoryItems={inventoryItems} customItemsData={customItemsData}
           isMobile={isMobile} charId={id} user={user}
         />
@@ -1249,7 +1351,9 @@ export default function CharacterSheet({ user }) {
         <SpellsTab
           spellSlots={spellSlots}
           preparedSpells={preparedSpells}
+          knownCantrips={knownCantrips}
           maxPrepared={maxPrepared}
+          castingInfo={castingInfo}
           isOwner={isOwner}
           accent={accent1}
           charClass={draft.class}
@@ -1259,6 +1363,7 @@ export default function CharacterSheet({ user }) {
           updateSpellSlot={updateSpellSlot}
           onOpenLongRest={() => setShowRestModal('largo')}
           onOpenShortRest={() => setShowRestModal('corto')}
+          onOpenPicker={() => setShowSpellPicker(true)}
           togglePrepared={togglePreparedSpell}
           castSpell={castSpell}
           activeConcentration={draft.activeConcentration}
@@ -1611,7 +1716,7 @@ function LearnMode({ draft, prof, accent, skillVal, saveVal, fmtMod, isMobile })
 }
 
 // ── Play mode (Modo Jugar) ────────────────────────────────────────────────────
-function PlayMode({ draft, prof, accent, accentGlow, spellSlots, preparedSpells, inventoryItems, customItemsData, isMobile, charId, user }) {
+function PlayMode({ draft, prof, accent, accentGlow, spellSlots, preparedSpells, knownCantrips, inventoryItems, customItemsData, isMobile, charId, user }) {
   const charClass = normalizeClass(draft.class);
   const desMod    = Math.floor(((draft.stats?.des || 10) - 10) / 2);
   const fueMod    = Math.floor(((draft.stats?.fue || 10) - 10) / 2);
@@ -1645,7 +1750,7 @@ function PlayMode({ draft, prof, accent, accentGlow, spellSlots, preparedSpells,
     .map(i => ({ inv: i, item: getItem(i.itemId) }))
     .filter(({ item }) => item?.tipo === 'weapon');
 
-  const availableSpells = preparedSpells
+  const availableSpells = [...preparedSpells, ...(knownCantrips || [])]
     .map(sid => SPELLS_MAP[sid]).filter(Boolean)
     .filter(spell => {
       if (spell.nivel === 0 || spell.esHabilidad) return true;
@@ -2606,14 +2711,14 @@ function SpellCard({ spell, isOwner, accent, expanded, onToggle, onCast, onUnpre
 }
 
 // ── Spells tab ────────────────────────────────────────────────────────────────
-function SpellsTab({ spellSlots, preparedSpells, maxPrepared, isOwner, accent, charClass, charLevel, charStats, isMobile, updateSpellSlot, onOpenLongRest, onOpenShortRest, togglePrepared, castSpell, activeConcentration }) {
+function SpellsTab({ spellSlots, preparedSpells, knownCantrips, maxPrepared, castingInfo, isOwner, accent, charClass, charLevel, charStats, isMobile, updateSpellSlot, onOpenLongRest, onOpenShortRest, onOpenPicker, togglePrepared, castSpell, activeConcentration }) {
   const [expanded, setExpanded]       = useState(null);
   const [spellSearch, setSpellSearch] = useState('');
 
-  const normalizedClass  = normalizeClass(charClass);
-  const hasSpellcasting  = normalizedClass !== null;
+  const normalizedClass  = normalizeClassFull(charClass);
+  const hasSpellcasting  = castingInfo.modo !== null;
   const classSpells      = normalizedClass
-    ? ALL_SPELLS.filter(s => s.clases?.includes(normalizedClass) && !s.esHabilidad)
+    ? ALL_SPELLS.filter(s => s.clases?.includes(normalizedClass) && !s.esHabilidad && s.nivel >= 1 && s.nivel <= castingInfo.maxSpellLevel)
     : [];
   const abilities        = normalizedClass
     ? ALL_SPELLS.filter(s => s.clases?.includes(normalizedClass) && s.esHabilidad)
@@ -2628,7 +2733,9 @@ function SpellsTab({ spellSlots, preparedSpells, maxPrepared, isOwner, accent, c
     : [];
 
   const preparedList  = preparedSpells.map(id => SPELLS_MAP[id]).filter(Boolean);
+  const cantripList   = (knownCantrips || []).map(id => SPELLS_MAP[id]).filter(Boolean);
   const activeSlots   = Object.entries(spellSlots || {}).filter(([, d]) => d.total > 0).sort(([a], [b]) => parseInt(a) - parseInt(b));
+  const preparaLabel  = castingInfo.modo === 'conoce' ? 'Conocidos' : 'Preparados';
 
   const canCast = (spell) => {
     if (spell.nivel === 0 || spell.esHabilidad) return true;
@@ -2645,11 +2752,17 @@ function SpellsTab({ spellSlots, preparedSpells, maxPrepared, isOwner, accent, c
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <button style={sp.restBtn} onClick={onOpenLongRest}>☽ Descanso Largo</button>
           <button style={sp.restBtn} onClick={onOpenShortRest}>☀ Descanso Corto</button>
+          {hasSpellcasting && (
+            <button style={{ ...sp.restBtn, background: `${accent}18`, borderColor: accent, color: accent }} onClick={onOpenPicker}>
+              ✦ Elegir Conjuros
+            </button>
+          )}
         </div>
       )}
 
       {/* Sección A — Espacios */}
-      <Section title="Espacios de Conjuro" iconEl={<GameIcon author={ICONS.spell.author} name={ICONS.spell.name} size={16} color="c7a242" />}>
+      <Section title="Espacios de Conjuro" iconEl={<GameIcon author={ICONS.spell.author} name={ICONS.spell.name} size={16} color="c7a242" />}
+        titleExtra={<HelpTip text="Los espacios de conjuro se gastan al lanzar un conjuro de nivel 1 o superior (los trucos no gastan espacios). Usar un espacio de nivel más alto que el mínimo del conjuro ('lanzarlo a nivel superior') suele hacerlo más potente." />}>
         {!charClass
           ? <div style={sp.muted}>Configurá la clase del personaje (tab Ficha → Editar) para ver sus espacios de conjuro.</div>
           : !hasSpellcasting
@@ -2657,6 +2770,9 @@ function SpellsTab({ spellSlots, preparedSpells, maxPrepared, isOwner, accent, c
           : activeSlots.length === 0
           ? <div style={sp.muted}>No hay espacios de conjuro guardados. Descanso largo para reinicializar.</div>
           : <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {castingInfo.pacto && (
+                <div style={{ ...sp.muted, marginBottom: '2px' }}>Magia de Pacto: estos espacios se recuperan en un descanso corto, no largo.</div>
+              )}
               {activeSlots.map(([lvl, data]) => (
                 <SpellSlotRow key={lvl} level={parseInt(lvl)} total={data.total} used={data.used}
                   isOwner={isOwner} accent={accent}
@@ -2666,71 +2782,87 @@ function SpellsTab({ spellSlots, preparedSpells, maxPrepared, isOwner, accent, c
             </div>}
       </Section>
 
-      {/* Sección B — Conjuros preparados */}
-      <Section title={`Conjuros Preparados — ${preparedList.length} / ${maxPrepared}`} iconEl={<GameIcon author={ICONS.spell.author} name={ICONS.spell.name} size={16} color="c7a242" />}>
+      {/* Sección A.2 — Trucos conocidos */}
+      {hasSpellcasting && castingInfo.trucosMax > 0 && (
+        <Section title={`Trucos Conocidos — ${cantripList.length} / ${castingInfo.trucosMax}`} iconEl={<GameIcon author={ICONS.spell.author} name={ICONS.spell.name} size={16} color="c7a242" />}
+          titleExtra={<HelpTip text="Un truco (o conjuro de nivel 0) se puede lanzar las veces que quieras, sin gastar espacios de conjuro." />}>
+          {cantripList.length === 0
+            ? <div style={sp.muted}>Ningún truco elegido todavía. Usá el botón 'Elegir Conjuros'.</div>
+            : cantripList.map(spell => (
+                <SpellCard key={spell.id} spell={spell} isOwner={isOwner} accent={accent}
+                  expanded={expanded === spell.id} onToggle={() => toggle(spell.id)}
+                  onCast={() => castSpell(spell.id)} onUnprepare={null}
+                  canCast={true} isConcentration={false} />
+              ))}
+        </Section>
+      )}
+
+      {/* Sección B — Conjuros preparados/conocidos */}
+      <Section title={`Conjuros ${preparaLabel} — ${preparedList.length} / ${maxPrepared}`} iconEl={<GameIcon author={ICONS.spell.author} name={ICONS.spell.name} size={16} color="c7a242" />}
+        titleExtra={<HelpTip text={castingInfo.modo === 'conoce'
+          ? "Esta clase 'conoce' un número fijo de conjuros: quedan grabados y solo podés cambiar uno al subir de nivel."
+          : "Esta clase 'prepara' conjuros desde toda su lista: podés cambiar la selección después de cada descanso largo con el botón correspondiente."} />}>
         {preparedList.length === 0
-          ? <div style={sp.muted}>Ningún conjuro preparado. Usa el buscador para preparar.</div>
+          ? <div style={sp.muted}>Ningún conjuro {castingInfo.modo === 'conoce' ? 'conocido' : 'preparado'}. Usá 'Elegir Conjuros'.</div>
           : preparedList.map(spell => (
               <SpellCard key={spell.id} spell={spell} isOwner={isOwner} accent={accent}
                 expanded={expanded === spell.id} onToggle={() => toggle(spell.id)}
                 onCast={() => castSpell(spell.id)} onUnprepare={() => togglePrepared(spell.id)}
                 canCast={canCast(spell)} isConcentration={activeConcentration === spell.id} />
             ))}
+        {isOwner && hasSpellcasting && castingInfo.modo === 'prepara' && (
+          <button style={{ ...sp.restBtn, marginTop: '10px' }} onClick={onOpenPicker}>↻ Cambiar conjuros preparados</button>
+        )}
       </Section>
 
-      {/* Sección C — Agregar conjuros */}
-      {isOwner && (
-        <Section title="Agregar Conjuros" iconEl={<GameIcon author={ICONS.spell.author} name={ICONS.spell.name} size={16} color="c7a242" />}>
-          {!charClass
-            ? <div style={sp.muted}>Configurá la clase del personaje en la tab Ficha → Editar para ver los conjuros disponibles.</div>
-            : !hasSpellcasting
-            ? <div style={sp.muted}>Los {charClass}s no tienen lista de conjuros nativa. Clases sin magia propia: Guerrero, Bárbaro, Monje, Pícaro.</div>
-            : <>
-                <div style={{ fontFamily: 'Cinzel,serif', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--gold-dim)', marginBottom: '8px' }}>
-                  Máximo preparados: <span style={{ color: accent }}>{maxPrepared}</span>
-                  <span style={{ color: 'var(--line)', margin: '0 6px' }}>·</span>
-                  <span style={{ fontStyle: 'italic', fontFamily: 'Crimson Pro,serif', fontSize: '10px' }}>CAR mod + nivel de personaje</span>
-                </div>
-                <input value={spellSearch} onChange={e => setSpellSearch(e.target.value)}
-                  style={sp.searchInput} placeholder="Buscar por nombre o escuela..." />
-                {searchResults.length > 0 && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
-                    {searchResults.map(spell => (
-                      <div key={spell.id} style={sp.searchRow}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                            <span style={{ fontFamily: 'Cinzel,serif', fontSize: '12px', color: 'var(--gold-bright)' }}>{spell.nombre}</span>
-                            <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', border: `1px solid ${SCHOOL_COLORS[spell.escuela] || 'var(--line)'}55`, color: SCHOOL_COLORS[spell.escuela] || 'var(--gold-dim)', padding: '1px 5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{spell.escuela}</span>
-                            <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', color: accent, border: `1px solid ${accent}55`, padding: '1px 5px' }}>Nv.{spell.nivel}</span>
-                            {spell.concentracion && <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', color: 'var(--ember)', letterSpacing: '0.5px' }}>● Conc.</span>}
-                          </div>
-                          <div style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--parchment-dim)', marginTop: '2px', lineHeight: 1.3 }}>{spell.descripcion?.substring(0, 90)}…</div>
-                        </div>
-                        <button style={{ ...sp.addBtn, opacity: preparedList.length >= maxPrepared ? 0.4 : 1 }}
-                          disabled={preparedList.length >= maxPrepared}
-                          onClick={() => { if (preparedList.length < maxPrepared) { togglePrepared(spell.id); setSpellSearch(''); } }}>
-                          + Preparar
-                        </button>
+      {/* Sección C — Agregar conjuros (búsqueda libre, avanzado) */}
+      {isOwner && hasSpellcasting && (
+        <Section title="Agregar Conjuros (búsqueda libre)" iconEl={<GameIcon author={ICONS.spell.author} name={ICONS.spell.name} size={16} color="c7a242" />}>
+            <input value={spellSearch} onChange={e => setSpellSearch(e.target.value)}
+              style={sp.searchInput} placeholder="Buscar por nombre o escuela..." />
+            {searchResults.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
+                {searchResults.map(spell => (
+                  <div key={spell.id} style={sp.searchRow}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        <span style={{ fontFamily: 'Cinzel,serif', fontSize: '12px', color: 'var(--gold-bright)' }}>{spell.nombre}</span>
+                        <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', border: `1px solid ${SCHOOL_COLORS[spell.escuela] || 'var(--line)'}55`, color: SCHOOL_COLORS[spell.escuela] || 'var(--gold-dim)', padding: '1px 5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{spell.escuela}</span>
+                        <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', color: accent, border: `1px solid ${accent}55`, padding: '1px 5px' }}>Nv.{spell.nivel}</span>
+                        {spell.concentracion && <span style={{ fontFamily: 'Cinzel,serif', fontSize: '7px', color: 'var(--ember)', letterSpacing: '0.5px' }}>● Conc.</span>}
                       </div>
-                    ))}
+                      <div style={{ fontFamily: 'Crimson Pro,serif', fontSize: '12px', color: 'var(--parchment-dim)', marginTop: '2px', lineHeight: 1.3 }}>{spell.descripcion?.substring(0, 90)}…</div>
+                    </div>
+                    <button style={{ ...sp.addBtn, opacity: preparedList.length >= maxPrepared ? 0.4 : 1 }}
+                      disabled={preparedList.length >= maxPrepared}
+                      onClick={() => { if (preparedList.length < maxPrepared) { togglePrepared(spell.id); setSpellSearch(''); } }}>
+                      + Preparar
+                    </button>
                   </div>
-                )}
-                {spellSearch.length > 1 && searchResults.length === 0 && (
-                  <div style={{ ...sp.muted, marginTop: '8px' }}>Sin resultados para "{spellSearch}".</div>
-                )}
+                ))}
+              </div>
+            )}
+            {spellSearch.length > 1 && searchResults.length === 0 && (
+              <div style={{ ...sp.muted, marginTop: '8px' }}>Sin resultados para "{spellSearch}".</div>
+            )}
 
-                {/* Habilidades de clase — solo las de la clase de este personaje */}
-                {abilities.length > 0 && (
-                  <div style={{ marginTop: '16px' }}>
-                    <div style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase', marginBottom: '8px' }}>Habilidades de Clase</div>
-                    {abilities.map(ab => (
-                      <SpellCard key={ab.id} spell={ab} isOwner={false} accent={accent}
-                        expanded={expanded === ab.id} onToggle={() => toggle(ab.id)}
-                        onCast={null} onUnprepare={null} canCast={false} isConcentration={false} />
-                    ))}
-                  </div>
-                )}
-              </>}
+            {/* Habilidades de clase — solo las de la clase de este personaje */}
+            {abilities.length > 0 && (
+              <div style={{ marginTop: '16px' }}>
+                <div style={{ fontFamily: 'Cinzel,serif', fontSize: '8px', letterSpacing: '2px', color: 'var(--gold-dim)', textTransform: 'uppercase', marginBottom: '8px' }}>Habilidades de Clase</div>
+                {abilities.map(ab => (
+                  <SpellCard key={ab.id} spell={ab} isOwner={false} accent={accent}
+                    expanded={expanded === ab.id} onToggle={() => toggle(ab.id)}
+                    onCast={null} onUnprepare={null} canCast={false} isConcentration={false} />
+                ))}
+              </div>
+            )}
+        </Section>
+      )}
+
+      {!hasSpellcasting && charClass && (
+        <Section title="Conjuros" iconEl={<GameIcon author={ICONS.spell.author} name={ICONS.spell.name} size={16} color="c7a242" />}>
+          <div style={sp.muted}>Los {charClass}s no tienen lista de conjuros nativa. Clases sin magia propia: Guerrero, Bárbaro, Monje, Pícaro.</div>
         </Section>
       )}
     </div>
@@ -2867,6 +2999,9 @@ function LevelUpModal({ draft, accent, onClose, onConfirm }) {
   const [featSearch, setFeatSearch]     = useState('');
   const [selectedFeatId, setSelectedFeatId] = useState(null);
   const [featAsiStat, setFeatAsiStat]   = useState(null);
+  const [showNewSpellPicker, setShowNewSpellPicker] = useState(false);
+  const [newCantrips, setNewCantrips] = useState(draft.knownCantrips || []);
+  const [newSpells, setNewSpells]     = useState(draft.preparedSpells || []);
 
   const selectedFeat = selectedFeatId ? FEATS_MAP[selectedFeatId] : null;
   const selectableFeats = ALL_FEATS.filter(f => f.id !== 'mejora_caracteristica');
@@ -2890,6 +3025,14 @@ function LevelUpModal({ draft, accent, onClose, onConfirm }) {
   const features  = (LEVEL_FEATURES[charClass] || {})[newLevel] || (LEVEL_FEATURES.generico || {})[newLevel] || [];
   const quote     = CLASS_QUOTES[charClass] || CLASS_QUOTES.generico;
   const newProf   = Math.ceil(newLevel / 4) + 1;
+
+  const oldCastingInfo = computeCastingInfo(draft.class, draft.level, draft.stats);
+  const newCastingInfo = computeCastingInfo(draft.class, newLevel, newStats);
+  const needsNewSpells = !!newCastingInfo.modo && (
+    newCastingInfo.trucosMax > oldCastingInfo.trucosMax ||
+    newCastingInfo.conjurosMax > oldCastingInfo.conjurosMax ||
+    newCastingInfo.maxSpellLevel > oldCastingInfo.maxSpellLevel
+  );
 
   const canProceed = () => {
     if (step === 1) {
@@ -2951,6 +3094,10 @@ function LevelUpModal({ draft, accent, onClose, onConfirm }) {
     };
     if (asiMode === 'feat' && selectedFeat) {
       changes.feats = [...(draft.feats || []), { id: selectedFeat.id, nombre: selectedFeat.nombre, nivelObtenido: newLevel }];
+    }
+    if (newCastingInfo.modo) {
+      changes.knownCantrips = newCantrips;
+      changes.preparedSpells = newSpells;
     }
     setTimeout(() => onConfirm(changes), 1400);
   };
@@ -3263,6 +3410,23 @@ function LevelUpModal({ draft, accent, onClose, onConfirm }) {
                     </div>
                   </div>
                 )}
+
+                {/* Elegir nuevos conjuros/trucos */}
+                {needsNewSpells && (
+                  <div style={{ marginTop:'14px', paddingTop:'12px', borderTop:'1px solid rgba(234,199,94,0.12)' }}>
+                    <div style={{ fontFamily:'var(--font-ui)', fontSize:'9px', letterSpacing:'1.5px', color:'var(--text-dim)', textTransform:'uppercase', marginBottom:'8px' }}>
+                      ¡Desbloqueaste nuevos conjuros!
+                      <HelpTip text="Al subir de nivel, muchas clases pueden aprender más trucos y conjuros, o acceder a un nivel de conjuro más alto. Elegilos acá." />
+                    </div>
+                    <div style={{ fontFamily:'var(--font-ui)', fontSize:'12px', color:'var(--text-soft)', marginBottom:'10px' }}>
+                      Trucos: {newCantrips.length}/{newCastingInfo.trucosMax} · Conjuros: {newSpells.length}/{newCastingInfo.conjurosMax}
+                    </div>
+                    <button onClick={() => setShowNewSpellPicker(true)}
+                      style={{ padding:'10px 18px', background:`${accent}22`, border:`1px solid ${accent}`, borderRadius:'8px', color:accent, fontFamily:'var(--font-title)', fontSize:'0.8rem', letterSpacing:'0.08em', textTransform:'uppercase', cursor:'pointer' }}>
+                      ✦ Elegí tus nuevos conjuros
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -3336,6 +3500,15 @@ function LevelUpModal({ draft, accent, onClose, onConfirm }) {
         </div>
 
       </div>
+      {showNewSpellPicker && (
+        <SpellPickerModal
+          charClass={draft.class} accent={accent}
+          castingInfo={newCastingInfo}
+          initialCantrips={newCantrips} initialSpells={newSpells}
+          onClose={() => setShowNewSpellPicker(false)}
+          onConfirm={(c, sp) => { setNewCantrips(c); setNewSpells(sp); setShowNewSpellPicker(false); }}
+        />
+      )}
     </div>
   );
 }
@@ -3472,6 +3645,199 @@ function RestSummaryModal({ summary, accent, onClose }) {
             ))}
           </div>
           <button onClick={onClose} className="lu-confirm-btn" style={{ borderColor: accent, color: accent, background: `${accent}20`, position: 'relative', zIndex: 1 }}>Cerrar</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SELECTOR GUIADO DE CONJUROS
+// ══════════════════════════════════════════════════════════════════════════════
+
+function SpellPickerModal({ charClass, accent, castingInfo, initialCantrips, initialSpells, onClose, onConfirm }) {
+  const normalizedClass = normalizeClassFull(charClass);
+  const [cantrips, setCantrips] = useState(initialCantrips || []);
+  const [spells, setSpells]     = useState(initialSpells || []);
+  const [step, setStep]         = useState(0);
+  const [search, setSearch]     = useState('');
+  const [filterSchool, setFilterSchool] = useState('');
+  const [filterConc, setFilterConc]     = useState(false);
+  const [filterRitual, setFilterRitual] = useState(false);
+  const [expandedId, setExpandedId]     = useState(null);
+
+  const hasCantrips = castingInfo.trucosMax > 0;
+  const levels = [];
+  for (let l = 1; l <= castingInfo.maxSpellLevel; l++) levels.push(l);
+  const STEPS = [...(hasCantrips ? ['trucos'] : []), ...levels, 'resumen'];
+  const stepKey = STEPS[Math.min(step, STEPS.length - 1)];
+  const isResumen = stepKey === 'resumen';
+  const isTrucos  = stepKey === 'trucos';
+
+  const poolForLevel = (lvl) => normalizedClass
+    ? ALL_SPELLS.filter(s => s.clases?.includes(normalizedClass) && !s.esHabilidad && s.nivel === lvl)
+    : [];
+  const currentPool = isResumen ? [] : isTrucos ? poolForLevel(0) : poolForLevel(stepKey);
+  const schools = [...new Set(currentPool.map(s => s.escuela))].sort();
+
+  const filtered = currentPool.filter(s => {
+    if (search && !s.nombre.toLowerCase().includes(search.toLowerCase())) return false;
+    if (filterSchool && s.escuela !== filterSchool) return false;
+    if (filterConc && !s.concentracion) return false;
+    if (filterRitual && !s.ritual) return false;
+    return true;
+  }).sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+  const isSelected = (sid) => isTrucos ? cantrips.includes(sid) : spells.includes(sid);
+  const countTrucos = cantrips.length;
+  const countSpells = spells.length;
+
+  const toggleSelect = (sid) => {
+    if (isTrucos) {
+      setCantrips(prev => prev.includes(sid) ? prev.filter(x => x !== sid) : (prev.length < castingInfo.trucosMax ? [...prev, sid] : prev));
+    } else {
+      setSpells(prev => prev.includes(sid) ? prev.filter(x => x !== sid) : (prev.length < castingInfo.conjurosMax ? [...prev, sid] : prev));
+    }
+  };
+
+  const stepLabel = (key) => key === 'trucos' ? 'Trucos' : key === 'resumen' ? 'Resumen' : `Nivel ${key}`;
+
+  return (
+    <div className="lu-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="lu-container" style={{ maxWidth: '780px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+          <div style={{ fontFamily: 'var(--font-title)', fontSize: '10px', letterSpacing: '3px', color: 'var(--gold-1)', textTransform: 'uppercase' }}>
+            ✦ Elegir Conjuros
+          </div>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: '20px', lineHeight: 1, padding: '0 4px' }}>✕</button>
+        </div>
+
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' }}>
+          {STEPS.map((key, i) => (
+            <div key={key} onClick={() => setStep(i)}
+              style={{ padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'var(--font-title)', fontSize: '10px', letterSpacing: '0.5px', textTransform: 'uppercase', border: `1px solid ${i === step ? accent : 'rgba(234,199,94,0.2)'}`, background: i === step ? `${accent}22` : 'rgba(0,0,0,0.25)', color: i === step ? accent : 'var(--text-dim)' }}>
+              {stepLabel(key)}
+            </div>
+          ))}
+        </div>
+
+        <div className="cs-fantasy-card">
+          {!isResumen ? (
+            <>
+              <div className="cs-card-header">
+                <GameIcon author={ICONS.spell.author} name={ICONS.spell.name} size={16} color="c7a242" />
+                <h2 className="cs-card-title">
+                  {isTrucos ? `Elegí tus trucos — ${countTrucos} de ${castingInfo.trucosMax} elegidos` : `Conjuros de nivel ${stepKey} — ${countSpells} de ${castingInfo.conjurosMax} elegidos en total`}
+                </h2>
+                <div className="cs-card-divider" />
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por nombre..."
+                  style={{ flex: '1 1 160px', padding: '8px 10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(234,199,94,0.25)', borderRadius: '8px', color: 'var(--text-main)', fontFamily: 'var(--font-ui)', fontSize: '12px' }} />
+                <select value={filterSchool} onChange={e => setFilterSchool(e.target.value)}
+                  style={{ padding: '8px 10px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(234,199,94,0.25)', borderRadius: '8px', color: 'var(--text-main)', fontFamily: 'var(--font-ui)', fontSize: '12px' }}>
+                  <option value="">Toda escuela</option>
+                  {schools.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <button onClick={() => setFilterConc(f => !f)}
+                  style={{ padding: '8px 10px', borderRadius: '8px', fontFamily: 'var(--font-ui)', fontSize: '11px', cursor: 'pointer', border: `1px solid ${filterConc ? accent : 'rgba(234,199,94,0.25)'}`, background: filterConc ? `${accent}22` : 'rgba(0,0,0,0.3)', color: filterConc ? accent : 'var(--text-dim)' }}>
+                  ◐ Concentración
+                </button>
+                <button onClick={() => setFilterRitual(f => !f)}
+                  style={{ padding: '8px 10px', borderRadius: '8px', fontFamily: 'var(--font-ui)', fontSize: '11px', cursor: 'pointer', border: `1px solid ${filterRitual ? accent : 'rgba(234,199,94,0.25)'}`, background: filterRitual ? `${accent}22` : 'rgba(0,0,0,0.3)', color: filterRitual ? accent : 'var(--text-dim)' }}>
+                  ∞ Ritual
+                </button>
+                <HelpTip text={isTrucos
+                  ? "Un truco se puede lanzar las veces que quieras sin gastar espacios de conjuro."
+                  : "Concentración: solo podés mantener un conjuro de concentración activo a la vez. Ritual: podés lanzarlo sin gastar un espacio si te tomás 10 minutos extra."} />
+              </div>
+
+              <div style={{ maxHeight: '320px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', paddingRight: '4px' }}>
+                {filtered.length === 0 && (
+                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--text-dim)', fontStyle: 'italic' }}>Sin resultados.</div>
+                )}
+                {filtered.map(spell => {
+                  const sel = isSelected(spell.id);
+                  const blocked = !sel && (isTrucos ? countTrucos >= castingInfo.trucosMax : countSpells >= castingInfo.conjurosMax);
+                  const isExp = expandedId === spell.id;
+                  return (
+                    <div key={spell.id} style={{ background: sel ? `${accent}14` : 'rgba(0,0,0,0.25)', border: `1px solid ${sel ? accent : 'rgba(234,199,94,0.15)'}`, borderRadius: '8px', padding: '8px 10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                        <div style={{ flex: 1, minWidth: 0, cursor: 'pointer' }} onClick={() => setExpandedId(isExp ? null : spell.id)}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <span style={{ fontFamily: 'var(--font-title)', fontSize: '13px', color: sel ? accent : 'var(--text-main)' }}>{spell.nombre}</span>
+                            <span style={{ fontFamily: 'var(--font-ui)', fontSize: '8px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>{spell.escuela}</span>
+                            {spell.concentracion && <span style={{ fontFamily: 'var(--font-ui)', fontSize: '8px', color: 'var(--ember)' }}>◐ Conc.</span>}
+                            {spell.ritual && <span style={{ fontFamily: 'var(--font-ui)', fontSize: '8px', color: 'var(--gold-2)' }}>∞ Ritual</span>}
+                            {spell.revisar && <span style={{ fontFamily: 'var(--font-ui)', fontSize: '8px', color: 'var(--ember)' }}>⚠ revisar</span>}
+                          </div>
+                          <div style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--text-soft)', marginTop: '3px', lineHeight: '1.4' }}>
+                            {isExp ? spell.descripcion : `${(spell.descripcion || '').slice(0, 100)}${(spell.descripcion || '').length > 100 ? '…' : ''}`}
+                          </div>
+                          {isExp && (
+                            <div style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', color: 'var(--text-dim)', marginTop: '6px', lineHeight: '1.5' }}>
+                              <strong>Tiempo:</strong> {spell.tiempoCasteo} · <strong>Alcance:</strong> {spell.alcance} · <strong>Componentes:</strong> {spell.componentes} · <strong>Duración:</strong> {spell.duracion}
+                            </div>
+                          )}
+                        </div>
+                        <button onClick={() => toggleSelect(spell.id)} disabled={blocked}
+                          style={{ flexShrink: 0, padding: '6px 10px', borderRadius: '6px', fontFamily: 'var(--font-ui)', fontSize: '10px', cursor: blocked ? 'not-allowed' : 'pointer', border: `1px solid ${sel ? accent : 'rgba(234,199,94,0.25)'}`, background: sel ? `${accent}30` : 'rgba(0,0,0,0.3)', color: sel ? accent : blocked ? 'var(--text-dim)' : 'var(--text-main)', opacity: blocked ? 0.5 : 1 }}>
+                          {sel ? '✓ Elegido' : blocked ? 'Máximo' : '+ Elegir'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="cs-card-header">
+                <GameIcon author={ICONS.levelup.author} name={ICONS.levelup.name} size={16} color="c7a242" />
+                <h2 className="cs-card-title">Resumen</h2>
+                <div className="cs-card-divider" />
+              </div>
+              {hasCantrips && (
+                <div style={{ marginBottom: '14px' }}>
+                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    Trucos ({countTrucos}/{castingInfo.trucosMax})
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {cantrips.map(sid => <span key={sid} style={{ padding: '4px 10px', background: `${accent}18`, border: `1px solid ${accent}55`, borderRadius: '99px', fontFamily: 'var(--font-ui)', fontSize: '11px', color: accent }}>{SPELLS_MAP[sid]?.nombre}</span>)}
+                    {countTrucos === 0 && <span style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--text-dim)', fontStyle: 'italic' }}>Ninguno elegido.</span>}
+                  </div>
+                </div>
+              )}
+              <div>
+                <div style={{ fontFamily: 'var(--font-ui)', fontSize: '9px', letterSpacing: '1.5px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  Conjuros ({countSpells}/{castingInfo.conjurosMax})
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {spells.map(sid => <span key={sid} style={{ padding: '4px 10px', background: `${accent}18`, border: `1px solid ${accent}55`, borderRadius: '99px', fontFamily: 'var(--font-ui)', fontSize: '11px', color: accent }}>{SPELLS_MAP[sid]?.nombre} <small style={{ opacity: 0.6 }}>Nv.{SPELLS_MAP[sid]?.nivel}</small></span>)}
+                  {countSpells === 0 && <span style={{ fontFamily: 'var(--font-ui)', fontSize: '11px', color: 'var(--text-dim)', fontStyle: 'italic' }}>Ninguno elegido.</span>}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', gap: '8px' }}>
+          <button onClick={step > 0 ? () => setStep(s => s - 1) : onClose}
+            style={{ background: 'transparent', border: '1px solid rgba(234,199,94,0.2)', color: 'var(--text-muted)', fontFamily: 'var(--font-ui)', fontSize: '11px', padding: '9px 20px', cursor: 'pointer', borderRadius: '8px' }}>
+            {step > 0 ? '← Anterior' : 'Cancelar'}
+          </button>
+          {!isResumen ? (
+            <button onClick={() => setStep(s => s + 1)}
+              style={{ background: `${accent}22`, border: `1px solid ${accent}88`, color: accent, fontFamily: 'var(--font-title)', fontSize: '0.8rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '9px 24px', cursor: 'pointer', borderRadius: '8px' }}>
+              Siguiente →
+            </button>
+          ) : (
+            <button onClick={() => onConfirm(cantrips, spells)}
+              style={{ background: `${accent}22`, border: `1px solid ${accent}`, color: accent, fontFamily: 'var(--font-title)', fontSize: '0.8rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '9px 24px', cursor: 'pointer', borderRadius: '8px' }}>
+              ✓ Confirmar
+            </button>
+          )}
         </div>
       </div>
     </div>

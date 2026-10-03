@@ -11,7 +11,10 @@
     "descripcion": "Bendices a hasta tres criaturas visibles. Cuando una criatura objetivo realiza una tirada de ataque o de salvación, puede lanzar 1d4 y sumar el resultado. A niveles superiores: una criatura adicional por nivel de espacio por encima del 1.°.",
     "concentracion": true,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin",
+      "clerigo"
+    ]
   },
   {
     "id": "orden-imperiosa",
@@ -25,7 +28,11 @@
     "descripcion": "Pronuncias una orden de una sola palabra a una criatura visible. El objetivo debe superar una salvación de Sabiduría o seguir la orden en su siguiente turno. No afecta a muertos vivientes ni a criaturas que no te entiendan.",
     "concentracion": false,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin",
+      "bardo",
+      "clerigo"
+    ]
   },
   {
     "id": "curar-heridas",
@@ -39,7 +46,13 @@
     "descripcion": "Una criatura que toques recupera 2d8 + modificador de conjuro puntos de golpe. A niveles superiores: +2d8 por nivel de espacio por encima del 1.°.",
     "concentracion": false,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin",
+      "bardo",
+      "clerigo",
+      "druida",
+      "explorador"
+    ]
   },
   {
     "id": "desafio-obligado",
@@ -53,7 +66,9 @@
     "descripcion": "Desafías a un enemigo visible a combatir contigo. Debe superar una salvación de Sabiduría o tiene desventaja en ataques contra objetivos que no seas tú, y debe salvar si intenta alejarse más de 9 metros.",
     "concentracion": true,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin"
+    ]
   },
   {
     "id": "detectar-el-bien-y-el-mal",
@@ -67,7 +82,9 @@
     "descripcion": "Sabes si hay aberraciones, celestiales, elementales, demonios, feéricos o muertos vivientes a 9 metros de ti y su ubicación. Funciona a través de la mayoría de barreras, pero el plomo la bloquea.",
     "concentracion": true,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin"
+    ]
   },
   {
     "id": "detectar-magia",
@@ -81,7 +98,16 @@
     "descripcion": "Percibes la presencia de magia a 9 metros de ti. Puedes usar tu acción para ver el aura de objetos o criaturas mágicas visibles e identificar la escuela de magia que los afecta.",
     "concentracion": true,
     "ritual": true,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin",
+      "bardo",
+      "brujo",
+      "clerigo",
+      "druida",
+      "explorador",
+      "hechicero",
+      "mago"
+    ]
   },
   {
     "id": "detectar-veneno-y-enfermedad",
@@ -95,7 +121,9 @@
     "descripcion": "Detectas la presencia y ubicación de venenos, criaturas venenosas y enfermedades a 9 metros de ti, e identificas el tipo de cada uno.",
     "concentracion": true,
     "ritual": true,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin"
+    ]
   },
   {
     "id": "escudo-de-la-fe",
@@ -109,7 +137,9 @@
     "descripcion": "Un campo centelleante de energía sagrada rodea a una criatura visible, concediéndole un bonus de +2 a la CA durante la duración.",
     "concentracion": true,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin"
+    ]
   },
   {
     "id": "fervor-divino",
@@ -123,7 +153,9 @@
     "descripcion": "Tus ataques quedan imbuidos con poder divino. Cuando aciertes un golpe con un arma, el ataque causa 1d4 puntos de daño radiante adicionales.",
     "concentracion": true,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin"
+    ]
   },
   {
     "id": "heroismo",
@@ -137,7 +169,9 @@
     "descripcion": "Una criatura que tocas es inmune al miedo y gana PG temporales iguales a tu modificador de conjuro al inicio de cada uno de sus turnos. A niveles superiores: una criatura adicional por nivel de espacio.",
     "concentracion": true,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin"
+    ]
   },
   {
     "id": "palabra-de-sanacion",
@@ -151,7 +185,9 @@
     "descripcion": "Una criatura visible recupera 2d4 + modificador de conjuro puntos de golpe. A niveles superiores: +2d4 por nivel de espacio por encima del 1.°.",
     "concentracion": false,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin"
+    ]
   },
   {
     "id": "proteccion-del-bien-y-el-mal",
@@ -165,7 +201,9 @@
     "descripcion": "La criatura tocada queda protegida contra aberraciones, celestiales, elementales, demonios, feéricos y muertos vivientes. Esas criaturas tienen desventaja en ataques contra el objetivo y no pueden hechizarlo, asustarlo ni poseerlo.",
     "concentracion": true,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin"
+    ]
   },
   {
     "id": "purificar-comida-y-bebida",
@@ -179,7 +217,11 @@
     "descripcion": "Toda la comida y bebida no mágica en una esfera de 1.5 metros centrada en un punto que elijas queda purificada y libre de veneno y enfermedad.",
     "concentracion": false,
     "ritual": true,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin",
+      "clerigo",
+      "druida"
+    ]
   },
   {
     "id": "represalia-trueno",
@@ -193,7 +235,9 @@
     "descripcion": "La próxima vez que golpees a una criatura con arma cuerpo a cuerpo, tu arma retumba con trueno audible a 300 m. El ataque inflige 2d6 de daño sónico adicional, y si falla una salvación de Fuerza, el objetivo es empujado hasta 3 metros.",
     "concentracion": true,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin"
+    ]
   },
   {
     "id": "castigo-iracundo",
@@ -207,7 +251,9 @@
     "descripcion": "La próxima vez que golpees a una criatura con arma, inflige 1d6 de daño psíquico adicional. El objetivo debe superar una salvación de Sabiduría o queda asustado de ti hasta el final de tu próximo turno.",
     "concentracion": true,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin"
+    ]
   },
   {
     "id": "ayuda",
@@ -221,7 +267,9 @@
     "descripcion": "El máximo y los PG actuales de hasta tres criaturas aumentan en 5 durante la duración. A niveles superiores: +5 PG por nivel de espacio por encima del 2.°.",
     "concentracion": false,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin"
+    ]
   },
   {
     "id": "restauracion-menor",
@@ -235,7 +283,9 @@
     "descripcion": "Pones fin a una enfermedad o condición (cegado, ensordecido, paralizado o envenenado) que afecte a una criatura que toques.",
     "concentracion": false,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin"
+    ]
   },
   {
     "id": "oracion-de-sanacion",
@@ -249,7 +299,9 @@
     "descripcion": "Hasta seis criaturas visibles recuperan PG iguales a 2d8 + modificador de conjuro. Sin efecto sobre muertos vivientes ni constructos. A niveles superiores: +2d8 por nivel de espacio.",
     "concentracion": false,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin"
+    ]
   },
   {
     "id": "encontrar-corcel",
@@ -263,7 +315,9 @@
     "descripcion": "Invocas un espíritu que asume la forma de un corcel inteligente y leal — caballo, poni, camello, alce o perro gigante — con el que formas un vínculo sobrenatural.",
     "concentracion": false,
     "ritual": false,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin"
+    ]
   },
   {
     "id": "ira-divina",
@@ -278,6 +332,4708 @@
     "concentracion": false,
     "ritual": false,
     "esHabilidad": true,
-    "clases": ["paladin"]
+    "clases": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "agarre-electrizante",
+    "nombre": "Agarre Electrizante",
+    "nivel": 0,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Una descarga eléctrica surge de tu mano. Haz un ataque de conjuro cuerpo a cuerpo: si acierta, el objetivo recibe 1d8 de daño de relámpago y no puede hacer ataques de oportunidad hasta el inicio de su siguiente turno. Mejora de truco: el daño sube a 2d8 (nivel 5), 3d8 (nivel 11) y 4d8 (nivel 17).",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "amistad",
+    "nombre": "Amistad",
+    "nivel": 0,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "3 metros",
+    "componentes": "S, M (un poco de maquillaje)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Emanás mágicamente un sentimiento de amistad hacia una criatura visible. Debe superar una salvación de Sabiduría o queda hechizada hasta que termine el conjuro. Termina antes si recibe daño o si hacés una tirada de ataque; al terminar, sabrá que la hechizaste.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "burla-danina",
+    "nombre": "Burla Dañina",
+    "nivel": 0,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Lanzás un insulto mágicamente agudo a una criatura visible. Si te entiende, hace una salvación de Sabiduría o recibe 1d6 de daño psíquico y tiene desventaja en su próxima tirada de ataque antes de tu siguiente turno. Mejora de truco: 2d6 (nivel 5), 3d6 (nivel 11), 4d6 (nivel 17).",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo"
+    ]
+  },
+  {
+    "id": "crear-llama",
+    "nombre": "Crear Llama",
+    "nivel": 0,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "3 metros",
+    "componentes": "V, S",
+    "duracion": "Hasta 1 minuto",
+    "descripcion": "Creás una pequeña llama que arde sin combustible en un punto que puedas ver. Emite luz tenue en un radio de 3 m y, como acción, podés hacer un ataque de conjuro a distancia contra una criatura a 9 m o menos para causar 1d8 de daño de fuego. Mejora de truco: 2d8 (nivel 5), 3d8 (nivel 11), 4d8 (nivel 17).",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "druida"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "descarga-de-fuego",
+    "nombre": "Descarga de Fuego",
+    "nivel": 0,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Lanzás una mota de fuego hacia una criatura u objeto dentro del alcance. Haz una tirada de ataque de conjuro: si acierta, el objetivo recibe 1d10 de daño de fuego. Mejora de truco: 2d10 (nivel 5), 3d10 (nivel 11), 4d10 (nivel 17).",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "descarga-sobrenatural",
+    "nombre": "Descarga Sobrenatural",
+    "nivel": 0,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Una descarga de energía crepitante sale de vos hacia una criatura dentro del alcance. Haz un ataque de conjuro: si acierta, 1d10 de daño de fuerza. Mejora de truco: 2d10 (nivel 5), 3d10 (nivel 11), 4d10 (nivel 17).",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "brujo"
+    ]
+  },
+  {
+    "id": "elementalismo",
+    "nombre": "Elementalismo",
+    "nivel": 0,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "3 metros",
+    "componentes": "S",
+    "duracion": "Instantánea o 1 hora",
+    "descripcion": "Creás uno de varios efectos menores ligados a un elemento (agua, tierra, aire o fuego): por ejemplo encender una vela, limpiar algo de barro, crear una brisa suave o enfriar comida. Son efectos de utilidad sin impacto en combate.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "hechicero",
+      "mago"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "fragmento-mental",
+    "nombre": "Fragmento Mental",
+    "nivel": 0,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Enviás una esquirla psíquica a una mente dentro del alcance. El objetivo hace una salvación de Inteligencia o recibe 1d6 de daño psíquico, y si falla por 5 o más no puede realizar reacciones hasta el final de su siguiente turno. Mejora de truco: 2d6/3d6/4d6.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "guardia-de-cuchillas",
+    "nombre": "Guardia de Cuchillas",
+    "nivel": 0,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción adicional",
+    "alcance": "Personal",
+    "componentes": "V, S",
+    "duracion": "Hasta 1 ronda",
+    "descripcion": "Te rodeás de láminas de fuerza espectral hasta el inicio de tu siguiente turno. Cuando una criatura te golpea con un ataque cuerpo a cuerpo, recibe 1d6 de daño de fuerza. Mejora de truco: 2d6 (nivel 5), 3d6 (nivel 11), 4d6 (nivel 17).",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "guia",
+    "nombre": "Guía",
+    "nivel": 0,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Tocás a una criatura voluntaria. Una vez antes de que termine el conjuro, el objetivo puede tirar 1d4 y sumarlo a una prueba de característica de su elección.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida"
+    ]
+  },
+  {
+    "id": "ilusion-menor",
+    "nombre": "Ilusión Menor",
+    "nivel": 0,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "S, M (un poco de lana)",
+    "duracion": "1 minuto",
+    "descripcion": "Creás un sonido o una imagen ilusoria de un objeto dentro de un cubo de 1,5 m que dura mientras se mantenga el conjuro (hasta 1 minuto sin concentración). Una criatura puede usar su acción para examinarla con Inteligencia (Investigación) contra tu CD y descubrir que es falsa.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "impacto-certero",
+    "nombre": "Impacto Certero",
+    "nivel": 0,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "Reacción",
+    "alcance": "9 metros",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Cuando una criatura visible dentro del alcance hace una tirada de ataque, de característica o de salvación, podés gastar tu reacción para darle un +1d4 a esa tirada, antes o después de conocer el resultado. Mejora de truco: podés usarlo dos veces entre descansos a nivel 5, y así sucesivamente.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "latigo-de-espinas",
+    "nombre": "Látigo de Espinas",
+    "nivel": 0,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "3 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Un látigo de espinas y enredaderas aparece en tu mano. Haz un ataque de conjuro cuerpo a cuerpo: si acierta, 1d6 de daño perforante y podés arrastrar al objetivo hasta 3 m hacia vos si es de tamaño Grande o menor. Mejora de truco: 2d6/3d6/4d6.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "druida"
+    ]
+  },
+  {
+    "id": "llama-sagrada",
+    "nombre": "Llama Sagrada",
+    "nivel": 0,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Un rayo de luz divina cae sobre una criatura visible dentro del alcance. Hace una salvación de Destreza o recibe 1d8 de daño radiante; el objetivo no obtiene ningún beneficio de cobertura para esta salvación. Mejora de truco: 2d8/3d8/4d8.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo"
+    ]
+  },
+  {
+    "id": "luz",
+    "nombre": "Luz",
+    "nivel": 0,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, M (una luciérnaga o musgo fosforescente)",
+    "duracion": "1 hora",
+    "descripcion": "Tocás un objeto que no mida más de 3 m en ningún lado. Hasta que termine el conjuro, el objeto emite luz brillante en un radio de 6 m y luz tenue 6 m más allá. La luz puede ser de cualquier color.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "hechicero",
+      "mago"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "localizar-objeto",
+    "nombre": "Localizar Objeto",
+    "nivel": 0,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V, S, M (una vara de zahorí)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Percibís la dirección hacia un objeto familiar, o hacia el tipo de objeto más cercano si no es específico, dentro de 300 m. Nota: este conjuro aparece listado como de nivel 2 en ediciones anteriores; mantenido como truco según el extracto del manual — revisar su nivel real en la mesa de juego.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida",
+      "explorador"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "luces-danzantes",
+    "nombre": "Luces Danzantes",
+    "nivel": 0,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S, M (fósforo o musgo fosforescente)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Creás hasta cuatro luces del tamaño de una antorcha dentro del alcance, que parecen antorchas, farolillos o esferas brillantes y flotan en el aire. También podés combinarlas en la forma tenue de un humanoide. Como acción adicional, podés moverlas hasta 18 m.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "mano-de-mago",
+    "nombre": "Mano de Mago",
+    "nivel": 0,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S",
+    "duracion": "1 minuto",
+    "descripcion": "Creás una mano espectral flotante dentro del alcance. Como acción adicional, podés controlarla para manipular objetos, abrir puertas o contenedores, guardar o sacar cosas, o verter contenido de un recipiente. No puede atacar ni activar objetos mágicos ni cargar más de 4,5 kg.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "mensaje",
+    "nombre": "Mensaje",
+    "nivel": 0,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S, M (un trozo de cobre)",
+    "duracion": "1 ronda",
+    "descripcion": "Señalás a una criatura dentro del alcance y susurrás un mensaje que solo ella escucha, pudiendo responderte en un susurro que solo vos oís, siempre que no haya más de 30 cm de piedra, metal o madera entre ambos.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "palabra-de-resplandor",
+    "nombre": "Palabra de Resplandor",
+    "nivel": 0,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "El resplandor divino sale de vos en un destello silencioso. Cada criatura hostil a 1,5 m de vos hace una salvación de Constitución o recibe 1d6 de daño radiante. Mejora de truco: 2d6/3d6/4d6.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo"
+    ]
+  },
+  {
+    "id": "piedad-con-los-moribundos",
+    "nombre": "Piedad con los Moribundos",
+    "nivel": 0,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Tocás con tu magia a una criatura con 0 PG, estabilizándola. Si está hostil, primero debe hacer una salvación de Sabiduría exitosa para que el conjuro tenga efecto.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida"
+    ]
+  },
+  {
+    "id": "prestidigitacion",
+    "nombre": "Prestidigitación",
+    "nivel": 0,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "3 metros",
+    "componentes": "V, S",
+    "duracion": "Hasta 1 hora",
+    "descripcion": "Creás uno de varios efectos mágicos menores: un sonido, una chispa de luz o color, un olor, limpiar o ensuciar algo pequeño, enfriar/calentar/dar sabor a comida, crear una marca o imagen pequeña, o hacer aparecer un objeto trivial en tu mano durante 1 hora.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "rayo-de-escarcha",
+    "nombre": "Rayo de Escarcha",
+    "nivel": 0,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Un rayo de frío azul blanco sale disparado hacia una criatura dentro del alcance. Haz un ataque de conjuro: si acierta, 1d8 de daño de frío y la velocidad del objetivo se reduce 3 m hasta el inicio de tu siguiente turno. Mejora de truco: 2d8/3d8/4d8.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "reparar",
+    "nombre": "Reparar",
+    "nivel": 0,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Tocás un objeto no mágico dañado y reparás una única rotura o perforación en él, dejándolo como nuevo. Podés reparar múltiples puntos de daño en objetos grandes lanzando el conjuro repetidamente.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "resistencia",
+    "nombre": "Resistencia",
+    "nivel": 0,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (talismán pequeño)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Tocás a una criatura voluntaria. Una vez antes de que el conjuro termine, el objetivo puede tirar 1d4 y sumarlo a una tirada de salvación de su elección.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida"
+    ]
+  },
+  {
+    "id": "rociada-venenosa",
+    "nombre": "Rociada Venenosa",
+    "nivel": 0,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción",
+    "alcance": "3 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Extendés tu mano hacia una criatura visible y hacés que vapores venenosos broten de ella. El objetivo hace una salvación de Constitución o recibe 1d12 de daño de veneno. Mejora de truco: 2d12/3d12/4d12.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "saber-druidico",
+    "nombre": "Saber Druídico",
+    "nivel": 0,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Susurrás a los espíritus de la naturaleza para obtener su conocimiento. Hacés una pregunta sobre fauna, flora, clima o terreno en 1,5 km a la redonda y obtenés una respuesta verdadera, resumida en una frase.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "druida"
+    ]
+  },
+  {
+    "id": "salpicadura-acida",
+    "nombre": "Salpicadura Ácida",
+    "nivel": 0,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Lanzás una burbuja de ácido. Elige una o dos criaturas a 1,5 m entre sí dentro del alcance; cada una hace una salvación de Destreza o recibe 1d6 de daño ácido. Mejora de truco: 2d6/3d6/4d6.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "shillelagh",
+    "nombre": "Shillelagh",
+    "nivel": 0,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción adicional",
+    "alcance": "Toque",
+    "componentes": "V, S, M (muérdago, trébol y un garrote o bastón)",
+    "duracion": "1 minuto",
+    "descripcion": "La madera de un garrote o bastón que empuñes se llena de energía natural. Hasta que termine el conjuro, podés usar tu modificador de aptitud mágica en vez de Fuerza para las tiradas de ataque y daño con esa arma, y su dado de daño pasa a ser 1d8.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "druida"
+    ]
+  },
+  {
+    "id": "tanido-por-los-muertos",
+    "nombre": "Tañido por los Muertos",
+    "nivel": 0,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Señalás a una criatura que veas con al menos 1 PG. El objetivo hace una salvación de Sabiduría; si tiene la mayoría de sus PG, recibe 1d8 de daño necrótico, y si no, recibe 1d12. Mejora de truco: los dados suben a 2d8/2d12 (nivel 5), 3d8/3d12 (nivel 11), 4d8/4d12 (nivel 17).",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "clerigo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "taumaturgia",
+    "nombre": "Taumaturgia",
+    "nivel": 0,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V",
+    "duracion": "Hasta 1 minuto",
+    "descripcion": "Manifestás una señal menor de poder divino: tu voz retumba, llamas parpadean, el suelo tiembla levemente, abrís o cerrás una puerta o tus ojos brillan, entre otros efectos menores. Podés tener un efecto activo a la vez.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo"
+    ]
+  },
+  {
+    "id": "toque-helado",
+    "nombre": "Toque Helado",
+    "nivel": 0,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Creás una mano espectral de frío sobrenatural. Haz un ataque de conjuro cuerpo a cuerpo contra una criatura: si acierta, 1d10 de daño necrótico y no puede recuperar PG hasta el inicio de tu siguiente turno. Contra un muerto viviente, además tiene desventaja en ataques contra vos hasta entonces. Mejora de truco: 2d10/3d10/4d10.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "tronar",
+    "nombre": "Tronar",
+    "nivel": 0,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal (emanación de 1,5 m)",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Una onda de sonido estalla desde vos. Cada criatura en una emanación de 1,5 m centrada en vos (excepto vos) hace una salvación de Constitución o recibe 1d6 de daño de trueno. Mejora de truco: 2d6/3d6/4d6.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "voluta-estelar",
+    "nombre": "Voluta Estelar",
+    "nivel": 0,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Invocás una brizna de luz estelar que golpea a una o dos criaturas dentro del alcance, a 1,5 m entre sí. Cada una hace una salvación de Destreza o recibe 1d8 de daño radiante. Mejora de truco: 2d8/3d8/4d8.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "druida"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "alarma",
+    "nombre": "Alarma",
+    "nivel": 1,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 minuto o ritual",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (una campana e hilo de plata)",
+    "duracion": "8 horas",
+    "descripcion": "Preparás una alarma contra intrusos en una puerta, ventana o zona que no supere un cubo de 6 m. Si una criatura no designada por vos la toca o entra en ella, te alertás con un sonido mental (si estás a 1,5 km o menos) o con una campanilla audible a 18 m.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "explorador",
+      "mago"
+    ]
+  },
+  {
+    "id": "armadura-de-agathys",
+    "nombre": "Armadura de Agathys",
+    "nivel": 1,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V, S, M (agua helada o granizo)",
+    "duracion": "1 hora",
+    "descripcion": "Un frío sobrenatural te envuelve, dándote 5 PG temporales. Mientras los tengas, cualquier criatura que te golpee con un ataque cuerpo a cuerpo recibe 5 de daño de frío. A niveles superiores: +5 PG temporales y +5 de daño de frío por nivel de espacio por encima del 1.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "brujo"
+    ]
+  },
+  {
+    "id": "brazos-de-hadar",
+    "nombre": "Brazos de Hadar",
+    "nivel": 1,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal (emanación de 3 m)",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Oscuros tentáculos surgen de vos. Cada criatura en una emanación de 3 m hace una salvación de Fuerza; si falla, recibe 2d6 de daño necrótico y no puede hacer reacciones hasta su siguiente turno. A niveles superiores: +1d6 de daño por nivel de espacio por encima del 1.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "brujo"
+    ]
+  },
+  {
+    "id": "castigo-divino",
+    "nombre": "Castigo Divino",
+    "nivel": 1,
+    "escuela": "Evocación",
+    "tiempoCasteo": "Acción adicional (al golpear)",
+    "alcance": "Personal",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Cuando golpeas a una criatura con un ataque de arma cuerpo a cuerpo, podés gastar un espacio de conjuro para infligir 2d8 de daño radiante adicional, más 1d8 extra si el objetivo es un demonio o un muerto viviente. El daño sube 1d8 por cada nivel de espacio por encima del 1.°, hasta un máximo de 5d8.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "paladin"
+    ],
+    "esHabilidad": true
+  },
+  {
+    "id": "crear-o-destruir-agua",
+    "nombre": "Crear o Destruir Agua",
+    "nivel": 1,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (una gota de agua si creás, o un grano de arena si destruís)",
+    "duracion": "Instantánea",
+    "descripcion": "Creás hasta 38 litros de agua potable, o destruís hasta esa cantidad de agua no mágica en un espacio que ocupe dentro del alcance, o afectás a una niebla mágica hasta 9 m en cada dimensión. A niveles superiores: x4 por nivel de espacio por encima del 1.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida"
+    ]
+  },
+  {
+    "id": "cuchillo-de-hielo",
+    "nombre": "Cuchillo de Hielo",
+    "nivel": 1,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (una gota de agua)",
+    "duracion": "Instantánea",
+    "descripcion": "Creás un cuchillo de hielo y lo lanzás contra una criatura dentro del alcance. Haz un ataque de conjuro: si acierta, 1d10 de daño perforante y luego el cuchillo explota en esquirlas; el objetivo y cada criatura a 1,5 m hacen una salvación de Destreza o reciben 2d6 de daño de frío.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "detectar-venenos-y-enfermedades",
+    "nombre": "Detectar Venenos y Enfermedades",
+    "nivel": 1,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal (9 m)",
+    "componentes": "V, S, M (una hoja de acebo)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Detectás la presencia y ubicación de venenos, criaturas venenosas y enfermedades dentro de 9 metros durante la duración. Identificás el tipo de veneno o enfermedad en cada caso.",
+    "concentracion": true,
+    "ritual": true,
+    "clases": [
+      "clerigo",
+      "druida",
+      "explorador",
+      "paladin"
+    ]
+  },
+  {
+    "id": "disco-flotante-de-tenser",
+    "nombre": "Disco Flotante de Tenser",
+    "nivel": 1,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción o ritual",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (una gota de mercurio)",
+    "duracion": "1 hora",
+    "descripcion": "Creás un disco flotante de fuerza del tamaño de una mesa redonda que sigue flotando a 1 m del suelo dentro de 6 m de vos, siguiéndote durante la duración. Puede soportar hasta 227 kg; si recibe más peso, el conjuro termina y todo lo que porta cae.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "dormir",
+    "nombre": "Dormir",
+    "nivel": 1,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (arena fina, pétalos de rosa o un grillo)",
+    "duracion": "1 minuto",
+    "descripcion": "Este conjuro envía criaturas a un sueño mágico. Tira 5d8; la suma es la cantidad total de PG de criaturas que puede afectar en un radio de 6 m, empezando por la de menos PG actuales. Las criaturas con 0 PG afectadas quedan inconscientes hasta que termine el conjuro, reciban daño o alguien las despierte.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "encontrar-familiar",
+    "nombre": "Encontrar Familiar",
+    "nivel": 1,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 hora, ritual",
+    "alcance": "3 metros",
+    "componentes": "V, S, M (incienso y mercurio por valor de 10 po, consumidos)",
+    "duracion": "Instantánea",
+    "descripcion": "Ganás el servicio de un familiar: un espíritu que toma la forma de un animal pequeño que elegís. Es tu aliado y puede llevar a cabo la acción de ayudar; podés percibir a través de sus sentidos y hablarle telepáticamente mientras esté a 30 m o menos. Si muere, podés volver a invocarlo con otra hora de ritual.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "enmaranar",
+    "nombre": "Enmarañar",
+    "nivel": 1,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Enredaderas y plantas brotan en un cuadrado de 6 m dentro del alcance y lo convierten en terreno difícil durante la duración. Cada criatura que empiece su turno ahí hace una salvación de Fuerza o queda apresada hasta que escape.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "enredadera",
+    "nombre": "Enredadera",
+    "nivel": 1,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S, M (planta trepadora)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Enredaderas espinosas aparecen en un punto que elijas, formando un área de 6 m de lado. Cada criatura en ella al lanzar el conjuro hace una salvación de Fuerza o queda apresada; una criatura apresada repite la salvación al final de cada uno de sus turnos.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "entender-idiomas",
+    "nombre": "Entender Idiomas",
+    "nivel": 1,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V, S, M (una pizca de hollín y sal)",
+    "duracion": "1 hora",
+    "descripcion": "Durante la duración, entendés el significado literal de cualquier idioma hablado que escuches, y el de cualquier texto escrito que veas, siempre que toques su fuente. No es tan rápido como leer la mayoría de los textos.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "escudo",
+    "nombre": "Escudo",
+    "nivel": 1,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "Reacción",
+    "alcance": "Personal",
+    "componentes": "V, S",
+    "duracion": "1 ronda",
+    "descripcion": "Una barrera invisible de fuerza mágica aparece y te protege. Hasta el inicio de tu siguiente turno, tenés +5 a la CA, incluso contra el ataque que desencadenó el conjuro, y no sufrís daño de proyectil mágico.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "escudo-de-fe",
+    "nombre": "Escudo de Fe",
+    "nivel": 1,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción adicional",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (un amuleto sagrado)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Un campo centelleante de energía protectora rodea a una criatura visible dentro del alcance, dándole +2 a la CA durante la duración.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "paladin"
+    ]
+  },
+  {
+    "id": "favor-divino",
+    "nombre": "Favor Divino",
+    "nivel": 1,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción adicional",
+    "alcance": "Personal",
+    "componentes": "V",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Tu arma se cubre de luz divina. Hasta que termine el conjuro, cada vez que golpeés con un ataque de arma, el objetivo recibe 1d4 de daño radiante adicional.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "fuego-feerico",
+    "nombre": "Fuego Feérico",
+    "nivel": 1,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Bañás un objeto en una zona de 6 m con luz azul, violeta o verde. Cada criatura en el área hace una salvación de Destreza; si falla, queda contorneada de luz hasta que termine el conjuro. Las criaturas contorneadas no se benefician de estar invisibles y los ataques contra ellas tienen ventaja.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "druida"
+    ]
+  },
+  {
+    "id": "grasa",
+    "nombre": "Grasa",
+    "nivel": 1,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (tocino o manteca)",
+    "duracion": "1 minuto",
+    "descripcion": "Un cuadrado resbaladizo de 3 m cubierto de grasa aparece en el suelo dentro del alcance. Al entrar por primera vez en su turno o terminarlo ahí, una criatura hace una salvación de Destreza o cae derribada.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "hablar-con-los-animales",
+    "nombre": "Hablar con los Animales",
+    "nivel": 1,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V, S",
+    "duracion": "10 minutos",
+    "descripcion": "Durante la duración, podés entender a las bestias y comunicarte con ellas en un idioma básico sobre ideas simples, aunque no se vuelven necesariamente más amigables.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "bardo",
+      "brujo",
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "hechizar-persona",
+    "nombre": "Hechizar Persona",
+    "nivel": 1,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S",
+    "duracion": "1 hora",
+    "descripcion": "Intentás hechizar a un humanoide visible. Debe hacer una salvación de Sabiduría (con ventaja si está en combate contigo o un aliado); si falla, queda hechizado hasta que termine el conjuro o hasta que hagas algo perjudicial contra él, y te considera un conocido amistoso.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "paladin"
+    ]
+  },
+  {
+    "id": "identificar",
+    "nombre": "Identificar",
+    "nivel": 1,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 minuto o ritual",
+    "alcance": "Toque",
+    "componentes": "V, S, M (una perla de al menos 100 po y una pluma de búho)",
+    "duracion": "Instantánea",
+    "descripcion": "Tocás un objeto durante todo el conjuro. Si es mágico o tiene conjuros aplicados, aprendés sus propiedades, cómo usarlas, si requiere sintonización y cuántas cargas le quedan. Alternativamente, aprendés qué conjuros, si hay alguno, están afectando a una criatura que toques.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "bardo",
+      "mago"
+    ]
+  },
+  {
+    "id": "infligir-heridas",
+    "nombre": "Infligir Heridas",
+    "nivel": 1,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Haz un ataque de conjuro cuerpo a cuerpo contra una criatura. Si acierta, recibe 3d10 de daño necrótico. A niveles superiores: +1d10 por nivel de espacio por encima del 1.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo"
+    ]
+  },
+  {
+    "id": "manos-ardientes",
+    "nombre": "Manos Ardientes",
+    "nivel": 1,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal (cono de 4,5 m)",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Un fino abanico de llamas brota de tus manos extendidas. Cada criatura en un cono de 4,5 m hace una salvación de Destreza; si falla, recibe 3d6 de daño de fuego (mitad si la supera). El fuego prende fuego a objetos inflamables no portados que no estén siendo usados. A niveles superiores: +1d6 por nivel de espacio por encima del 1.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "marca-del-cazador",
+    "nombre": "Marca del Cazador",
+    "nivel": 1,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción adicional",
+    "alcance": "27 metros",
+    "componentes": "V",
+    "duracion": "Concentración, hasta 1 hora",
+    "descripcion": "Elegís una criatura visible y la marcáis mágicamente como presa. Hasta que termine, sumás 1d6 de daño adicional al objetivo cada vez que lo golpees con un ataque, tenés ventaja en pruebas de Sabiduría para localizarla, y podés volver a aplicar la marca a otro objetivo si el actual cae a 0 PG o queda fuera de alcance.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "explorador"
+    ]
+  },
+  {
+    "id": "nube-de-oscurecimiento",
+    "nombre": "Nube de Oscurecimiento",
+    "nivel": 1,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (hollín, carbón o madera quemada)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Creás una esfera de niebla de 6 m de radio centrada en un punto dentro del alcance. La esfera se mueve con el viento y oscurece visualmente esa zona, bloqueando la visión normal y la visión en la oscuridad más allá de su borde.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "ola-atronadora",
+    "nombre": "Ola Atronadora",
+    "nivel": 1,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal (cubo de 4,5 m)",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Emite una onda de sonido de tu cuerpo. Cada criatura en un cubo de 4,5 m que emane de vos hace una salvación de Constitución; si falla, recibe 2d8 de daño de trueno y es empujada 3 m (mitad de daño y sin empuje si la supera). Objetos frágiles no portados que estén en la zona se rompen.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "orbe-cromatico",
+    "nombre": "Orbe Cromático",
+    "nivel": 1,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S, M (un diamante de al menos 50 po)",
+    "duracion": "Instantánea",
+    "descripcion": "Lanzás una esfera de energía mágica de un tipo de daño que elegís (ácido, frío, fuego, relámpago, veneno o trueno). Haz un ataque de conjuro: si acierta, 3d8 del tipo elegido. A niveles superiores: +1d8 por nivel de espacio por encima del 1.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "palabra-de-curacion",
+    "nombre": "Palabra de Curación",
+    "nivel": 1,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción adicional",
+    "alcance": "18 metros",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Una criatura visible dentro del alcance recupera PG iguales a 1d4 + tu modificador de aptitud mágica. No tiene efecto sobre muertos vivientes ni constructos. A niveles superiores: +1d4 por nivel de espacio por encima del 1.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "druida"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "perdicion",
+    "nombre": "Perdición",
+    "nivel": 1,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Elegís una criatura visible que pueda escucharos y le infundís desesperanza. Debe hacer una salvación de Sabiduría o tiene desventaja en todas las tiradas de ataque y de característica mientras dure el conjuro.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "clerigo"
+    ]
+  },
+  {
+    "id": "proteccion-contra-el-bien-y-el-mal",
+    "nombre": "Protección contra el Bien y el Mal",
+    "nivel": 1,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (agua bendita o polvo de hierro o plata)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Hasta que termine, una criatura voluntaria que toques queda protegida contra aberraciones, celestiales, elementales, demonios, feéricos, infernales y muertos vivientes: esas criaturas tienen desventaja en ataques contra el objetivo, y este no puede ser hechizado, asustado ni poseído por ellas.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "clerigo",
+      "druida",
+      "mago",
+      "paladin"
+    ]
+  },
+  {
+    "id": "rayo-nauseabundo",
+    "nombre": "Rayo Nauseabundo",
+    "nivel": 1,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (vísceras de cualquier criatura)",
+    "duracion": "Instantánea",
+    "descripcion": "Un rayo verdoso de energía nauseabunda sale disparado hacia una criatura visible. Haz un ataque de conjuro: si acierta, 2d8 de daño de veneno y el objetivo hace una salvación de Constitución o queda envenenado hasta el final de tu siguiente turno. Mientras esté envenenada, no puede hacer acciones ni reacciones.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "reprension-infernal",
+    "nombre": "Reprensión Infernal",
+    "nivel": 1,
+    "escuela": "Evocación",
+    "tiempoCasteo": "Reacción",
+    "alcance": "18 metros",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Cuando una criatura que puedas ver te causa daño, podés hacer que reciba 2d10 de daño del tipo que te infligió (mitad con una salvación de Destreza superada). A niveles superiores: +1d10 por nivel de espacio por encima del 1.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "brujo"
+    ]
+  },
+  {
+    "id": "retirada-expeditiva",
+    "nombre": "Retirada Expeditiva",
+    "nivel": 1,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "Acción adicional",
+    "alcance": "Personal",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Hasta que termine, podés usar una acción adicional en cada uno de tus turnos para llevar a cabo la acción de correr.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "risa-horrible-de-tasha",
+    "nombre": "Risa Horrible de Tasha",
+    "nivel": 1,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (pluma de tickle o galleta de jengibre)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Una criatura visible de tu elección hace una salvación de Sabiduría o queda con el estado de derribado y de hechizada mientras dure. En cada uno de sus turnos puede repetir la salvación al final, terminando el efecto en ella si la supera.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "mago"
+    ]
+  },
+  {
+    "id": "salto",
+    "nombre": "Salto",
+    "nivel": 1,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (una pata de langosta)",
+    "duracion": "1 minuto",
+    "descripcion": "Tocás a una criatura. Su distancia de salto se triplica hasta que termine el conjuro.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "santuario",
+    "nombre": "Santuario",
+    "nivel": 1,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "Acción adicional",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (talismán pequeño de plata)",
+    "duracion": "1 minuto",
+    "descripcion": "Proteges a una criatura dentro del alcance con energía divina. Hasta que termine, cualquiera que la ataque o la haga objetivo de un conjuro dañino debe primero hacer una salvación de Sabiduría; si falla, debe elegir otro objetivo o perder la acción. No protege de ataques de área.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo"
+    ]
+  },
+  {
+    "id": "sirviente-invisible",
+    "nombre": "Sirviente Invisible",
+    "nivel": 1,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (jabón y hierro)",
+    "duracion": "1 hora",
+    "descripcion": "Creás una fuerza invisible y sin mente que realiza tareas sencillas dentro del alcance: limpiar, reparar, doblar, encender fuegos, servir comida o verter vino. Puede moverse hasta 9 m por turno obedeciendo tus órdenes mentales.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "mago"
+    ]
+  },
+  {
+    "id": "tormenta-de-la-venganza",
+    "nombre": "Tormenta de la Venganza",
+    "nivel": 1,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Convocás una zona de clima violento (granizo, viento cortante o similar) en un punto dentro del alcance. Las criaturas que elijas en la zona reciben daño del tipo correspondiente y pueden sufrir dificultad de movimiento mientras dure.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "explorador"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "zancada-prodigiosa",
+    "nombre": "Zancada Prodigiosa",
+    "nivel": 1,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "Acción adicional",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "1 minuto",
+    "descripcion": "Tocás a una criatura. Su velocidad aumenta 3 m y no provoca ataques de oportunidad al moverse mientras dure el conjuro.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "druida",
+      "explorador",
+      "mago"
+    ]
+  },
+  {
+    "id": "abrir",
+    "nombre": "Abrir",
+    "nivel": 2,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Elegís un objeto cerrado que veáis dentro del alcance: una puerta, caja, cofre, esposas, candado, etc. Si está cerrado con una cerradura normal o atascado, se abre. Si tiene varios cerrojos, solo se abre uno. Al lanzarlo se escucha un fuerte golpe audible a 90 m.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "agrandar-reducir",
+    "nombre": "Agrandar/Reducir",
+    "nivel": 2,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (pizca de hierro en polvo)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Una criatura u objeto visible dentro del alcance aumenta o reduce de tamaño mientras dure el conjuro (una criatura no voluntaria puede salvar con Constitución para resistirlo). Agrandar da ventaja en pruebas y salvaciones de Fuerza y +1d4 de daño; Reducir da desventaja en esas pruebas y -1d4 de daño.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "aliento-de-dragon",
+    "nombre": "Aliento de Dragón",
+    "nivel": 2,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción adicional",
+    "alcance": "Toque",
+    "componentes": "V, S, M (una guindilla)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Tocás a una criatura voluntaria y elegís ácido, frío, fuego, relámpago o veneno. Mientras dure, puede usar una acción de magia para exhalar un cono de 4,5 m: las criaturas en la zona hacen salvación de Destreza y reciben 3d6 de daño del tipo elegido (mitad si la superan). A niveles superiores: +1d6 por nivel por encima del 2.°.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "alterar-el-propio-aspecto",
+    "nombre": "Alterar el Propio Aspecto",
+    "nivel": 2,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Modificás tu forma física: podés crecer branquias y respirar bajo el agua, hacer crecer armas naturales que hacen 1d6 de daño, o cambiar tu apariencia (altura, peso, rasgos, voz). Podés usar una acción de magia para cambiar la opción elegida mientras dure.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "arma-espiritual",
+    "nombre": "Arma Espiritual",
+    "nivel": 2,
+    "escuela": "Evocación",
+    "tiempoCasteo": "Acción adicional",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Creás una fuerza espectral con forma de un arma de tu elección que flota dentro del alcance. Podés hacer un ataque de conjuro cuerpo a cuerpo con ella contra una criatura a 1,5 m: si acierta, 1d8 + mod. de aptitud mágica de daño de fuerza. Como acción adicional en turnos posteriores, podés moverla 6 m y repetir el ataque. A niveles superiores: +1d8 por nivel por encima del 2.°.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo"
+    ]
+  },
+  {
+    "id": "arma-magica",
+    "nombre": "Arma Mágica",
+    "nivel": 2,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Tocás un arma no mágica. Hasta que termine, se convierte en arma mágica con un +1 a sus tiradas de ataque y daño. A niveles superiores: +2 (espacio 4) o +3 (espacio 6).",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "explorador",
+      "hechicero",
+      "mago",
+      "paladin"
+    ]
+  },
+  {
+    "id": "augurio",
+    "nombre": "Augurio",
+    "nivel": 2,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 minuto, ritual",
+    "alcance": "Personal",
+    "componentes": "V, S, M (palillos de incienso y huesos de valor similar)",
+    "duracion": "Instantánea",
+    "descripcion": "Consultáis presagios sobre el resultado de un curso de acción específico que planeéis llevar a cabo en la próxima media hora. El DM elige una respuesta entre un augurio favorable, débil, malo o mezclado, representando la influencia de fuerzas más allá de vuestro control.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "clerigo",
+      "druida",
+      "mago"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "aura-magica-de-nystul",
+    "nombre": "Aura Mágica de Nystul",
+    "nivel": 2,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (un poco de hollín y limaduras de hierro)",
+    "duracion": "24 horas",
+    "descripcion": "Tocás un objeto o criatura y le aplicás una de dos auras ilusorias: una que la hace parecer no mágica, o una que simula el aura de otro objeto/escuela de magia a efectos de conjuros de detección como Detectar Magia o Identificar.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "auxilio",
+    "nombre": "Auxilio",
+    "nivel": 2,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (tira de tela blanca)",
+    "duracion": "8 horas",
+    "descripcion": "Los PG máximos y actuales de hasta tres criaturas visibles aumentan en 5 durante la duración. A niveles superiores: +5 PG por nivel de espacio por encima del 2.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "druida",
+      "explorador",
+      "paladin"
+    ]
+  },
+  {
+    "id": "boca-magica",
+    "nombre": "Boca Mágica",
+    "nivel": 2,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 minuto, ritual",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (fragmento pequeño de carbón, una gota de miel y una oreja de jade en polvo)",
+    "duracion": "Instantánea",
+    "descripcion": "Implantáis un mensaje en un objeto dentro del alcance, que se activa cuando se cumple una condición que establecéis (hasta 25 palabras de condición). El objeto entonces 'habla' el mensaje (hasta 25 palabras) con una voz fuerte, imitando la vuestra si lo queréis.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "bardo",
+      "mago"
+    ]
+  },
+  {
+    "id": "calentar-metal",
+    "nombre": "Calentar Metal",
+    "nivel": 2,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (un trozo de hierro)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Elegís un objeto de metal visible, como un arma o armadura metálica, y lo hacéis arder al rojo vivo. Cualquiera en contacto con él recibe 2d8 de daño de fuego al inicio del conjuro y en turnos posteriores si lo seguís tocando con una acción adicional; puede soltarlo con una salvación de Constitución.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "druida"
+    ]
+  },
+  {
+    "id": "calmar-emociones",
+    "nombre": "Calmar Emociones",
+    "nivel": 2,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Intentás suprimir emociones violentas en un grupo de personas. Cada humanoide en una esfera de 6 m hace una salvación de Carisma. Con quienes fallen podés suprimir el estado de hechizado o asustado, o volverlos indiferentes hacia criaturas que elijas, o dar ventaja a uno en pruebas o salvaciones contra el miedo durante la duración.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo"
+    ]
+  },
+  {
+    "id": "cerradura-arcana",
+    "nombre": "Cerradura Arcana",
+    "nivel": 2,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (oro en polvo por valor de 25 po, consumido)",
+    "duracion": "Hasta que se disipe",
+    "descripcion": "Conjurás una puerta, ventana o contenedor dentro del alcance para que quede cerrada con magia. Solo vos o quienes designéis podéis abrirla; es inmune al conjuro abrir y se vuelve mucho más difícil de forzar físicamente.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "clavo-mental",
+    "nombre": "Clavo Mental",
+    "nivel": 2,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Perforás la mente de una criatura visible con una esquirla psíquica. Hace una salvación de Sabiduría; si falla, recibe 3d8 de daño psíquico y su velocidad se reduce a la mitad hasta el final de tu siguiente turno (mitad de daño sin reducción si la supera). A niveles superiores: +1d8 por nivel por encima del 2.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "hechicero",
+      "mago"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "contorno-borroso",
+    "nombre": "Contorno Borroso",
+    "nivel": 2,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Tu forma se vuelve borrosa, parpadeando y cambiando de lugar sutilmente a ojos de los demás. Mientras dure, cualquier criatura tiene desventaja en tiradas de ataque contra vos; un atacante es inmune si no depende de la vista.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "cordon-de-flechas",
+    "nombre": "Cordón de Flechas",
+    "nivel": 2,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (una flecha o virote)",
+    "duracion": "8 horas",
+    "descripcion": "Encantás una flecha o virote que, al ser disparado y errar, se transforma en una trampa mágica oculta en el punto de impacto, saltando hacia una criatura cercana que pase por ahí más adelante durante la duración.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "explorador"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "corona-de-la-locura",
+    "nombre": "Corona de la Locura",
+    "nivel": 2,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Elegís una criatura visible en una esfera de 36 m. Hace una salvación de Sabiduría o queda hechizada; mientras esté hechizada así, debés usar una acción adicional en cada uno de tus turnos para dirigir mentalmente un ataque cuerpo a cuerpo contra una criatura que vos elijáis.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "crecimiento-espinoso",
+    "nombre": "Crecimiento Espinoso",
+    "nivel": 2,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "45 metros",
+    "componentes": "V, S, M (siete espinas o un trozo de zarza)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "El terreno en una esfera de 6 m centrada en un punto dentro del alcance se cubre de enredaderas espinosas, volviéndose terreno difícil. Cada criatura que entre o se mueva dentro de él recibe 2d4 de daño perforante por cada 1,5 m recorridos.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "detectar-pensamientos",
+    "nombre": "Detectar Pensamientos",
+    "nivel": 2,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V, S, M (una pieza de cobre)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Durante la duración, podés leer la superficie de los pensamientos de una criatura dentro de 9 m que podáis ver. Si está en guardia mentalmente, hace una salvación de Sabiduría; si la falla, podés sondear más profundo y hacerle preguntas, y detectar si miente.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "detectar-trampas",
+    "nombre": "Detectar Trampas",
+    "nivel": 2,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal (9 m)",
+    "componentes": "V, S, M (hierro y una piedra imán)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Percibís la presencia de cualquier trampa dentro de 9 m que sea un objeto o construcción mágica diseñada para infligir daño o causar una condición, incluyendo glifos custodios y conjuros similares.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "dulce-descanso",
+    "nombre": "Dulce Descanso",
+    "nivel": 2,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (un grano de sal)",
+    "duracion": "10 días",
+    "descripcion": "Tocás un cadáver o restos. Durante la duración, el objetivo queda a salvo de la descomposición y no puede convertirse en muerto viviente. El conjuro también neutraliza venenos y detiene progresión de enfermedades en el cuerpo.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "mago",
+      "paladin"
+    ]
+  },
+  {
+    "id": "embelesar",
+    "nombre": "Embelesar",
+    "nivel": 2,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "1 minuto",
+    "descripcion": "Intentás captar la atención de un grupo con una interpretación. Cada criatura hostil en una esfera de 9 m que pueda oíros hace una salvación de Sabiduría o tiene desventaja en pruebas de Sabiduría (Percepción) salvo las dirigidas a vos, mientras dure o escuche vuestra interpretación.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo"
+    ]
+  },
+  {
+    "id": "esfera-de-llamas",
+    "nombre": "Esfera de Llamas",
+    "nivel": 2,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (grasa animal, azufre y goma arábiga)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Una esfera de fuego de 1,5 m de diámetro aparece en un espacio dentro del alcance y persiste mientras dure. Cada criatura en el espacio de la esfera al aparecer o al moverla (hasta 9 m por turno con una acción adicional) hace salvación de Destreza o recibe 2d6 de daño de fuego.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "flecha-acida-de-melf",
+    "nombre": "Flecha Ácida de Melf",
+    "nivel": 2,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S, M (polvo de hierro arenoso)",
+    "duracion": "Instantánea",
+    "descripcion": "Una flecha brillante de ácido vuela hacia un objetivo dentro del alcance. Haz un ataque de conjuro: si acierta, 2d4 de daño ácido inmediato y 2d4 adicionales al final de su siguiente turno. A niveles superiores: +1d4 inmediato y +1d4 posterior por nivel por encima del 2.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "fuerza-fantasma",
+    "nombre": "Fuerza Fantasma",
+    "nivel": 2,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (fibra vegetal, resina y pigmento)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Creás una ilusión de un objeto, criatura o fenómeno visible que cabe en un cubo de 3 m, visible solo para una criatura que elijas dentro del alcance. Un ataque o efecto dañino de la ilusión le causa daño psíquico real (hasta 3d6) si cree que es real, y puede quedar asustada o incapacitada hasta que se dé cuenta de que es falsa.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "hacer-anicos",
+    "nombre": "Hacer Añicos",
+    "nivel": 2,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (un fragmento de mica)",
+    "duracion": "Instantánea",
+    "descripcion": "Un sonido estridente resuena en un punto que elijas dentro del alcance. Cada criatura en una esfera de 3 m hace una salvación de Constitución o recibe 2d8 de daño de trueno (mitad si la supera). Un objeto no mágico que no sea portado ni usado también recibe el daño sin salvación. A niveles superiores: +1d8 por nivel por encima del 2.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "hallar-corcel",
+    "nombre": "Hallar Corcel",
+    "nivel": 2,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "10 minutos",
+    "alcance": "9 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Invocás un espíritu que asume la forma de un corcel inteligente y leal —caballo, poni, camello, alce o perro gigante—, con el que formás un vínculo. El corcel actúa como animal independiente en combate pero obedece tus órdenes, y podés recuperarlo si muere volviendo a lanzar el conjuro.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "hoja-de-fuego",
+    "nombre": "Hoja de Fuego",
+    "nivel": 2,
+    "escuela": "Evocación",
+    "tiempoCasteo": "Acción adicional",
+    "alcance": "Personal",
+    "componentes": "V, S, M (hojas de dormidera)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Una espada de fuego llameante aparece en tu mano. Dura mientras la empuñes y se mantenga el conjuro. Haz un ataque de conjuro cuerpo a cuerpo con ella: si acierta, 3d6 de daño de fuego. También emite luz brillante en 3 m y tenue 3 m más.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "hechicero"
+    ]
+  },
+  {
+    "id": "imagen-multiple",
+    "nombre": "Imagen Múltiple",
+    "nivel": 2,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V, S, M (un trozo de vidrio pulido)",
+    "duracion": "1 minuto",
+    "descripcion": "Creás tres duplicados ilusorios de vos mismo. Mientras dure, cada vez que una criatura te ataque, tira para determinar si golpea a una imagen en lugar de a vos (destruyendo esa imagen); con 0 imágenes restantes, el conjuro termina.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "inmovilizar-persona",
+    "nombre": "Inmovilizar Persona",
+    "nivel": 2,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (un trozo de hierro recto)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Un humanoide visible dentro del alcance hace una salvación de Sabiduría o queda paralizado. Puede repetir la salvación al final de cada uno de sus turnos. A niveles superiores: un humanoide adicional por nivel de espacio por encima del 2.°.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "clerigo",
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "invisibilidad",
+    "nombre": "Invisibilidad",
+    "nivel": 2,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (una pestaña envuelta en goma arábiga)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Una criatura que toques se vuelve invisible hasta que termine el conjuro. Cualquier cosa que lleve también lo es mientras la porte. Termina antes si atacás o lanzás un conjuro. A niveles superiores: una criatura adicional por nivel por encima del 2.°.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "invocar-bestia",
+    "nombre": "Invocar Bestia",
+    "nivel": 2,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (ofrenda de comida apropiada para una bestia real)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Invocás un espíritu que toma forma de bestia feroz en un espacio desocupado dentro del alcance. Luchás junto a ella; comparte tu iniciativa y la controlás, pudiendo elegir entre varias opciones de ataque según el tamaño del espíritu que escojas.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "levitar",
+    "nombre": "Levitar",
+    "nivel": 2,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (una pluma o una raíz de regaliz bifurcada)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Una criatura u objeto de tu elección que veas dentro del alcance se eleva verticalmente hasta 6 m y permanece suspendido durante la duración (una criatura no voluntaria puede salvar con Constitución para resistirlo). El objetivo puede moverse solo empujando o tirando de una superficie u objeto cercano.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "llama-permanente",
+    "nombre": "Llama Permanente",
+    "nivel": 2,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (rubí en polvo por valor de 50 po, consumido)",
+    "duracion": "Hasta que se disipe",
+    "descripcion": "Creás una llama en una fuente de luz (vela, antorcha o brasero) que arde sin consumirse, produciendo la misma luz que una llama normal. Puede apagarse como una vela normal o con un conjuro de disipar magia.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida",
+      "mago"
+    ]
+  },
+  {
+    "id": "localizar-animales-o-plantas",
+    "nombre": "Localizar Animales o Plantas",
+    "nivel": 2,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción, ritual",
+    "alcance": "Personal",
+    "componentes": "V, S, M (hierba, carbón y agua)",
+    "duracion": "Instantánea",
+    "descripcion": "Pronunciás el nombre de un tipo específico de bestia o planta. Si hay alguna de ese tipo dentro de 1,5 km, aprendés la dirección y distancia hasta la más cercana.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "bardo",
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "mensajero-animal",
+    "nombre": "Mensajero Animal",
+    "nivel": 2,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción, ritual",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (bocado de comida)",
+    "duracion": "24 horas",
+    "descripcion": "Elegís un animal diminuto visible dentro del alcance y le enviáis a entregar un mensaje de hasta veinticinco palabras a un lugar que describáis, entregándolo a una criatura que coincida con tu descripción. A niveles superiores: la duración aumenta mucho (24 días en espacio 3, 1 año en espacio 4).",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "bardo",
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "nube-de-dagas",
+    "nombre": "Nube de Dagas",
+    "nivel": 2,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (tres dagas de hierro o acero)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Creás una esfera de dagas giratorias de 1,5 m que llena un espacio dentro del alcance durante la duración. Cualquier criatura que entre al espacio por primera vez en un turno o empiece ahí recibe 4d4 de daño cortante.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "oscuridad",
+    "nombre": "Oscuridad",
+    "nivel": 2,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, M (carbón vegetal, ala de murciélago y hollín)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "La oscuridad mágica se extiende en una esfera de 4,5 m centrada en un punto dentro del alcance, incluso bloqueando visión en la oscuridad. Una fuente de luz mágica de nivel igual o inferior creada dentro del área queda apagada mientras dure.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "piel-rocosa",
+    "nombre": "Piel Rocosa",
+    "nivel": 2,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "Acción adicional",
+    "alcance": "Toque",
+    "componentes": "V, S, M (un trozo de corteza)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Tocás a una criatura voluntaria. Su piel se vuelve rugosa y leñosa mientras dure, dándole una CA mínima de 16 (sin contar escudo u otros efectos) independientemente de su armadura o Destreza.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "plegaria-de-curacion",
+    "nombre": "Plegaria de Curación",
+    "nivel": 2,
+    "escuela": "Evocación",
+    "tiempoCasteo": "10 minutos",
+    "alcance": "9 metros",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Hasta seis criaturas visibles dentro del alcance recuperan PG iguales a 2d8 + tu modificador de aptitud mágica. No tiene efecto sobre muertos vivientes ni constructos. A niveles superiores: +2d8 por nivel de espacio por encima del 2.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "paladin"
+    ]
+  },
+  {
+    "id": "potenciar-caracteristica",
+    "nombre": "Potenciar Característica",
+    "nivel": 2,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (una pluma de ave)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Tocás a una criatura y le otorgás ventaja en pruebas de una característica (Fuerza, Destreza, Constitución, Inteligencia, Sabiduría o Carisma) de tu elección mientras dure el conjuro. A niveles superiores: un objetivo adicional por nivel de espacio por encima del 2.°.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "druida",
+      "explorador",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "proteccion-contra-veneno",
+    "nombre": "Protección contra Veneno",
+    "nivel": 2,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "1 hora",
+    "descripcion": "Tocás a una criatura. Si está envenenada, neutralizás el veneno; si tiene múltiples venenos, neutralizás uno. Durante la hora siguiente, el objetivo tiene ventaja en salvaciones contra veneno y resistencia al daño de veneno.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida",
+      "explorador",
+      "paladin"
+    ]
+  },
+  {
+    "id": "rafaga-de-viento",
+    "nombre": "Ráfaga de Viento",
+    "nivel": 2,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal (línea de 18 m)",
+    "componentes": "V, S, M (una pluma legal)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Una línea de viento fuerte de 18 m de largo y 3 m de ancho sale de vos en una dirección. Cada criatura que empiece su turno en la línea debe superar una salvación de Fuerza o es empujada 4,5 m en la dirección del viento. El viento dispersa gases/vapores y apaga llamas pequeñas.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "rayo-abrasador",
+    "nombre": "Rayo Abrasador",
+    "nivel": 2,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Creás tres rayos de fuego y los lanzás contra uno o varios objetivos dentro del alcance. Haz un ataque de conjuro por cada rayo: cada uno que acierte causa 2d6 de daño de fuego. A niveles superiores: un rayo adicional por nivel de espacio por encima del 2.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "rayo-de-luna",
+    "nombre": "Rayo de Luna",
+    "nivel": 2,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S, M (perla de valor similar o guano de murciélago fosforescente)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Un pilar plateado de luz brilla en un cilindro de 1,5 m de radio y 12 m de alto, centrado en un punto dentro del alcance. Cada criatura en la zona al aparecer o en su turno hace una salvación de Constitución o recibe 2d10 de daño radiante (mitad si la supera). Podés mover la zona 18 m en tu turno.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida"
+    ]
+  },
+  {
+    "id": "rayo-debilitador",
+    "nombre": "Rayo Debilitador",
+    "nivel": 2,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S",
+    "duracion": "1 minuto",
+    "descripcion": "Un rayo negro sale de tu mano hacia una criatura visible. Haz un ataque de conjuro: si acierta, recibe 2d4 de daño necrótico y tiene desventaja en tiradas de ataque basadas en Fuerza y en daño de arma hasta el final del conjuro. A niveles superiores: +1d4 por nivel por encima del 2.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "mago"
+    ]
+  },
+  {
+    "id": "restablecimiento-menor",
+    "nombre": "Restablecimiento Menor",
+    "nivel": 2,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Tocás a una criatura y acabás con una enfermedad o condición que la afecte: cegada, ensordecida, paralizada o envenenada.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "druida",
+      "explorador",
+      "paladin"
+    ]
+  },
+  {
+    "id": "sentidos-de-la-bestia",
+    "nombre": "Sentidos de la Bestia",
+    "nivel": 2,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "Acción adicional",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Tocás a una bestia voluntaria. Mientras dure, podés usar tu acción para ver a través de sus ojos y oír lo que escucha, aprovechando sentidos especiales que tenga, hasta que termine el conjuro.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "silencio",
+    "nombre": "Silencio",
+    "nivel": 2,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 acción, ritual",
+    "alcance": "36 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "El sonido no puede empezar, salir ni pasar a través de una esfera de 6 m centrada en un punto dentro del alcance. Las criaturas y objetos dentro son inmunes a daño de trueno, y las criaturas están ensordecidas mientras estén dentro. Lanzar conjuros con componente verbal es imposible dentro de la zona.",
+    "concentracion": true,
+    "ritual": true,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "explorador"
+    ]
+  },
+  {
+    "id": "sordera-ceguera",
+    "nombre": "Sordera/Ceguera",
+    "nivel": 2,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V",
+    "duracion": "1 minuto",
+    "descripcion": "Una criatura visible dentro del alcance hace una salvación de Constitución o queda ensordecida o cegada (a tu elección) durante la duración. Al final de cada uno de sus turnos puede repetir la salvación, terminando el efecto en un éxito. A niveles superiores: un objetivo adicional por nivel por encima del 2.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "sugestion",
+    "nombre": "Sugestión",
+    "nivel": 2,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, M (una gota de cera o grasa de animal)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Sugerís un curso de acción (en no más de veinticinco palabras) a una criatura visible que os entienda. Hace una salvación de Sabiduría; si falla, sigue la sugerencia razonablemente hasta que se complete o termine el conjuro (hasta 24 horas).",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "telarana",
+    "nombre": "Telaraña",
+    "nivel": 2,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (un poco de telaraña)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Llenáis un cubo de 6 m dentro del alcance con telarañas gruesas y pegajosas que vuelven ese espacio terreno difícil. Una criatura que entre por primera vez o empiece su turno ahí hace salvación de Destreza o queda apresada mientras las telarañas persistan y pueda estar ahí.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "truco-de-la-cuerda",
+    "nombre": "Truco de la Cuerda",
+    "nivel": 2,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "1,5 metros",
+    "componentes": "V, S, M (polvo de caparazón de escarabajo pulverizado y unido con resina)",
+    "duracion": "1 hora",
+    "descripcion": "Una cuerda se eleva y queda rígida en el aire, desapareciendo en un espacio extradimensional en su extremo superior visible solo para quienes trepen por ella. Hasta ocho criaturas Medianas o más pequeñas pueden refugiarse ahí, a salvo del exterior, mientras dure el conjuro.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "ver-invisibilidad",
+    "nombre": "Ver Invisibilidad",
+    "nivel": 2,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V, S, M (polvo de talco y plata)",
+    "duracion": "1 hora",
+    "descripcion": "Durante la duración, ves criaturas y objetos invisibles como si fueran visibles, y podés ver dentro del Plano Etéreo.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "vigor-arcano",
+    "nombre": "Vigor Arcano",
+    "nivel": 2,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "Acción adicional",
+    "alcance": "Personal",
+    "componentes": "V, S",
+    "duracion": "1 hora",
+    "descripcion": "Canalizás energía arcana para fortalecerte: ganás PG temporales iguales a 2d8 + tu nivel de lanzador de conjuros, que duran hasta que se agoten o termine el conjuro. A niveles superiores: +1d8 por nivel por encima del 2.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "vinculo-protector",
+    "nombre": "Vínculo Protector",
+    "nivel": 2,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "3 metros",
+    "componentes": "V, S, M (anillos de pareja por valor de 50 po, llevados por cada objetivo)",
+    "duracion": "1 hora",
+    "descripcion": "Vinculás a dos criaturas voluntarias dentro del alcance. Mientras ambas estén a 18 m, si una recibe daño, la otra puede teletransportarse a su lado y asumir parte del daño; si cualquiera cae a 0 PG, el conjuro termina.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "paladin"
+    ]
+  },
+  {
+    "id": "vision-en-la-oscuridad",
+    "nombre": "Visión en la Oscuridad",
+    "nivel": 2,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (una zanahoria o ágata pulida)",
+    "duracion": "8 horas",
+    "descripcion": "Tocás a una criatura voluntaria para otorgarle la capacidad de ver en la oscuridad. Durante la duración, tiene visión en la oscuridad con un alcance de 18 m.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "acelerar",
+    "nombre": "Acelerar",
+    "nivel": 3,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (una viruta de raíz de regaliz)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Elegís una criatura voluntaria visible. Hasta que termine, su velocidad se duplica, gana +2 a la CA, tiene ventaja en salvaciones de Destreza y consigue una acción adicional cada turno (solo para Atacar una vez, correr, destrabarse, esconderse o usar un objeto). Al terminar, el objetivo no puede actuar hasta el final de su siguiente turno.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "animar-a-los-muertos",
+    "nombre": "Animar a los Muertos",
+    "nivel": 3,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 minuto",
+    "alcance": "3 metros",
+    "componentes": "V, S, M (una gota de sangre, carne y polvo de hueso)",
+    "duracion": "Instantánea",
+    "descripcion": "Elegís un montón de huesos o un cadáver humanoide dentro del alcance. Se convierte en un esqueleto o un zombi bajo tu control permanente, obedeciendo tus órdenes. A niveles superiores: dos muertos vivientes adicionales por nivel de espacio por encima del 3.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "mago"
+    ]
+  },
+  {
+    "id": "arma-elemental",
+    "nombre": "Arma Elemental",
+    "nivel": 3,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Un arma no mágica que toques se convierte en arma mágica. Elegís ácido, frío, fuego, relámpago o trueno: ganás +1 a las tiradas de ataque con ella y, al golpear, 1d4 de daño adicional del tipo elegido. A niveles superiores: +2/+2d4 (espacio 5) o +3/+3d4 (espacio 7).",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador",
+      "paladin"
+    ]
+  },
+  {
+    "id": "aura-de-vitalidad",
+    "nombre": "Aura de Vitalidad",
+    "nivel": 3,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal (emanación de 9 m)",
+    "componentes": "V",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Energía sanadora irradia de vos en una emanación de 9 m. Como acción adicional, podés hacer que un aliado en la zona recupere 2d6 PG; podés usar este beneficio una vez por turno mientras dure el conjuro.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida",
+      "paladin"
+    ]
+  },
+  {
+    "id": "bola-de-fuego",
+    "nombre": "Bola de Fuego",
+    "nivel": 3,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "45 metros",
+    "componentes": "V, S, M (una bolita de guano de murciélago y azufre)",
+    "duracion": "Instantánea",
+    "descripcion": "Una esfera de fuego brillante estalla en un punto que elijas dentro del alcance. Cada criatura en una esfera de 6 m hace salvación de Destreza, recibiendo 8d6 de daño de fuego (mitad si la supera). El fuego prende fuego a objetos inflamables no portados en la zona. A niveles superiores: +1d6 por nivel por encima del 3.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "caminar-sobre-el-agua",
+    "nombre": "Caminar sobre el Agua",
+    "nivel": 3,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (un corcho de madera)",
+    "duracion": "1 hora",
+    "descripcion": "Esta magia otorga a las criaturas que elijas, hasta diez dentro del alcance, la capacidad de moverse sobre cualquier superficie líquida (agua, ácido, lodo, nieve, arenas movedizas, lava, etc.) como si fuera suelo firme.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "clerigo",
+      "druida",
+      "explorador",
+      "hechicero"
+    ]
+  },
+  {
+    "id": "castigo-cegador",
+    "nombre": "Castigo Cegador",
+    "nivel": 3,
+    "escuela": "Evocación",
+    "tiempoCasteo": "Acción adicional (al golpear)",
+    "alcance": "Personal",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Variante de Castigo Divino: al golpear con un ataque de arma, podés gastar un espacio de conjuro de nivel 3 o superior para infligir 4d8 de daño radiante adicional (+1d8 por nivel por encima del 3.°), y el objetivo hace salvación de Constitución o queda cegado hasta el final de tu siguiente turno.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "paladin"
+    ],
+    "esHabilidad": true
+  },
+  {
+    "id": "circulo-magico",
+    "nombre": "Círculo Mágico",
+    "nivel": 3,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 minuto",
+    "alcance": "3 metros",
+    "componentes": "V, S, M (agua bendita o hierro/plata en polvo)",
+    "duracion": "1 hora",
+    "descripcion": "Trazás un cilindro de 3 m de radio y 6 m de alto centrado en un punto dentro del alcance. Elegís uno o más tipos de criatura (aberraciones, celestiales, elementales, demonios, feéricos, infernales o muertos vivientes): no pueden entrar voluntariamente ni hacer objetivo a nadie dentro con conjuros o efectos, y tienen desventaja en ataques contra quienes estén dentro.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "clerigo",
+      "mago",
+      "paladin"
+    ]
+  },
+  {
+    "id": "clarividencia",
+    "nombre": "Clarividencia",
+    "nivel": 3,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "10 minutos",
+    "alcance": "1,5 kilómetros",
+    "componentes": "V, S, M (un ópalo de valor similar y seda)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Creás un sensor invisible en un lugar que conozcas dentro del alcance. Podés usar tu acción para ver y oír a través de él, pudiendo moverlo hasta 9 m en cada turno, en lugar de usar tus propios sentidos.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "conjurar-animales",
+    "nombre": "Conjurar Animales",
+    "nivel": 3,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Invocás espíritus que toman forma de bestias feroces en espacios desocupados dentro del alcance; según el nivel del espacio usado, podés invocar más bestias de un desafío menor. Luchan junto a vos, comparten tu iniciativa y las controlás.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "conjurar-descarga-de-proyectiles",
+    "nombre": "Conjurar Descarga de Proyectiles",
+    "nivel": 3,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Invocás una lluvia de armas a distancia espectrales que caen sobre un punto que veas dentro del alcance. Cada criatura en una esfera de 6 m hace salvación de Destreza, recibiendo 3d8 de daño perforante (mitad si la supera). A niveles superiores: +1d8 por nivel por encima del 3.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "explorador"
+    ]
+  },
+  {
+    "id": "contrahechizo",
+    "nombre": "Contrahechizo",
+    "nivel": 3,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "Reacción",
+    "alcance": "18 metros",
+    "componentes": "S",
+    "duracion": "Instantánea",
+    "descripcion": "Intentás interrumpir a una criatura en proceso de lanzar un conjuro. Si lanza un conjuro de nivel 3 o inferior, su conjuro falla sin efecto. Si es de nivel 4 o superior, hacé una prueba de característica con tu aptitud mágica (CD igual al nivel del conjuro) para anularlo.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "corcel-fantasma",
+    "nombre": "Corcel Fantasma",
+    "nivel": 3,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V",
+    "duracion": "1 hora",
+    "descripcion": "Creás una montura espectral cuasirreal, parecida a un caballo pesado, en un espacio dentro del alcance. Solo vos podéis montarla. Desaparece si se aleja más de 3 km de vos o si vuela por encima de 3 m.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "crear-comida-y-agua",
+    "nombre": "Crear Comida y Agua",
+    "nivel": 3,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Creás comida y agua potable suficiente para alimentar a quince humanoides o cinco caballos durante 24 horas, en un punto dentro del alcance.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "paladin"
+    ]
+  },
+  {
+    "id": "crecimiento-vegetal",
+    "nombre": "Crecimiento Vegetal",
+    "nivel": 3,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "45 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Si usás el conjuro para enriquecer el suelo, la vegetación en una esfera de 30 m mejora drásticamente durante un año. Si lo usás como ataque, la vegetación en esa zona se vuelve terreno difícil durante 24 horas.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "desplazamiento",
+    "nombre": "Desplazamiento",
+    "nivel": 3,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "Reacción",
+    "alcance": "Personal",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Cuando sufrís daño, invocás magia que te desplaza a un lugar seguro. Tirás el daño y recibís solo la mitad, teletransportándote hasta 18 m a un espacio desocupado que podáis ver.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "disipar-magia",
+    "nombre": "Disipar Magia",
+    "nivel": 3,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Elegís una criatura, objeto o efecto mágico visible dentro del alcance. Cualquier conjuro de nivel 3 o inferior que lo afecte termina. Para conjuros de nivel 4 o superior, hacé una prueba de característica con tu aptitud mágica (CD 10 + nivel del conjuro); si tenés éxito, termina.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "clerigo",
+      "druida",
+      "explorador",
+      "hechicero",
+      "mago",
+      "paladin"
+    ]
+  },
+  {
+    "id": "don-de-lenguas",
+    "nombre": "Don de Lenguas",
+    "nivel": 3,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (pequeño pedazo de incienso)",
+    "duracion": "1 hora",
+    "descripcion": "Tocás a una criatura voluntaria. Durante la duración, puede entender cualquier idioma hablado que escuche, y cualquiera que la escuche hablar entiende lo que dice si conoce al menos un idioma.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "clerigo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "espiritus-guardianes",
+    "nombre": "Espíritus Guardianes",
+    "nivel": 3,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal (emanación de 4,5 m)",
+    "componentes": "V, S, M (un amuleto sagrado)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Espíritus leves rodean vuestro cuerpo mientras dura el conjuro. Elegís un tipo de criatura al lanzarlo. Cada criatura hostil que empiece su turno en la emanación de 4,5 m hace salvación de Sabiduría o recibe 3d8 de daño (radiante o necrótico, a tu elección; 3d10 si es del tipo que elegiste), mitad si la supera; su velocidad también se reduce a la mitad hasta su siguiente turno.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo"
+    ]
+  },
+  {
+    "id": "fingir-muerte",
+    "nombre": "Fingir Muerte",
+    "nivel": 3,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción, ritual",
+    "alcance": "Toque",
+    "componentes": "V, S, M (una pizca de tierra de tumba)",
+    "duracion": "1 hora",
+    "descripcion": "Tocás a una criatura voluntaria (o que no oponga resistencia) y la hacés parecer muerta a toda inspección externa y a conjuros de detección de vida durante la duración.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "druida",
+      "mago"
+    ]
+  },
+  {
+    "id": "flecha-de-relampago",
+    "nombre": "Flecha de Relámpago",
+    "nivel": 3,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción adicional",
+    "alcance": "27 metros",
+    "componentes": "V",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Encantás tu próximo ataque con armas a distancia dentro del conjuro: al acertar, el objetivo recibe daño adicional de relámpago y queda marcado por un breve destello crepitante que puede propagarse a criaturas cercanas.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "explorador"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "forma-gaseosa",
+    "nombre": "Forma Gaseosa",
+    "nivel": 3,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (un trozo de gasa y humo)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Vos u otra criatura voluntaria que toquéis, junto con el equipo que lleve, se transforma en una nube vaporosa mientras dure el conjuro. En esta forma, es inmune a daño de arma no mágico, tiene resistencia a casi todo el daño y puede volar y filtrarse por espacios pequeños.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "fundirse-con-la-piedra",
+    "nombre": "Fundirse con la Piedra",
+    "nivel": 3,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "Concentración, 8 horas",
+    "descripcion": "Vos y hasta ocho criaturas dispuestas que toquéis os fundís en una formación de piedra grande dentro del alcance, quedando a salvo e indetectables mientras dure el conjuro, aunque sin poder actuar desde dentro.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "glifo-custodio",
+    "nombre": "Glifo Custodio",
+    "nivel": 3,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 hora",
+    "alcance": "Toque",
+    "componentes": "V, S, M (polvo de plata y rubí por valor de 200 po, consumido)",
+    "duracion": "Hasta que se active o disipe",
+    "descripcion": "Inscribís un glifo mágico en una superficie o dentro de un objeto cerrado que se activa cuando una criatura toca o se acerca sin saber el código, causando una explosión de 6 m con un conjuro de ataque de nivel 3 o inferior, o atrapando en runas que hechizan o asustan.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "mago"
+    ]
+  },
+  {
+    "id": "hablar-con-las-plantas",
+    "nombre": "Hablar con las Plantas",
+    "nivel": 3,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal (9 m)",
+    "componentes": "V, S",
+    "duracion": "10 minutos",
+    "descripcion": "Durante la duración, ganás la capacidad de comunicarte con plantas ordinarias y bestias afines a plantas, pudiendo pedirles que realicen tareas simples según su naturaleza (apartarse de un sendero, dejar pasar, etc.).",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "hablar-con-los-muertos",
+    "nombre": "Hablar con los Muertos",
+    "nivel": 3,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción",
+    "alcance": "3 metros",
+    "componentes": "V, S, M (incienso quemado)",
+    "duracion": "10 minutos",
+    "descripcion": "Devolvéis temporalmente la capacidad de hablar a un cadáver. Este debe tener boca y no estar muerto viviente. Podéis hacerle hasta cinco preguntas; responde con lo que sabía en vida, de forma breve, confusa o repetida si el conjuro se usó previamente sobre él.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "mago"
+    ]
+  },
+  {
+    "id": "hambre-de-hadar",
+    "nombre": "Hambre de Hadar",
+    "nivel": 3,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Una tiniebla espacial se extiende desde un punto que elijas, llenando una esfera de 6 m durante la duración y dejando ciega a cualquiera dentro. Cada criatura que empieza su turno ahí recibe 2d6 de daño ácido, y si es la primera vez en el turno que se mueve 1,5 m o más hacia el centro, recibe 2d6 adicional de frío.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "brujo"
+    ]
+  },
+  {
+    "id": "imagen-mayor",
+    "nombre": "Imagen Mayor",
+    "nivel": 3,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (un poco de lana)",
+    "duracion": "Concentración, hasta 10 minutos",
+    "descripcion": "Creás la imagen de un objeto, criatura o fenómeno visible que cabe en un cubo de 6 m, con sonido, olor y efectos menores de temperatura, dentro del alcance mientras dure. Podés moverla y cambiar sus efectos con una acción. Al examinarla físicamente se revela como falsa.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "imponer-maldicion",
+    "nombre": "Imponer Maldición",
+    "nivel": 3,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Maldecís a una criatura que toquéis. Hasta que termine, elegís uno de varios efectos: desventaja en pruebas y salvaciones de una característica, desventaja en ataques contra vos, obligarla a hacer salvación de Sabiduría o no poder actuar, o causar 1d8 de daño necrótico extra a tus ataques contra ella.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "mago"
+    ]
+  },
+  {
+    "id": "indetectable",
+    "nombre": "Indetectable",
+    "nivel": 3,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (hoja de muérdago cosechada con hoz de plata)",
+    "duracion": "8 horas",
+    "descripcion": "Vos o una criatura voluntaria que toquéis quedáis ocultos de la adivinación mágica durante la duración. El objetivo no puede ser objetivo de adivinación ni localizado por un sensor mágico (bola de cristal, conjuros de localización, etc.).",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "explorador",
+      "mago"
+    ]
+  },
+  {
+    "id": "invocar-feerico",
+    "nombre": "Invocar Feérico",
+    "nivel": 3,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (ofrenda apropiada para un feérico)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Invocás un espíritu feérico en un espacio desocupado dentro del alcance, de una de varias formas (un bufón embaucador, un guerrero sombrío fiero o un sanador feérico gentil). Comparte tu iniciativa y la controlás como aliado.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "druida",
+      "explorador",
+      "mago"
+    ]
+  },
+  {
+    "id": "invocar-muerto-viviente",
+    "nombre": "Invocar Muerto Viviente",
+    "nivel": 3,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (hueso quemado o cenizas de un cadáver)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Invocás un espíritu muerto viviente (en forma de guerrero colérico o aparición sombría) en un espacio desocupado dentro del alcance. Comparte tu iniciativa y la controlás como aliado.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "mago"
+    ]
+  },
+  {
+    "id": "levantar-maldicion",
+    "nombre": "Levantar Maldición",
+    "nivel": 3,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Pone fin a una maldición que afecte a una criatura u objeto tocado, incluyendo la restricción de un escudo custodio o una debilidad de hombre lobo.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "clerigo",
+      "mago",
+      "paladin"
+    ]
+  },
+  {
+    "id": "llamar-al-relampago",
+    "nombre": "Llamar al Relámpago",
+    "nivel": 3,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Una nube de tormenta aparece sobre un punto que elijas, apenas visible, mientras dure el conjuro (en exteriores). Como acción, podés hacer que un rayo caiga del cielo hasta cinco veces; cada criatura en un cilindro de 1,5 m bajo la nube hace salvación de Destreza, recibiendo 3d10 de daño de relámpago (mitad si la supera).",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida"
+    ]
+  },
+  {
+    "id": "maleficio",
+    "nombre": "Maleficio",
+    "nivel": 3,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Invocás una fuerza divina sobre una criatura visible. Hace salvación de Sabiduría o recibe 3d8 de daño radiante o necrótico (a tu elección), y cualquier luz brillante en 1,5 m se apaga. A niveles superiores: +1d8 por nivel por encima del 3.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida",
+      "explorador",
+      "hechicero",
+      "paladin"
+    ]
+  },
+  {
+    "id": "manto-del-cruzado",
+    "nombre": "Manto del Cruzado",
+    "nivel": 3,
+    "escuela": "Evocación",
+    "tiempoCasteo": "Acción adicional",
+    "alcance": "Personal (emanación de 9 m)",
+    "componentes": "V",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Una luz sagrada irradia de vos en una emanación de 9 m mientras dure. Cada aliado en la zona gana resistencia a un tipo de daño que elijas, y cada enemigo tiene desventaja en salvaciones contra tus conjuros de Paladín.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "muro-de-viento",
+    "nombre": "Muro de Viento",
+    "nivel": 3,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S, M (pluma legal)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Un muro de viento fuerte aparece en un punto dentro del alcance, formando una línea de hasta 15 m o un anillo de 3 m, y 4,5 m de alto. Dispersa nieblas y gases, apaga llamas pequeñas e impone desventaja en ataques a distancia que lo cruzan.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "nube-apestosa",
+    "nombre": "Nube Apestosa",
+    "nivel": 3,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S, M (huevo podrido o hojas de col)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Una esfera de 6 m de gas nauseabundo y amarillo se extiende desde un punto dentro del alcance. Cada criatura que empiece su turno ahí debe hacer salvación de Constitución o queda envenenada hasta el inicio de su siguiente turno; mientras envenenada, no puede hacer acciones ni reacciones.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "palabra-de-curacion-en-masa",
+    "nombre": "Palabra de Curación en Masa",
+    "nivel": 3,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "Acción adicional",
+    "alcance": "18 metros",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Hasta seis criaturas visibles dentro del alcance recuperan PG iguales a 1d4 + tu modificador de aptitud mágica. No afecta a muertos vivientes ni constructos. A niveles superiores: +1d4 por nivel por encima del 3.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo"
+    ]
+  },
+  {
+    "id": "patron-hipnotico",
+    "nombre": "Patrón Hipnótico",
+    "nivel": 3,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "S, M (dispositivo de cristal o metal brillante)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Creás un patrón retorcido de colores que flota en el aire dentro de una esfera de 9 m. Cada criatura en la zona que pueda verlo hace salvación de Sabiduría o queda hechizada, quedando incapacitada y con velocidad 0 mientras dure.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "pequena-choza-de-leomund",
+    "nombre": "Pequeña Choza de Leomund",
+    "nivel": 3,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 minuto",
+    "alcance": "3 metros",
+    "componentes": "V, S, M (un trocito de cristal)",
+    "duracion": "8 horas",
+    "descripcion": "Una cúpula de fuerza forzada aparece alrededor de un punto dentro del alcance, de 3 m de radio, impenetrable desde fuera. Hasta diez criaturas dentro pueden ver hacia afuera, pero nadie desde afuera puede ver hacia dentro. Sirve de refugio seguro para un descanso.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "mago"
+    ]
+  },
+  {
+    "id": "proteccion-contra-energia",
+    "nombre": "Protección contra Energía",
+    "nivel": 3,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Tocás a una criatura voluntaria y elegís ácido, frío, fuego, relámpago o trueno. El objetivo gana resistencia a ese tipo de daño durante la duración.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida",
+      "explorador",
+      "hechicero"
+    ]
+  },
+  {
+    "id": "ralentizar",
+    "nombre": "Ralentizar",
+    "nivel": 3,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S, M (una gota de mercurio)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Elegís hasta seis criaturas en un cubo de 12 m dentro del alcance. Cada una hace salvación de Sabiduría; si falla, su velocidad se reduce a la mitad, tiene -2 a la CA y a salvaciones de Destreza, y no puede usar reacciones mientras dure. En su turno solo puede hacer una acción o una adicional, no ambas.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "recado",
+    "nombre": "Recado",
+    "nivel": 3,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 minuto, ritual",
+    "alcance": "Ilimitado",
+    "componentes": "V, S, M (un diminuto cono de incienso y una vela de colores)",
+    "duracion": "1 ronda",
+    "descripcion": "Enviáis un breve mensaje mágico de veinticinco palabras o menos a una criatura que conozcáis, en cualquier plano de existencia, sin importar la distancia. La criatura escucha el mensaje en su mente y puede responder con un mensaje igual de corto de inmediato.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "mago"
+    ]
+  },
+  {
+    "id": "relampago",
+    "nombre": "Relámpago",
+    "nivel": 3,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal (línea de 30 m)",
+    "componentes": "V, S, M (fur de piel de gato y barra de ámbar/cristal/vidrio)",
+    "duracion": "Instantánea",
+    "descripcion": "Un rayo centelleante de relámpago forma una línea de 30 m de largo y 1,5 m de ancho desde vos en la dirección que elijáis. Cada criatura en la línea hace salvación de Destreza y recibe 8d6 de daño de relámpago (mitad si la supera). A niveles superiores: +1d6 por nivel por encima del 3.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "respirar-bajo-el-agua",
+    "nombre": "Respirar Bajo el Agua",
+    "nivel": 3,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción, ritual",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (una pajita corta de caña o junco)",
+    "duracion": "24 horas",
+    "descripcion": "Esta magia otorga a hasta diez criaturas dispuestas dentro del alcance la capacidad de respirar bajo el agua hasta que termine el conjuro.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "druida",
+      "explorador",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "revivir",
+    "nombre": "Revivir",
+    "nivel": 3,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (diamante de valor 300 po, consumido)",
+    "duracion": "Instantánea",
+    "descripcion": "Tocás una criatura que haya muerto en el último minuto. Vuelve a la vida con 1 PG. No funciona si murió de vejez o si le faltan partes vitales del cuerpo.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida",
+      "explorador",
+      "paladin"
+    ]
+  },
+  {
+    "id": "senal-de-esperanza",
+    "nombre": "Señal de Esperanza",
+    "nivel": 3,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Hasta cinco criaturas de tu elección dentro de 9 m ganan ventaja en salvaciones mientras dure el conjuro.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo"
+    ]
+  },
+  {
+    "id": "texto-ilusorio",
+    "nombre": "Texto Ilusorio",
+    "nivel": 3,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 minuto, ritual",
+    "alcance": "Toque",
+    "componentes": "S, M (tinta por valor de 25 po, consumida)",
+    "duracion": "Hasta que se disipe",
+    "descripcion": "Escribís un texto en una superficie que puede ser leído con normalidad, pero contiene un mensaje oculto que solo criaturas que elijáis (o que lancen Detectar Magia) pueden leer; para el resto, parece texto distinto y mundano.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "toque-vampirico",
+    "nombre": "Toque Vampírico",
+    "nivel": 3,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Tu mano se llena de energía oscura. Haz un ataque de conjuro cuerpo a cuerpo contra una criatura: si acierta, 3d6 de daño necrótico, y recuperás PG iguales a la mitad de ese daño. A niveles superiores: +1d6 por nivel por encima del 3.°.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "tormenta-de-aguanieve",
+    "nombre": "Tormenta de Aguanieve",
+    "nivel": 3,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S, M (una pizca de polvo y agua)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Un cilindro de 6 m de radio y 12 m de alto, centrado en un punto dentro del alcance, se llena de aguanieve y niebla helada. El terreno se vuelve difícil y se oscurece; cada criatura ahí al aparecer hace salvación de Constitución o queda aturdida hasta el final de su siguiente turno.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "volar",
+    "nombre": "Volar",
+    "nivel": 3,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (una pluma de ala de murciélago o pájaro)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Tocás a una criatura voluntaria. Gana una velocidad de vuelo de 18 m durante la duración. Al terminar, si sigue en el aire, cae a menos de tener otra forma de volar o flotar.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "adivinacion",
+    "nombre": "Adivinación",
+    "nivel": 4,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 minuto, ritual",
+    "alcance": "Personal",
+    "componentes": "V, S, M (incienso por valor de 25 po, consumido)",
+    "duracion": "Instantánea",
+    "descripcion": "Pedís consejo a un ente oráculo sobre un objetivo, suceso o actividad específica que ocurrirá en los próximos 7 días. El DM te da una respuesta verdadera, que puede ser una frase corta o una rima críptica.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "clerigo",
+      "druida",
+      "mago"
+    ]
+  },
+  {
+    "id": "asesino-fantasmal",
+    "nombre": "Asesino Fantasmal",
+    "nivel": 4,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Creás una ilusión del peor miedo de una criatura visible, visible solo para ella. Hace salvación de Sabiduría o queda asustada, recibiendo 4d10 de daño psíquico (mitad si la supera); si cae a 0 PG por este daño, muere de terror si no es inmune a asustado. A niveles superiores: +1d10 por nivel por encima del 4.°.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "mago"
+    ]
+  },
+  {
+    "id": "atadura-planar",
+    "nombre": "Atadura Planar",
+    "nivel": 4,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 minuto",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (joya de valor 1000 po, consumida)",
+    "duracion": "24 horas",
+    "descripcion": "Intentás atar a una criatura de otro plano para que os preste servicio temporal. El objetivo hace una salvación de Carisma o queda obligado a cumplir una tarea razonable durante la duración; a niveles superiores la duración se extiende mucho más.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "mago"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "aura-de-pureza",
+    "nombre": "Aura de Pureza",
+    "nivel": 4,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "Acción adicional",
+    "alcance": "Personal (emanación de 9 m)",
+    "componentes": "V",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Energía purificadora irradia de vos en una emanación de 9 m mientras dure. Vos y los aliados en la zona tenéis ventaja en salvaciones contra enfermedades y venenos, y resistencia al daño de veneno.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "paladin"
+    ]
+  },
+  {
+    "id": "aura-de-vida",
+    "nombre": "Aura de Vida",
+    "nivel": 4,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "Acción adicional",
+    "alcance": "Personal (emanación de 9 m)",
+    "componentes": "V",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Energía vital irradia de vos en una emanación de 9 m mientras dure. Vos y los aliados en la zona tenéis resistencia a daño necrótico, y cuando un aliado ahí caería a 0 PG por daño, en cambio queda con 1 PG (solo una vez por conjuro).",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "paladin"
+    ]
+  },
+  {
+    "id": "cofre-oculto-de-leomund",
+    "nombre": "Cofre Oculto de Leomund",
+    "nivel": 4,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 minuto",
+    "alcance": "Toque",
+    "componentes": "V, S, M (un trozo diminuto de madera, metal y vidrio)",
+    "duracion": "Instantánea",
+    "descripcion": "Escondés un cofre de hasta 3 m cúbicos de contenido en el Plano Etéreo. Podéis recuperarlo como acción, apareciendo en un espacio desocupado dentro de 9 m, siempre que sepáis a qué cofre vinculado estáis llamando.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "compulsion",
+    "nombre": "Compulsión",
+    "nivel": 4,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Cada criatura que podáis ver en una esfera de 6 m y pueda oíros hace salvación de Sabiduría. Si falla, mientras dure el conjuro, debe moverse en la dirección que le ordenéis cuando sea su turno y no pueda hacer otra cosa.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo"
+    ]
+  },
+  {
+    "id": "confusion",
+    "nombre": "Confusión",
+    "nivel": 4,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S, M (tres nueces secas)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Cada criatura en una esfera de 3 m hace salvación de Sabiduría; si falla, no puede actuar con normalidad y debe tirar cada turno para determinar su comportamiento (vagar, atacar al azar, o actuar normalmente). A niveles superiores: +1,5 m de radio por nivel por encima del 4.°.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "conjurar-seres-del-bosque",
+    "nombre": "Conjurar Seres del Bosque",
+    "nivel": 4,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (puñado de hojas)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Invocás espíritus feéricos del bosque en espacios desocupados dentro del alcance; según el nivel del espacio usado, podés invocar más de ellos. Luchan junto a vos, comparten tu iniciativa y los controlás como aliados.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "controlar-agua",
+    "nombre": "Controlar Agua",
+    "nivel": 4,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "90 metros",
+    "componentes": "V, S, M (una gota de agua y un trozo de roca)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Controlás cualquier agua dentro de un cubo de 90 m, eligiendo uno de varios efectos: inundar, eliminar (abriendo un pasaje en el agua), crear una ola gigante, o invertir la dirección de una corriente.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida",
+      "mago"
+    ]
+  },
+  {
+    "id": "dominar-bestia",
+    "nombre": "Dominar Bestia",
+    "nivel": 4,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Intentás dominar a una bestia visible. Hace salvación de Sabiduría (con desventaja si tiene 4 o menos de Inteligencia) o queda hechizada. Mientras dure, podéis comunicaros telepáticamente y darle órdenes; si no le dais ninguna, se defiende pero no actúa. A niveles superiores: podéis afectar a Gigantescas (espacio 6), o imponer desventaja normal (espacio 8), o afectar a cualquier bestia sin importar Inteligencia (espacio 9).",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador",
+      "hechicero"
+    ]
+  },
+  {
+    "id": "escudo-de-fuego",
+    "nombre": "Escudo de Fuego",
+    "nivel": 4,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V, S, M (ceniza fosforescente)",
+    "duracion": "10 minutos",
+    "descripcion": "Llamas delgadas envuelven vuestro cuerpo durante la duración, emitiendo luz brillante en 3 m y tenue 3 m más. Las llamas os dan resistencia a frío o fuego (a elección), y cualquier criatura que os golpee cuerpo a cuerpo recibe 2d8 de daño de fuego.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "esfera-resiliente-de-otiluke",
+    "nombre": "Esfera Resiliente de Otiluke",
+    "nivel": 4,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (dos hemisferios de cristal transparente)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Una esfera de fuerza encierra a una criatura u objeto de tamaño Grande o menor dentro del alcance (salvación de Destreza si es no voluntaria). Nada puede pasar a través de la esfera, dentro ni fuera, mientras dure.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "esfera-vitriolica",
+    "nombre": "Esfera Vitriólica",
+    "nivel": 4,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "45 metros",
+    "componentes": "V, S, M (vial de ácido)",
+    "duracion": "Instantánea",
+    "descripcion": "Lanzás una esfera burbujeante de ácido. Elegís un punto dentro del alcance: cada criatura en una esfera de 3 m hace salvación de Destreza, recibiendo 10d4 de daño ácido (mitad si la supera), y la mitad de ese total de nuevo al final de su siguiente turno. A niveles superiores: +2d4 por nivel por encima del 4.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "fabricar",
+    "nombre": "Fabricar",
+    "nivel": 4,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "10 minutos",
+    "alcance": "36 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Transformás materia prima de un tipo en un producto de ese mismo material dentro del alcance (madera en muebles, piedra en una estatua, tela en ropa, etc.), creando un objeto de hasta 3 m cúbicos sin necesitar herramientas.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "fausto-privado-de-mordenkainen",
+    "nombre": "Fausto Privado de Mordenkainen",
+    "nivel": 4,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "10 minutos",
+    "alcance": "36 metros",
+    "componentes": "V, S, M (tiza, plata y hierro en polvo por valor de 1000 po, consumido)",
+    "duracion": "24 horas",
+    "descripcion": "Volvéis una zona cúbica de hasta 30 m impenetrable a la adivinación mágica, al teletransporte y a la extraplanación, y podéis personalizar cómo entra o sale el sonido y la luz, así como cerrar sus entradas durante la duración.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "fuente-de-luz-lunar",
+    "nombre": "Fuente de Luz Lunar",
+    "nivel": 4,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (ópalo o perla por valor de 50 po)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Invocás una columna de luz lunar en un punto dentro del alcance. Las criaturas que elijas dentro de la zona reciben curación o daño radiante leve (a tu elección por criatura), según sean aliadas u hostiles.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "druida"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "guarda-contra-la-muerte",
+    "nombre": "Guarda contra la Muerte",
+    "nivel": 4,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S",
+    "duracion": "8 horas",
+    "descripcion": "Tocás a una criatura voluntaria y la protegéis contra la muerte. Si sufriría daño que la reduciría a 0 PG, en cambio queda a 1 PG, consumiendo el conjuro (no funciona contra daño masivo instantáneo que mataría directamente).",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "paladin"
+    ]
+  },
+  {
+    "id": "guardian-de-la-fe",
+    "nombre": "Guardián de la Fe",
+    "nivel": 4,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V",
+    "duracion": "8 horas",
+    "descripcion": "Invocás un guardián espectral de gran tamaño en un espacio desocupado dentro del alcance durante la duración o hasta que inflija 60 PG de daño total. Cualquier criatura hostil que entre por primera vez en un turno a 3 m de él hace salvación de Sabiduría o recibe 20 de daño radiante o del tipo elegido, quedando ralentizada en caso de fallar también.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo"
+    ]
+  },
+  {
+    "id": "hechizar-monstruo",
+    "nombre": "Hechizar Monstruo",
+    "nivel": 4,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Intentás hechizar a una criatura visible, de cualquier tipo. Hace salvación de Sabiduría (con ventaja si estáis en combate) o queda hechizada mientras dure, considerándote un conocido amistoso.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "druida",
+      "hechicero",
+      "mago"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "insecto-gigante",
+    "nombre": "Insecto Gigante",
+    "nivel": 4,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "Acción adicional",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (puñado de guano de grillo o escarabajo)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Transformáis hasta diez insectos o arañas visibles dentro del alcance en versiones Grandes de sí mismas durante la duración, obedeciendo vuestras órdenes y luchando como aliados.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida"
+    ]
+  },
+  {
+    "id": "invisibilidad-mejorada",
+    "nombre": "Invisibilidad Mejorada",
+    "nivel": 4,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Vos u otra criatura voluntaria que toquéis os volvéis invisibles durante la duración, incluso mientras atacáis o lanzáis conjuros.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "invocar-aberracion",
+    "nombre": "Invocar Aberración",
+    "nivel": 4,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (ofrenda apropiada para una aberración)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Invocás un espíritu aberrante en un espacio desocupado dentro del alcance (en forma viscosa, carnal o fantasmal). Comparte tu iniciativa y la controlás como aliado.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "mago"
+    ]
+  },
+  {
+    "id": "invocar-automata",
+    "nombre": "Invocar Autómata",
+    "nivel": 4,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (bisagra, cerradura u otro mecanismo pequeño)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Invocás un espíritu que toma forma de autómata en un espacio desocupado dentro del alcance. Comparte tu iniciativa y la controlás como aliado.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "invocar-elemental",
+    "nombre": "Invocar Elemental",
+    "nivel": 4,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Invocás un espíritu elemental (aire, tierra, fuego o agua, a elección) en un espacio desocupado dentro del alcance. Comparte tu iniciativa y la controlás como aliado.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador",
+      "mago"
+    ]
+  },
+  {
+    "id": "libertad-de-movimiento",
+    "nombre": "Libertad de Movimiento",
+    "nivel": 4,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (correa de cuero atada alrededor de una extremidad)",
+    "duracion": "1 hora",
+    "descripcion": "Tocás a una criatura voluntaria. Durante la duración, el movimiento del objetivo no se ve afectado por terreno difícil, y conjuros y efectos que normalmente lo apresarían o reducirían su velocidad no tienen efecto sobre él.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "localizar-criatura",
+    "nombre": "Localizar Criatura",
+    "nivel": 4,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V, S, M (fragmento de piel o pelo de un sabueso)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Describís o nombráis a una criatura que conozcáis bien. Sabéis la dirección hacia ella si está dentro de 1,5 km y no está tras agua corriente ni protegida contra adivinación. El conjuro sigue su movimiento mientras dure.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "druida",
+      "explorador",
+      "mago",
+      "paladin"
+    ]
+  },
+  {
+    "id": "marchitar",
+    "nombre": "Marchitar",
+    "nivel": 4,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Energía necrótica se derrama sobre una criatura visible. Hace salvación de Constitución, recibiendo 8d8 de daño necrótico (mitad si la supera); una planta no mágica afectada muere automáticamente. A niveles superiores: +1d8 por nivel por encima del 4.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "mastin-fiel-de-mordenkainen",
+    "nombre": "Mastín Fiel de Mordenkainen",
+    "nivel": 4,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (hueso pequeño de perro plateado)",
+    "duracion": "8 horas",
+    "descripcion": "Convocás un sabueso espectral vigilante e invisible en un punto dentro del alcance durante la duración. Solo vos lo veis. Ladra al detectar una criatura hostil a 18 m o menos, y puede morder con un ataque de conjuro causando 4d8 de daño de fuerza.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "moldear-la-piedra",
+    "nombre": "Moldear la Piedra",
+    "nivel": 4,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Moldeáis piedra de tamaño y forma que tocáis (hasta 3 m cúbicos) en cualquier forma que deseéis: tallar una puerta en un muro sólido, dar forma a una estatua tosca, o nivelar terreno rocoso, entre otras posibilidades.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida",
+      "mago"
+    ]
+  },
+  {
+    "id": "muro-de-fuego",
+    "nombre": "Muro de Fuego",
+    "nivel": 4,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S, M (pizca de fósforo)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Creás un muro de fuego de hasta 18 m de largo (o un anillo de 6 m), 6 m de alto y opaco, en un punto dentro del alcance. Cada criatura que entre por primera vez en un turno o empiece ahí hace salvación de Destreza, recibiendo 5d8 de daño de fuego (mitad si la supera). A niveles superiores: +1d8 por nivel por encima del 4.°.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "ojo-arcano",
+    "nombre": "Ojo Arcano",
+    "nivel": 4,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Ilimitado",
+    "componentes": "V, S, M (bola de cristal tallada por valor de 25 po)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Creás un ojo invisible y mágico en un punto dentro de 9 km que conozcáis, o dentro de un lugar que hayáis visitado antes. El ojo flota y se mueve hasta 9 m por turno según vuestras órdenes mentales, y veis y oís a través de él.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "piel-petrea",
+    "nombre": "Piel Pétrea",
+    "nivel": 4,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (diamante en polvo por valor de 100 po, consumido)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Tocás a una criatura voluntaria para otorgarle resistencia a daño contundente, cortante y perforante no mágico mientras dure el conjuro.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "polimorfar",
+    "nombre": "Polimorfar",
+    "nivel": 4,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S, M (crisálida de oruga)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Transformáis a una criatura visible en una nueva forma de bestia (una no voluntaria puede salvar con Sabiduría para resistirlo). La criatura usa el perfil de la bestia en lugar del suyo, conservando su personalidad y alineamiento; vuelve a su forma original si cae a 0 PG en la nueva forma o si termina el conjuro.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "puerta-dimensional",
+    "nombre": "Puerta Dimensional",
+    "nivel": 4,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "150 metros",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Vos y, opcionalmente, una criatura voluntaria a vuestro lado os teletransportáis a un punto que puedas ver u os sea descrito dentro del alcance. Si el destino está ocupado, ambos sufren 4d6 de daño de fuerza y el conjuro falla en teletransportar.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "tentaculos-negros-de-evard",
+    "nombre": "Tentáculos Negros de Evard",
+    "nivel": 4,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S, M (fragmento de tentáculo de pulpo o kraken)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Tentáculos negros y retorcidos llenan un cuadrado de 6 m dentro del alcance. Cada criatura que empiece su turno ahí hace salvación de Fuerza, recibiendo 3d6 de daño contundente y quedando apresada si falla (mitad de daño y sin apresar si la supera).",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "terreno-alucinatorio",
+    "nombre": "Terreno Alucinatorio",
+    "nivel": 4,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "10 minutos",
+    "alcance": "45 metros",
+    "componentes": "V, S, M (piedra, rama y un poco de tierra verde)",
+    "duracion": "24 horas",
+    "descripcion": "Hacéis que el terreno natural en un cubo de 45 m parezca otro tipo de terreno natural (un campo abierto parece un pantano, una colina parece un barranco, etc.) mientras dure. El engaño es solo visual/auditivo/olfativo; examinarlo físicamente revela la verdad.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "druida",
+      "mago"
+    ]
+  },
+  {
+    "id": "tormenta-de-hielo",
+    "nombre": "Tormenta de Hielo",
+    "nivel": 4,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "90 metros",
+    "componentes": "V, S, M (fragmento de cuarzo cristal)",
+    "duracion": "Instantánea",
+    "descripcion": "Granizo cae violentamente en un cilindro de 6 m de radio y 12 m de alto, centrado en un punto dentro del alcance. Cada criatura ahí hace salvación de Destreza, recibiendo 2d8 de daño contundente y 4d6 de daño de frío (mitad si la supera). El terreno queda cubierto de hielo.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "alterar-los-recuerdos",
+    "nombre": "Alterar los Recuerdos",
+    "nivel": 5,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Una criatura visible hace salvación de Sabiduría (con ventaja si está en combate) o queda hechizada e incapacitada mientras dure, sin ser consciente de su entorno aunque puede oíros. Si no recibe daño ni es objetivo de otro conjuro, podéis luego alterar su recuerdo de las últimas 24 horas (hasta 10 minutos de sucesos).",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "mago"
+    ]
+  },
+  {
+    "id": "alzar-a-los-muertos",
+    "nombre": "Alzar a los Muertos",
+    "nivel": 5,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 hora",
+    "alcance": "Toque",
+    "componentes": "V, S, M (diamante de valor 500 po, consumido)",
+    "duracion": "Instantánea",
+    "descripcion": "Con un toque, revivís a una criatura que no lleve más de 10 días muerta y no fuera muerto viviente. Vuelve a la vida con 1 PG y un penalizador de -4 a pruebas con d20 que se reduce en 1 cada vez que termine un descanso largo, hasta desaparecer.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "paladin"
+    ]
+  },
+  {
+    "id": "animar-objetos",
+    "nombre": "Animar Objetos",
+    "nivel": 5,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Hasta diez objetos no mágicos, no portados, dentro del alcance cobran vida como autómatas bajo vuestro control durante la duración. Como acción adicional, podéis ordenarles atacar o moverse. Al terminar o al llegar a 0 PG, vuelven a ser objetos inertes.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "apariencia",
+    "nombre": "Apariencia",
+    "nivel": 5,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S",
+    "duracion": "8 horas",
+    "descripcion": "Le dais una apariencia ilusoria distinta a cada criatura que elijáis dentro del alcance (una no voluntaria hace salvación de Carisma para resistirlo), cambiando altura, peso y rasgos. Examinar físicamente al objetivo puede revelar el engaño.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "caparazon-antivida",
+    "nombre": "Caparazón Antivida",
+    "nivel": 5,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V, S, M (fragmento de concha fosilizada)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Un caparazón de energía abjuradora os rodea mientras dure, otorgándoos resistencia a daño necrótico e impidiendo que criaturas muertas vivientes se acerquen o afecten vuestra vitalidad con facilidad.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "carcaj-veloz",
+    "nombre": "Carcaj Veloz",
+    "nivel": 5,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "Acción adicional",
+    "alcance": "Personal",
+    "componentes": "V, S, M (carcaj con al menos una flecha o virote)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Vuestro carcaj queda imbuido de magia veloz. Como acción adicional cada turno mientras dure, podéis sacar hasta dos flechas o virotes del carcaj y disparar ambos como parte de la misma acción de atacar.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "explorador"
+    ]
+  },
+  {
+    "id": "castigo-desterrador",
+    "nombre": "Castigo Desterrador",
+    "nivel": 5,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "Acción adicional (al golpear)",
+    "alcance": "Personal",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Variante de Castigo Divino: al golpear con un ataque de arma, podés gastar un espacio de conjuro de nivel 5 o superior para infligir 5d10 de daño radiante adicional (+1d10 por nivel por encima del 5.°) y, si el objetivo no es originario de vuestro plano, hacer salvación de Carisma o ser desterrado temporalmente.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "paladin"
+    ],
+    "esHabilidad": true
+  },
+  {
+    "id": "circulo-de-poder",
+    "nombre": "Círculo de Poder",
+    "nivel": 5,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 minuto",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (hierro o plata en polvo por valor de 1000 po)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Energía abjuradora llena una esfera de 9 m centrada en un punto dentro del alcance durante la duración. Los aliados dentro ganan ventaja en salvaciones contra conjuros y otros efectos mágicos dañinos, y resistencia al daño de esos efectos si ya tienen ventaja por otra razón.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "mago",
+      "paladin"
+    ]
+  },
+  {
+    "id": "circulo-de-teletransportacion",
+    "nombre": "Círculo de Teletransportación",
+    "nivel": 5,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "10 minutos",
+    "alcance": "3 metros",
+    "componentes": "V, S, M (rubíes en polvo por valor de 50 po, consumidos)",
+    "duracion": "1 ronda",
+    "descripcion": "Trazáis un círculo de 3 m de diámetro que, si conocéis el sello permanente de un destino, abre un portal hacia él durante la duración, permitiendo que cualquier criatura lo cruce para teletransportarse hasta allí.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "comunion",
+    "nombre": "Comunión",
+    "nivel": 5,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 minuto, ritual",
+    "alcance": "Personal",
+    "componentes": "V, S, M (incensario con incienso por valor de 25 po, consumido)",
+    "duracion": "1 minuto",
+    "descripcion": "Entráis en contacto con vuestra deidad u otros servidores divinos. En el minuto siguiente, podéis hacer hasta tres preguntas que se respondan con sí o no; cada respuesta es verdadera dentro del conocimiento de la entidad consultada.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "clerigo"
+    ]
+  },
+  {
+    "id": "comunion-con-la-naturaleza",
+    "nombre": "Comunión con la Naturaleza",
+    "nivel": 5,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 minuto, ritual",
+    "alcance": "Personal",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Os volvéis uno con la naturaleza circundante, obteniendo conocimiento del terreno en 1,5 km a la redonda: topografía, asentamientos, cuerpos de agua, y presencia general de criaturas, plantas destacadas o fenómenos sobrenaturales.",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "conjurar-elemental",
+    "nombre": "Conjurar Elemental",
+    "nivel": 5,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S, M (ofrenda apropiada para un elemental)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Invocás un espíritu elemental más poderoso (aire, tierra, fuego o agua) en un espacio desocupado dentro del alcance. Comparte tu iniciativa y la controlás como aliado durante la duración.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "mago"
+    ]
+  },
+  {
+    "id": "conjurar-lluvia-de-flechas",
+    "nombre": "Conjurar Lluvia de Flechas",
+    "nivel": 5,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Invocáis una intensa lluvia de proyectiles espectrales sobre un punto dentro del alcance. Cada criatura en una esfera de 6 m hace salvación de Destreza, recibiendo daño perforante considerable (mitad si la supera).",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "explorador"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "cono-de-frio",
+    "nombre": "Cono de Frío",
+    "nivel": 5,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal (cono de 18 m)",
+    "componentes": "V, S, M (un pedazo de marfil o cristal)",
+    "duracion": "Instantánea",
+    "descripcion": "Un cono helado de 18 m de aire frío sale disparado de vuestras manos. Cada criatura en la zona hace salvación de Constitución, recibiendo 8d8 de daño de frío (mitad si la supera); una criatura humanoide muerta por este conjuro queda congelada en una estatua de hielo. A niveles superiores: +1d8 por nivel por encima del 5.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "conocer-las-leyendas",
+    "nombre": "Conocer las Leyendas",
+    "nivel": 5,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V, S, M (ofrenda por valor de 250 po, consumida)",
+    "duracion": "Instantánea",
+    "descripcion": "Nombráis o describís a una persona, lugar u objeto. El conjuro os aporta conocimientos relevantes que sean de dominio general en vuestra región: historia, leyendas conocidas, o rumores notables relacionados.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "mago"
+    ]
+  },
+  {
+    "id": "consagrar",
+    "nombre": "Consagrar",
+    "nivel": 5,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 minuto",
+    "alcance": "36 metros",
+    "componentes": "V, S, M (hierba, aceites y agua bendita por valor de 1000 po, consumidos)",
+    "duracion": "24 horas",
+    "descripcion": "Consagráis terreno en una esfera de 18 m con bendiciones divinas durante la duración, pudiendo elegir hasta cinco efectos secundarios de una lista (dificultar que muertos vivientes entren, otorgar ventaja en salvaciones a ciertas criaturas, luz constante, silencio, etc.).",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo"
+    ]
+  },
+  {
+    "id": "contactar-con-otro-plano",
+    "nombre": "Contactar con Otro Plano",
+    "nivel": 5,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 minuto, ritual",
+    "alcance": "Personal",
+    "componentes": "V",
+    "duracion": "1 minuto",
+    "descripcion": "Vuestra mente se extiende hacia otro plano para consultar a una entidad de conocimiento y propósito desconocidos. Hacéis salvación de Inteligencia o sufrís daño psíquico y quedáis incapacitados; si la superáis, podéis hacer hasta cinco preguntas, respondidas por el DM (pueden ser crípticas o incluso falsas si la entidad es hostil).",
+    "concentracion": false,
+    "ritual": true,
+    "clases": [
+      "brujo",
+      "mago"
+    ]
+  },
+  {
+    "id": "contagio",
+    "nombre": "Contagio",
+    "nivel": 5,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S",
+    "duracion": "7 días",
+    "descripcion": "Vuestro ataque de contacto inflige una enfermedad mágica virulenta. Haz un ataque de conjuro cuerpo a cuerpo: si acierta, el objetivo hace salvación de Constitución o queda envenenado y debe repetirla cada 24 horas, sufriendo efectos cada vez peores (desventaja progresiva en pruebas y salvaciones de una característica elegida al lanzar el conjuro) hasta curarse.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida"
+    ]
+  },
+  {
+    "id": "creacion",
+    "nombre": "Creación",
+    "nivel": 5,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 minuto",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (fibra vegetal, resina y pigmento de poco valor)",
+    "duracion": "Variable (hasta permanente)",
+    "descripcion": "Tiráis de hilos de materia sombría para crear un objeto no vivo de materia vegetal o mineral de hasta 1,5 m cúbicos dentro del alcance. Si el objeto es de un material raro o precioso, dura solo un tiempo limitado antes de desaparecer; de materiales comunes, es permanente.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "curar-heridas-en-masa",
+    "nombre": "Curar Heridas en Masa",
+    "nivel": 5,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "Instantánea",
+    "descripcion": "Una ola de energía curativa se extiende desde un punto que elijáis dentro del alcance. Elegís hasta seis criaturas en una esfera de 9 m centrada en ese punto; cada una recupera PG iguales a 5d8 + tu modificador de aptitud mágica. A niveles superiores: +1d8 por nivel por encima del 5.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "druida"
+    ]
+  },
+  {
+    "id": "despertar",
+    "nombre": "Despertar",
+    "nivel": 5,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "8 horas",
+    "alcance": "Toque",
+    "componentes": "V, S, M (ágata por valor de 1000 po, consumida)",
+    "duracion": "Instantánea",
+    "descripcion": "Tocáis a una bestia o planta no mágica y le otorgáis un intelecto humanoide de forma permanente: Inteligencia 10 y la capacidad de hablar un idioma que conozcáis. Se vuelve amistosa hacia vos durante 30 días o hasta que la tratéis mal.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "druida"
+    ]
+  },
+  {
+    "id": "disipar-el-bien-y-el-mal",
+    "nombre": "Disipar el Bien y el Mal",
+    "nivel": 5,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V, S, M (agua bendita o polvo de hierro/plata)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Energía protectora os rodea mientras dure. Contra celestiales, elementales, demonios, feéricos, infernales y muertos vivientes, podéis gastar vuestra reacción para imponerles desventaja en ataques contra vos, romper un hechizo que os afecte proveniente de ellos, o desterrar a una criatura invocada o convocada de vuelta a su plano de origen.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "paladin"
+    ]
+  },
+  {
+    "id": "dominar-persona",
+    "nombre": "Dominar Persona",
+    "nivel": 5,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Intentáis dominar a un humanoide visible. Hace salvación de Sabiduría (con ventaja si estáis en combate) o queda hechizado mientras dure; podéis darle órdenes mentalmente, e incluso tomar control total de sus acciones si gastáis vuestra acción para ello. A niveles superiores: la duración se extiende hasta 8 horas (espacio 7), 24 horas (espacio 8) o se vuelve permanente hasta disiparse (espacio 9).",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "enganar",
+    "nombre": "Engañar",
+    "nivel": 5,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Ilimitado",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Vuestro cuerpo real se vuelve invisible mientras creáis una duplicata ilusoria controlable de vos mismo en cualquier punto que conozcáis, dentro de la cual podéis percibir y 'hablar' a través de ella mientras dure el conjuro.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "mago"
+    ],
+    "revisar": true
+  },
+  {
+    "id": "enlace-telepatico-de-rary",
+    "nombre": "Enlace Telepático de Rary",
+    "nivel": 5,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (hilo de plata y cobre entrelazados)",
+    "duracion": "1 hora",
+    "descripcion": "Vos y hasta siete criaturas voluntarias que toquéis quedáis vinculados telepáticamente durante la duración, pudiendo comunicarse mentalmente sin importar el idioma o la distancia, mientras ambos estén en el mismo plano de existencia.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "mago"
+    ]
+  },
+  {
+    "id": "ensueno",
+    "nombre": "Ensueño",
+    "nivel": 5,
+    "escuela": "Ilusionismo",
+    "tiempoCasteo": "1 minuto",
+    "alcance": "Especial (ilimitado)",
+    "componentes": "V, S, M (pizca de arena fina, tinta de calamar y pluma arrancada de un ave dormida)",
+    "duracion": "8 horas",
+    "descripcion": "Entráis en el sueño de una criatura conocida (o un mensajero convocado lo hace en vuestro lugar) y conversáis con ella como si estuviera despierta, pudiendo generarle pesadillas que la perturben al despertar si así lo deseáis.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "mago"
+    ]
+  },
+  {
+    "id": "escudrinar",
+    "nombre": "Escudriñar",
+    "nivel": 5,
+    "escuela": "Adivinación",
+    "tiempoCasteo": "10 minutos",
+    "alcance": "Personal",
+    "componentes": "V, S, M (bola de cristal, espejo pulido o recipiente con agua, por valor de 1000 po)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Observáis y escucháis a una criatura conocida en cualquier lugar del mismo plano. Hace salvación de Sabiduría (con ventaja si desconfía mágicamente); si falla, aparece un sensor invisible cerca de ella desde el que veis y oís durante la duración.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "clerigo",
+      "druida",
+      "mago"
+    ]
+  },
+  {
+    "id": "estatica-sinaptica",
+    "nombre": "Estática Sináptica",
+    "nivel": 5,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Una explosión silenciosa de energía mental estalla en un punto que elijáis. Cada criatura en una esfera de 6 m hace salvación de Inteligencia, recibiendo 8d6 de daño psíquico (mitad si la supera), y si falla queda confundida durante 1 minuto, incapaz de concentrarse en conjuros con normalidad.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "geas",
+    "nombre": "Geas",
+    "nivel": 5,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 minuto",
+    "alcance": "18 metros",
+    "componentes": "V",
+    "duracion": "30 días",
+    "descripcion": "Imponéis una orden mágicamente vinculante a una criatura que podáis ver. Hace salvación de Sabiduría (con ventaja si no os entiende o estáis en combate); si falla, queda obligada a seguir la orden durante la duración, sufriendo daño psíquico si actúa en contra. A niveles superiores: la duración se vuelve permanente hasta disiparse (espacio 7 o más).",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "druida",
+      "mago",
+      "paladin"
+    ]
+  },
+  {
+    "id": "golpe-de-viento-acerado",
+    "nombre": "Golpe de Viento Acerado",
+    "nivel": 5,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "S",
+    "duracion": "Instantánea",
+    "descripcion": "Os teletransportáis fugazmente junto a hasta cinco criaturas visibles dentro del alcance, atacando a cada una con un arma espectral. Cada objetivo hace un ataque de conjuro; con cada acierto, 6d10 de daño de fuerza. Al terminar, aparecéis en un espacio desocupado cerca de uno de los objetivos.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "explorador",
+      "mago"
+    ]
+  },
+  {
+    "id": "golpe-flamigero",
+    "nombre": "Golpe Flamígero",
+    "nivel": 5,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S, M (hierba, especias y una llama)",
+    "duracion": "Instantánea",
+    "descripcion": "Un pilar de fuego divino se abate sobre un punto que podáis ver dentro del alcance. Cada criatura en un cilindro de 3 m de radio y 18 m de alto hace salvación de Destreza, recibiendo 4d6 de daño de fuego y 4d6 de daño radiante (mitad si la supera). A niveles superiores: +1d6 de cada tipo por nivel por encima del 5.°.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "clerigo"
+    ]
+  },
+  {
+    "id": "inmovilizar-monstruo",
+    "nombre": "Inmovilizar Monstruo",
+    "nivel": 5,
+    "escuela": "Encantamiento",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S, M (trozo de hierro recto)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Una criatura visible, de cualquier tipo, hace salvación de Sabiduría o queda paralizada mientras dure. Puede repetir la salvación al final de cada uno de sus turnos. A niveles superiores: un objetivo adicional por nivel de espacio por encima del 5.°.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "brujo",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "invocar-celestial",
+    "nombre": "Invocar Celestial",
+    "nivel": 5,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S, M (ofrenda apropiada para un celestial)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Invocás un espíritu celestial (en forma de guerrero avenjado o sanador radiante, a elección) en un espacio desocupado dentro del alcance. Comparte tu iniciativa y la controlás como aliado durante la duración.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "paladin"
+    ]
+  },
+  {
+    "id": "invocar-dragon",
+    "nombre": "Invocar Dragón",
+    "nivel": 5,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "27 metros",
+    "componentes": "V, S, M (escama de dragón)",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Invocás un espíritu dracónico en un espacio desocupado dentro del alcance, de un tipo elemental de daño que elijáis (ácido, frío, fuego, veneno o relámpago). Comparte tu iniciativa y la controlás como aliado durante la duración.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "mano-de-bigby",
+    "nombre": "Mano de Bigby",
+    "nivel": 5,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S, M (guante de cuero reforzado)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Creás una mano espectral grande dentro del alcance. Cada turno, con una acción adicional, podéis ordenarle golpear (4d8 de daño de fuerza), agarrar, interponerse como escudo (+4 a vuestra CA), o empujar a una criatura.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "muro-de-fuerza",
+    "nombre": "Muro de Fuerza",
+    "nivel": 5,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S, M (fragmento de una burbuja de cristal diminuta)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Un muro invisible de fuerza aparece en un punto dentro del alcance, en diez paneles de 3 m o una esfera de 3 m de radio, completamente impenetrable a daño físico, criaturas y la mayoría de la magia mientras dure.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "muro-de-piedra",
+    "nombre": "Muro de Piedra",
+    "nivel": 5,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S, M (pequeño bloque de granito)",
+    "duracion": "Concentración, 10 horas",
+    "descripcion": "Creás un muro de piedra no mágica de hasta 180 m cuadrados dentro del alcance, de 15 cm de grosor, en cualquier forma que podáis visualizar. Puede incluir aberturas y adopta cualquier orientación que deseéis.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "nube-aniquiladora",
+    "nombre": "Nube Aniquiladora",
+    "nivel": 5,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S, M (fragmento de bulbo podrido)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Una esfera de 6 m de niebla amarilla y venenosa aparece centrada en un punto dentro del alcance y persiste mientras dure, moviéndose 3 m cada turno alejándose de vos. Cada criatura ahí hace salvación de Constitución, recibiendo 5d8 de daño de veneno (mitad si la supera).",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "ola-destructora",
+    "nombre": "Ola Destructora",
+    "nivel": 5,
+    "escuela": "Evocación",
+    "tiempoCasteo": "Acción adicional",
+    "alcance": "Personal (emanación de 9 m)",
+    "componentes": "V",
+    "duracion": "Instantánea",
+    "descripcion": "Energía divina irradia de vos en una emanación de 9 m. Cada criatura hostil en la zona hace salvación de Constitución, recibiendo 5d6 de daño radiante o necrótico (a vuestra elección) y quedando derribada si falla (mitad de daño sin derribo si la supera).",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "pasamuros",
+    "nombre": "Pasamuros",
+    "nivel": 5,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "9 metros",
+    "componentes": "V, S, M (pizca de arena, granito en polvo y agua)",
+    "duracion": "1 hora",
+    "descripcion": "Creáis un pasaje a través de madera, yeso o piedra dentro del alcance, de hasta 1,5 m de ancho, 3 m de alto y 6 m de profundidad, que persiste mientras dure el conjuro.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "mago"
+    ]
+  },
+  {
+    "id": "paso-arboreo",
+    "nombre": "Paso Arbóreo",
+    "nivel": 5,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Personal",
+    "componentes": "V, S",
+    "duracion": "Concentración, 1 hora",
+    "descripcion": "Os fundís con un árbol grande dentro del alcance y podéis usar vuestra acción para reaparecer instantáneamente desde dentro de otro árbol grande a menos de 150 m, repitiendo esto hasta que el conjuro termine.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "druida",
+      "explorador"
+    ]
+  },
+  {
+    "id": "plaga-de-insectos",
+    "nombre": "Plaga de Insectos",
+    "nivel": 5,
+    "escuela": "Conjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "90 metros",
+    "componentes": "V, S, M (bola de estiércol)",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Un enjambre bullente de insectos llena una esfera de 6 m centrada en un punto dentro del alcance. Cada criatura ahí hace salvación de Constitución, recibiendo 4d10 de daño perforante (mitad si la supera). La zona queda oscurecida ligeramente mientras dure.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "clerigo",
+      "druida",
+      "hechicero"
+    ]
+  },
+  {
+    "id": "reencarnar",
+    "nombre": "Reencarnar",
+    "nivel": 5,
+    "escuela": "Nigromancia",
+    "tiempoCasteo": "1 hora",
+    "alcance": "Toque",
+    "componentes": "V, S, M (aceites y ungüentos raros por valor de 1000 po, consumidos)",
+    "duracion": "Instantánea",
+    "descripcion": "Tocáis un humanoide que haya muerto en la última semana. Su alma, si está libre y dispuesta, regresa en un cuerpo totalmente nuevo de una especie determinada al azar, con 1 PG, recordando su vida anterior.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "druida"
+    ]
+  },
+  {
+    "id": "restablecimiento-mayor",
+    "nombre": "Restablecimiento Mayor",
+    "nivel": 5,
+    "escuela": "Abjuración",
+    "tiempoCasteo": "1 acción",
+    "alcance": "Toque",
+    "componentes": "V, S, M (perla pulverizada de valor 100 po, consumida)",
+    "duracion": "Instantánea",
+    "descripcion": "Tocáis a una criatura y acabáis con uno de los siguientes efectos que la afecten: una reducción de característica, una maldición (incluyendo la limitación de un objeto maldito), ser transformada contra su voluntad, o reducción de PG máximos.",
+    "concentracion": false,
+    "ritual": false,
+    "clases": [
+      "bardo",
+      "clerigo",
+      "druida",
+      "explorador",
+      "paladin"
+    ]
+  },
+  {
+    "id": "telequinesis",
+    "nombre": "Telequinesis",
+    "nivel": 5,
+    "escuela": "Transmutación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "18 metros",
+    "componentes": "V, S",
+    "duracion": "Concentración, 10 minutos",
+    "descripcion": "Ganás la capacidad de mover o manipular criaturas u objetos a distancia mediante el pensamiento mientras dure. En cada turno, podéis usar una acción de magia para intentar mover un objetivo (una criatura no voluntaria puede salvar con Fuerza) hasta 9 m, abrir o cerrar algo, o manipular un objeto sencillo.",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "hechicero",
+      "mago"
+    ]
+  },
+  {
+    "id": "tormenta-resplandeciente-de-jallarzi",
+    "nombre": "Tormenta Resplandeciente de Jallarzi",
+    "nivel": 5,
+    "escuela": "Evocación",
+    "tiempoCasteo": "1 acción",
+    "alcance": "36 metros",
+    "componentes": "V, S, M (fragmento de gema que brilla con luz interior)",
+    "duracion": "Concentración, 1 minuto",
+    "descripcion": "Convocáis una tormenta de energía radiante centelleante en un punto dentro del alcance. Cada criatura en la zona hace salvación de Destreza, recibiendo daño radiante considerable y quedando cegada brevemente si falla (mitad de daño sin cegar si la supera).",
+    "concentracion": true,
+    "ritual": false,
+    "clases": [
+      "brujo",
+      "mago"
+    ]
   }
 ]
